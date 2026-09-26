@@ -47,7 +47,7 @@ export default function AdminLayout({ children, admin, title }: Props) {
                         <Sparkles size={18} className="text-white" />
                     </div>
                     <div>
-                        <p className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>PromptAI</p>
+                        <p className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>Prompt Saar</p>
                         <p className="text-xs" style={{ color: 'var(--color-muted)' }}>Admin Panel</p>
                     </div>
                     <button className="ml-auto lg:hidden" onClick={() => setSidebarOpen(false)}>

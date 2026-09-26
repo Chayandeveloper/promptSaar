@@ -37,7 +37,7 @@ export default function Login() {
                                 style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
                                 <Sparkles size={28} className="text-white" />
                             </div>
-                            <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>PromptAI Admin</h1>
+                            <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Prompt Saar Admin</h1>
                             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>Sign in to your admin panel</p>
                         </div>
 
@@ -53,7 +53,7 @@ export default function Login() {
                                         type="email"
                                         value={data.email}
                                         onChange={e => setData('email', e.target.value)}
-                                        placeholder="admin@promptai.app"
+                                        placeholder="admin@promptbaba.cloud"
                                         className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
                                         style={{
                                             background: 'var(--color-surface-2)',
@@ -106,10 +106,6 @@ export default function Login() {
                                 {processing ? 'Signing in...' : 'Sign In'}
                             </button>
                         </form>
-
-                        <p className="text-center text-xs mt-6" style={{ color: 'var(--color-muted)' }}>
-                            Default: admin@promptcraft.ai / password
-                        </p>
                     </div>
                 </div>
             </div>
