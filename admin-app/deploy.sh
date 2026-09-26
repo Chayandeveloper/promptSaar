@@ -26,14 +26,15 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# 6. Ensure correct file permissions
+# 6. Ensure correct directories and file permissions
 echo "🔒 Fixing file permissions..."
+mkdir -p storage/framework/{sessions,views,cache/data} storage/logs bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
 # 7. Reload services
 echo "🔄 Reloading PHP-FPM and Nginx..."
-sudo systemctl reload php8.2-fpm || true
+sudo systemctl reload php8.5-fpm || sudo systemctl reload php*-fpm || true
 sudo systemctl reload nginx || true
 
 echo "✅ Deployment completed successfully!"
