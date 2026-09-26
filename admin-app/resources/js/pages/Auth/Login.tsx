@@ -41,7 +41,7 @@ export default function Login() {
                             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>Sign in to your admin panel</p>
                         </div>
 
-                        <form onSubmit={submit} className="space-y-5">
+                        <form onSubmit={submit} className="space-y-5" autoComplete="off">
                             {/* Email */}
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
@@ -54,6 +54,7 @@ export default function Login() {
                                         value={data.email}
                                         onChange={e => setData('email', e.target.value)}
                                         placeholder="admin@promptbaba.cloud"
+                                        autoComplete="off"
                                         className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
                                         style={{
                                             background: 'var(--color-surface-2)',
@@ -79,6 +80,7 @@ export default function Login() {
                                         value={data.password}
                                         onChange={e => setData('password', e.target.value)}
                                         placeholder="••••••••"
+                                        autoComplete="new-password"
                                         className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
                                         style={{
                                             background: 'var(--color-surface-2)',
