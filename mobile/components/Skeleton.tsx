@@ -4,7 +4,7 @@ import { Theme } from '../constants/Theme';
 
 export const Skeleton: React.FC<{
   width?: number | string;
-  height?: number;
+  height?: number | string;
   borderRadius?: number;
   style?: any;
 }> = ({ width = '100%', height = 20, borderRadius = Theme.borderRadius.md, style }) => {

@@ -141,7 +141,9 @@ export default function PromptDetailsScreen() {
     return (
       <ScreenContainer>
         <View style={styles.loadingContainer}>
-          <Skeleton width="100%" height={260} borderRadius={Theme.borderRadius.xl} />
+          <View style={{ width: '100%', aspectRatio: 4 / 5, borderRadius: Theme.borderRadius.xl, overflow: 'hidden' }}>
+            <Skeleton width="100%" height="100%" />
+          </View>
           <View style={{ marginTop: 20, gap: 10 }}>
             <Skeleton width="30%" height={16} />
             <Skeleton width="80%" height={26} />
@@ -514,7 +516,7 @@ const styles = StyleSheet.create({
   },
   coverWrapper: {
     width: '100%',
-    height: 270,
+    aspectRatio: 4 / 5,
     position: 'relative',
     backgroundColor: Theme.colors.surfaceElevated,
   },
