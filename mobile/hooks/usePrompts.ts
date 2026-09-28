@@ -95,10 +95,38 @@ export function useToggleSavePrompt() {
       }
       return !isSaved;
     },
-    onSuccess: (_, { prompt }) => {
+    onMutate: async ({ prompt, isSaved }) => {
+      await queryClient.cancelQueries({ queryKey: ['saved-prompts'] });
+      const previousSaved = queryClient.getQueryData<PromptSummary[]>(['saved-prompts']) || [];
+
+      if (isSaved) {
+        queryClient.setQueryData(
+          ['saved-prompts'],
+          previousSaved.filter((p) => p.id !== prompt.id)
+        );
+      } else {
+        queryClient.setQueryData(
+          ['saved-prompts'],
+          [prompt, ...previousSaved.filter((p) => p.id !== prompt.id)]
+        );
+      }
+
+      queryClient.setQueryData(['prompt', prompt.id], (old: any) => {
+        if (!old) return old;
+        return { ...old, is_saved: !isSaved };
+      });
+
+      return { previousSaved };
+    },
+    onError: (_err, { prompt }, context) => {
+      if (context?.previousSaved) {
+        queryClient.setQueryData(['saved-prompts'], context.previousSaved);
+      }
+      queryClient.invalidateQueries({ queryKey: ['prompt', prompt.id] });
+    },
+    onSettled: (_, __, { prompt }) => {
       queryClient.invalidateQueries({ queryKey: ['prompt', prompt.id] });
       queryClient.invalidateQueries({ queryKey: ['saved-prompts'] });
-      queryClient.invalidateQueries({ queryKey: ['prompts'] });
     },
   });
 }

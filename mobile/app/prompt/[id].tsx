@@ -25,6 +25,7 @@ import {
   useToggleSavePrompt,
   usePrompts,
   useRecentPrompts,
+  useSavedPrompts,
 } from '../../hooks/usePrompts';
 import { useCoinBalance, useUnlockWithCoins, useUnlockWithAd, useRewardConfig } from '../../hooks/useRewards';
 import { adService } from '../../services/ads';
@@ -38,6 +39,8 @@ export default function PromptDetailsScreen() {
 
   const { data: prompt, isLoading, error, refetch } = usePrompt(promptId);
   const toggleSave = useToggleSavePrompt();
+  const { data: savedPrompts = [] } = useSavedPrompts();
+  const isSaved = Boolean(prompt?.is_saved) || savedPrompts.some((p) => p.id === promptId);
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -72,7 +75,7 @@ export default function PromptDetailsScreen() {
 
   const handleSaveToggle = () => {
     if (prompt) {
-      toggleSave.mutate({ prompt: prompt as any, isSaved: Boolean(prompt.is_saved) });
+      toggleSave.mutate({ prompt: prompt as any, isSaved });
     }
   };
 
@@ -187,12 +190,15 @@ export default function PromptDetailsScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleSaveToggle}
-              style={styles.circleActionButton}
+              style={[
+                styles.circleActionButton,
+                isSaved && styles.circleActionButtonActive,
+              ]}
             >
               <Ionicons
-                name={prompt.is_saved ? 'bookmark' : 'bookmark-outline'}
+                name={isSaved ? 'bookmark' : 'bookmark-outline'}
                 size={18}
-                color={prompt.is_saved ? Theme.colors.primaryLight : '#FFFFFF'}
+                color={isSaved ? '#F59E0B' : '#FFFFFF'}
               />
             </TouchableOpacity>
           </View>
@@ -541,6 +547,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  circleActionButtonActive: {
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    borderColor: '#F59E0B',
   },
   contentBody: {
     padding: Theme.spacing.md,

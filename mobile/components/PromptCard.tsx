@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../constants/Theme';
 import { PromptSummary } from '../types';
-import { useToggleSavePrompt } from '../hooks/usePrompts';
+import { useToggleSavePrompt, useSavedPrompts } from '../hooks/usePrompts';
 
 interface PromptCardProps {
   prompt: PromptSummary;
@@ -19,6 +19,8 @@ export const PromptCard: React.FC<PromptCardProps> = ({
 }) => {
   const router = useRouter();
   const toggleSave = useToggleSavePrompt();
+  const { data: savedPrompts = [] } = useSavedPrompts();
+  const isSaved = Boolean(prompt.is_saved) || savedPrompts.some((p) => p.id === prompt.id);
 
   const handlePress = () => {
     router.push(`/prompt/${prompt.id}` as any);
@@ -26,7 +28,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
 
   const handleSavePress = (e: any) => {
     e.stopPropagation?.();
-    toggleSave.mutate({ prompt, isSaved: Boolean(prompt.is_saved) });
+    toggleSave.mutate({ prompt, isSaved });
   };
 
   const handleSharePress = async (e: any) => {
@@ -84,12 +86,16 @@ export const PromptCard: React.FC<PromptCardProps> = ({
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSavePress}
-            style={[styles.saveButton, grid && styles.saveButtonGrid]}
+            style={[
+              styles.saveButton,
+              grid && styles.saveButtonGrid,
+              isSaved && styles.saveButtonActive,
+            ]}
           >
             <Ionicons
-              name={prompt.is_saved ? 'bookmark' : 'bookmark-outline'}
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
               size={grid ? 12 : 14}
-              color={prompt.is_saved ? Theme.colors.primaryLight : '#E2E8F0'}
+              color={isSaved ? '#F59E0B' : '#E2E8F0'}
             />
           </TouchableOpacity>
         </View>
@@ -251,6 +257,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  saveButtonActive: {
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    borderColor: '#F59E0B',
   },
   saveButtonGrid: {
     width: 24,
