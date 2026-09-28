@@ -29,8 +29,8 @@ export default function TemplatesScreen() {
     <ScreenContainer noPadding>
       {/* Screen Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Templates</Text>
-        <Text style={styles.subtitle}>Curated ready-to-use AI prompt templates</Text>
+        <Text style={styles.title}>Search</Text>
+        <Text style={styles.subtitle}>Find and explore AI prompt templates</Text>
       </View>
 
       {/* Filter / Search Bar */}
@@ -38,7 +38,7 @@ export default function TemplatesScreen() {
         <SearchBar
           value={filterQuery}
           onSearch={(text) => setFilterQuery(text)}
-          placeholder="Filter templates (e.g. coding, marketing, midjourney)..."
+          placeholder="Search prompts (e.g. coding, marketing, midjourney)..."
         />
       </View>
 
