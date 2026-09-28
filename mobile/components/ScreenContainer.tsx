@@ -1,21 +1,23 @@
 import React from 'react';
 import { View, StyleSheet, StatusBar, StyleProp, ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, Edge } from 'react-native-safe-area-context';
 import { Theme } from '../constants/Theme';
 
 interface ScreenContainerProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   noPadding?: boolean;
+  edges?: readonly Edge[];
 }
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   children,
   style,
   noPadding = false,
+  edges = ['top', 'left', 'right'],
 }) => {
   return (
-    <SafeAreaView style={[styles.container, style]}>
+    <SafeAreaView edges={edges} style={[styles.container, style]}>
       <StatusBar barStyle="light-content" backgroundColor={Theme.colors.background} />
       <View style={[styles.inner, noPadding && { paddingHorizontal: 0 }]}>
         {children}

@@ -10,9 +10,9 @@ export default function TabLayout() {
 
   // Dynamic bottom clearance ensuring comfortable gap from device chin / navigation bar
   const bottomPadding = Platform.OS === 'ios'
-    ? Math.max(insets.bottom, 28)
-    : Math.max(insets.bottom, 14) + 8;
-  const tabHeight = (Platform.OS === 'ios' ? 56 : 58) + bottomPadding;
+    ? Math.max(insets.bottom, 12)
+    : Math.max(insets.bottom, 8);
+  const tabHeight = 54 + bottomPadding;
 
   return (
     <Tabs
@@ -26,7 +26,7 @@ export default function TabLayout() {
           borderTopWidth: 1,
           height: tabHeight,
           paddingBottom: bottomPadding,
-          paddingTop: 10,
+          paddingTop: 8,
           elevation: 10,
         },
         tabBarItemStyle: {
