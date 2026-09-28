@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "97515885011",
+    "project_id": "promptcraft-b14f6",
+    "storage_bucket": "promptcraft-b14f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:97515885011:android:c7cac9ec9b051cb2a29f26",
+        "android_client_info": {
+          "package_name": "com.promptcraft.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlGG-Lx_x_U47H_RYfErsX3GM8IVamJzI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
