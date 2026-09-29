@@ -7,8 +7,8 @@ const getBackendUrl = () => {
     return envUrl;
   }
 
-  // Default Fallback
-  return 'http://192.168.1.10:8000/api';
+  // Default Fallback for Production / Local
+  return 'https://promptbaba.cloud/api';
 };
 
 export const Config = {
