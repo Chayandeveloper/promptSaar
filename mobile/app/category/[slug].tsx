@@ -36,7 +36,7 @@ export default function CategoryScreen() {
   }
 
   return (
-    <ScreenContainer noPadding>
+    <ScreenContainer noPadding edges={['left', 'right', 'bottom']}>
       <FlatList
         data={prompts}
         keyExtractor={(item) => String(item.id)}
@@ -54,7 +54,7 @@ export default function CategoryScreen() {
             {/* Category Banner without photos */}
             {category && (
               <LinearGradient
-                colors={['#1E1B4B', '#0F172A', '#080B11']}
+                colors={['#E11D48', '#BE123C']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.bannerCard}
@@ -117,10 +117,12 @@ const styles = StyleSheet.create({
     borderRadius: Theme.borderRadius.xl,
     overflow: 'hidden',
     marginBottom: Theme.spacing.md,
-    backgroundColor: Theme.colors.surface,
     padding: Theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
+    shadowColor: '#E11D48',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 3,
   },
   categoryTitle: {
     fontSize: 22,
@@ -131,15 +133,13 @@ const styles = StyleSheet.create({
   },
   categoryDesc: {
     fontSize: 12,
-    color: '#CBD5E1',
+    color: 'rgba(255, 255, 255, 0.85)',
     lineHeight: 16,
     marginBottom: 8,
   },
   countBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(99, 102, 241, 0.3)',
-    borderColor: 'rgba(99, 102, 241, 0.5)',
-    borderWidth: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: Theme.borderRadius.sm,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#C7D2FE',
+    color: '#FFFFFF',
   },
   promptsHeader: {
     flexDirection: 'row',

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Layers, Tag, Unlock, LogOut, Menu, X,
-    Sparkles, ChevronRight, Bell, Users, Coins
+    Sparkles, ChevronRight, Bell, Users, Coins, Image as ImageIcon
 } from 'lucide-react';
 
 interface Admin { name: string; email: string; avatar?: string; }
@@ -11,6 +11,7 @@ interface Props { children: React.ReactNode; admin: Admin; title?: string; }
 const navItems = [
     { href: '/admin/dashboard',        label: 'Dashboard',          icon: LayoutDashboard },
     { href: '/admin/prompts',          label: 'Prompts',            icon: Layers          },
+    { href: '/admin/banners',          label: 'Top Banners',        icon: ImageIcon       },
     { href: '/admin/categories',       label: 'Categories',         icon: Tag             },
     { href: '/admin/users',            label: 'Users & Coins',      icon: Users           },
     { href: '/admin/notifications',    label: 'Push Notifications', icon: Bell            },

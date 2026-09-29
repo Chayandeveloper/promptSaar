@@ -71,7 +71,7 @@ export default function ProfileScreen() {
           <View style={styles.avatarCircle}>
             <Ionicons name="sparkles" size={28} color={Theme.colors.primary} />
           </View>
-          <Text style={styles.userName}>PromptCraft Explorer</Text>
+          <Text style={styles.userName}>Prompt Saar Explorer</Text>
           <Text style={styles.userSubtitle}>
             Device ID: {deviceId ? `${deviceId.substring(0, 12)}...` : 'Loading...'}
           </Text>
@@ -121,7 +121,7 @@ export default function ProfileScreen() {
               style={styles.earnCoinsBtn}
             >
               <Text style={styles.earnCoinsBtnText}>Earn Coins</Text>
-              <Ionicons name="arrow-forward" size={13} color="#090D16" />
+              <Ionicons name="arrow-forward" size={13} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 
@@ -223,7 +223,7 @@ export default function ProfileScreen() {
           >
             <View style={styles.menuLeft}>
               <Ionicons name="share-social-outline" size={20} color={Theme.colors.textSecondary} />
-              <Text style={styles.menuTitle}>Share PromptCraft App</Text>
+              <Text style={styles.menuTitle}>Share Prompt Saar App</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
           </TouchableOpacity>
@@ -251,8 +251,20 @@ export default function ProfileScreen() {
             style={styles.menuItem}
           >
             <View style={styles.menuLeft}>
-              <Ionicons name="shield-checkmark-outline" size={20} color={Theme.colors.textSecondary} />
+              <Ionicons name="shield-checkmark-outline" size={20} color={Theme.colors.primary} />
               <Text style={styles.menuTitle}>Privacy Policy</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push('/settings/terms')}
+            style={styles.menuItem}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="document-text-outline" size={20} color={Theme.colors.primary} />
+              <Text style={styles.menuTitle}>Terms & Conditions</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
           </TouchableOpacity>
@@ -264,7 +276,7 @@ export default function ProfileScreen() {
           >
             <View style={styles.menuLeft}>
               <Ionicons name="information-circle-outline" size={20} color={Theme.colors.textSecondary} />
-              <Text style={styles.menuTitle}>About PromptCraft</Text>
+              <Text style={styles.menuTitle}>About Prompt Saar</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
           </TouchableOpacity>
@@ -309,12 +321,12 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Theme.spacing.sm,
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.2)',
   },
   userName: {
     fontSize: 18,
@@ -328,16 +340,16 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   badge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: Theme.borderRadius.full,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.2)',
   },
   badgeText: {
-    color: Theme.colors.primaryLight,
+    color: Theme.colors.primary,
     fontSize: 10,
     fontWeight: '700',
   },
@@ -375,7 +387,7 @@ const styles = StyleSheet.create({
     borderRadius: Theme.borderRadius.xl,
     padding: Theme.spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(255, 122, 0, 0.25)',
     marginBottom: Theme.spacing.md,
   },
   rewardsCardHeader: {
@@ -404,19 +416,19 @@ const styles = StyleSheet.create({
   coinBalanceText: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#FDE68A',
+    color: '#FF7A00',
   },
   earnCoinsBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FF7A00',
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: Theme.borderRadius.md,
   },
   earnCoinsBtnText: {
-    color: '#090D16',
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -469,7 +481,7 @@ const styles = StyleSheet.create({
   getMoreCoinsLink: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FDE68A',
+    color: '#FF7A00',
   },
   emptyTxBox: {
     paddingVertical: 14,
@@ -484,7 +496,7 @@ const styles = StyleSheet.create({
   txRow: {
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: Theme.colors.border,
   },
   txLeft: {
     flexDirection: 'row',
@@ -499,24 +511,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   txBadgePositive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
   },
   txBadgeNegative: {
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+    backgroundColor: 'rgba(225, 29, 72, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
   },
   txAmountText: {
     fontSize: 12,
     fontWeight: '800',
   },
   txTextPositive: {
-    color: '#34D399',
+    color: '#10B981',
   },
   txTextNegative: {
-    color: '#F43F5E',
+    color: '#E11D48',
   },
   txInfo: {
     flex: 1,
@@ -537,7 +549,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: Theme.colors.border,
   },
   menuLeft: {
     flexDirection: 'row',
@@ -554,8 +566,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-    borderColor: 'rgba(244, 63, 94, 0.25)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
+    borderColor: 'rgba(225, 29, 72, 0.2)',
     borderWidth: 1,
     paddingVertical: 12,
     borderRadius: Theme.borderRadius.lg,

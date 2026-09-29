@@ -12,7 +12,7 @@ export const PromptViewer: React.FC<PromptViewerProps> = ({ promptText }) => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.statusPill}>
-          <Ionicons name="checkmark-circle" size={13} color="#34D399" />
+          <Ionicons name="checkmark-circle" size={13} color={Theme.colors.success} />
           <Text style={styles.statusText}>PROMPT UNLOCKED</Text>
         </View>
         <Text style={styles.charCount}>
@@ -45,15 +45,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(6, 78, 59, 0.4)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: Theme.borderRadius.sm,
   },
   statusText: {
-    color: '#34D399',
+    color: Theme.colors.success,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,
@@ -64,10 +64,10 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
   },
   contentBox: {
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    backgroundColor: '#F8F9FA',
     borderRadius: Theme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.25)',
+    borderColor: Theme.colors.border,
     maxHeight: 280,
     padding: Theme.spacing.md,
   },
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   promptText: {
     fontSize: 13,
-    color: '#F1F5F9',
+    color: Theme.colors.text,
     lineHeight: 21,
     fontFamily: 'System',
   },

@@ -31,7 +31,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <View style={styles.container}>
-      <Ionicons name="search" size={17} color={Theme.colors.textMuted} style={styles.searchIcon} />
+      <Ionicons name="search" size={17} color={Theme.colors.primary} style={styles.searchIcon} />
       <TextInput
         style={styles.input}
         value={text}
@@ -53,12 +53,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Theme.colors.surfaceElevated,
+    backgroundColor: '#F8F9FA',
     borderRadius: Theme.borderRadius.lg,
     paddingHorizontal: Theme.spacing.md,
     height: 44,
     borderWidth: 1,
-    borderColor: Theme.colors.border,
+    borderColor: '#E5E7EB',
     marginHorizontal: Theme.spacing.md,
     marginBottom: Theme.spacing.md,
   },

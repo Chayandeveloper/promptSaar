@@ -49,13 +49,13 @@ export default function OnboardingScreen() {
     <View style={styles.container}>
       <Image source={{ uri: slide.image }} style={styles.bgImage} />
       <LinearGradient
-        colors={['transparent', 'rgba(9, 13, 22, 0.7)', 'rgba(9, 13, 22, 0.98)']}
+        colors={['transparent', 'rgba(17, 24, 39, 0.75)', 'rgba(17, 24, 39, 0.96)']}
         style={styles.gradient}
       />
 
       <View style={styles.content}>
         <View style={styles.iconCircle}>
-          <Ionicons name={slide.icon as any} size={28} color={Theme.colors.primaryLight} />
+          <Ionicons name={slide.icon as any} size={28} color={Theme.colors.primary} />
         </View>
 
         <Text style={styles.title}>{slide.title}</Text>
@@ -117,9 +117,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(99, 102, 241, 0.25)',
+    backgroundColor: 'rgba(225, 29, 72, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.4)',
+    borderColor: 'rgba(225, 29, 72, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Theme.spacing.md,
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '800',
-    color: Theme.colors.text,
+    color: '#FFFFFF',
     letterSpacing: -0.5,
     marginBottom: Theme.spacing.sm,
   },
   subtitle: {
     fontSize: 14,
-    color: Theme.colors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 21,
     marginBottom: Theme.spacing.xl,
   },
@@ -149,11 +149,11 @@ const styles = StyleSheet.create({
   },
   indicatorActive: {
     width: 24,
-    backgroundColor: Theme.colors.primary,
+    backgroundColor: '#FF7A00',
   },
   indicatorInactive: {
     width: 8,
-    backgroundColor: Theme.colors.borderLight,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   button: {
     flexDirection: 'row',

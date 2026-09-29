@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PromptController;
 use App\Http\Controllers\Api\RewardController;
@@ -12,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 | Mobile API & Reward System
 |--------------------------------------------------------------------------
 */
+
+// Hero Banners
+Route::get('/banners', [BannerController::class, 'index']);
+Route::get('/banners/active', [BannerController::class, 'active']);
 
 // User Coin Balance & Transactions
 Route::get('/me/coins', [RewardController::class, 'balance']);

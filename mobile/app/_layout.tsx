@@ -54,10 +54,13 @@ export default function RootLayout() {
           options={{ headerShown: false, animation: 'fade' }}
         />
         <Stack.Screen
+          name="rewards"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="prompt/[id]"
           options={{
-            title: 'Prompt Details',
-            headerBackTitle: 'Back',
+            headerShown: false,
           }}
         />
         <Stack.Screen

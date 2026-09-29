@@ -1,41 +1,47 @@
 export const Theme = {
   colors: {
-    background: '#090D16',
-    surface: '#101726',
-    surfaceElevated: '#172033',
-    surfaceGlass: 'rgba(16, 23, 38, 0.85)',
-    border: '#1E293B',
-    borderLight: '#2E3D56',
+    background: '#FFFFFF',          // 60% Dominant: Clean crisp white background
+    backgroundSecondary: '#F8F9FA', // Subtle off-white for sections/elevations
+    surface: '#FFFFFF',             // Clean white card surfaces
+    surfaceElevated: '#F3F4F6',     // Soft light elevated surfaces
+    surfaceGlass: 'rgba(255, 255, 255, 0.95)',
+    surfaceCard: '#FFFFFF',
+    border: '#E5E7EB',              // Subtle clean light border
+    borderLight: '#F3F4F6',
 
-    primary: '#6366F1', // Electric Indigo
-    primaryLight: '#818CF8', // Light Indigo
-    primaryDark: '#4F46E5', // Deep Indigo
+    primary: '#E11D48',             // 30% Secondary: Vibrant crimson red (brand, active nav, primary accents)
+    primaryLight: '#FB7185',        // Soft red
+    primaryDark: '#BE123C',         // Deep red
 
-    secondary: '#06B6D4', // Vivid Cyan
-    accent: '#8B5CF6', // Electric Violet
-    cyan: '#06B6D4',
-    violet: '#8B5CF6',
-    rose: '#F43F5E',
-    amber: '#F59E0B',
-    emerald: '#10B981',
+    secondary: '#FF7A00',           // 10% Accent: Warm electric orange (CTAs, rewards, highlights)
+    accent: '#FF7A00',              // Warm Orange
+    highlightStart: '#E11D48',      // Red
+    highlightEnd: '#FF7A00',        // Orange
 
-    warning: '#F59E0B', // Amber
-    warningLight: '#FDE68A', // Gold
-    success: '#10B981', // Emerald
-    danger: '#F43F5E', // Rose
+    cyan: '#E11D48',
+    violet: '#E11D48',
+    rose: '#E11D48',
+    amber: '#FF7A00',
+    emerald: '#10B981',             // Success state
 
-    coin: '#F59E0B',
-    coinLight: '#FDE68A',
-    coinBg: 'rgba(245, 158, 11, 0.14)',
-    coinBorder: 'rgba(245, 158, 11, 0.35)',
+    warning: '#FF7A00',             // Warm orange
+    warningLight: '#FED7AA',
+    success: '#10B981',             // Emerald Green
+    danger: '#E11D48',              // Red
 
-    text: '#F8FAFC',
-    textSecondary: '#94A3B8',
-    textMuted: '#64748B',
-    textInverse: '#090D16',
+    coin: '#FF7A00',                // 10% Warm orange for coins and rewards
+    coinLight: '#FED7AA',
+    coinBg: 'rgba(255, 122, 0, 0.1)',
+    coinBorder: 'rgba(255, 122, 0, 0.35)',
 
-    overlay: 'rgba(5, 8, 15, 0.85)',
-    cardGlow: 'rgba(99, 102, 241, 0.22)',
+    text: '#111827',                // High-contrast primary dark typography on white
+    textSecondary: '#4B5563',       // Secondary gray text
+    textMuted: '#9CA3AF',           // Muted light gray text
+    textInverse: '#FFFFFF',
+
+    overlay: 'rgba(17, 24, 39, 0.55)',
+    cardGlow: 'rgba(225, 29, 72, 0.12)',
+    cardGlowOrange: 'rgba(255, 122, 0, 0.2)',
   },
   spacing: {
     xs: 4,

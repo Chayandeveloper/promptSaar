@@ -52,8 +52,8 @@ export const PromptCard: React.FC<PromptCardProps> = ({
         horizontal
           ? styles.cardHorizontal
           : grid
-          ? styles.cardGrid
-          : styles.cardVertical,
+            ? styles.cardGrid
+            : styles.cardVertical,
       ]}
     >
       {/* Cover Image Container */}
@@ -68,14 +68,14 @@ export const PromptCard: React.FC<PromptCardProps> = ({
         <View style={[styles.topBadgeRow, grid && styles.topBadgeRowGrid]}>
           {prompt.is_locked ? (
             <View style={styles.lockPill}>
-              <Ionicons name="lock-closed" size={grid ? 8 : 10} color="#FBBF24" />
+              <Ionicons name="lock-closed" size={grid ? 8 : 10} color="#FF7A00" />
               <Text style={[styles.lockText, grid && styles.lockTextGrid]}>
                 🪙 {prompt.unlock_cost || 30}
               </Text>
             </View>
           ) : (
             <View style={styles.unlockedPill}>
-              <Ionicons name="checkmark-circle" size={grid ? 8 : 10} color="#34D399" />
+              <Ionicons name="checkmark-circle" size={grid ? 8 : 10} color="#10B981" />
               <Text style={[styles.unlockedText, grid && styles.unlockedTextGrid]}>
                 Unlocked
               </Text>
@@ -95,7 +95,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             <Ionicons
               name={isSaved ? 'bookmark' : 'bookmark-outline'}
               size={grid ? 12 : 14}
-              color={isSaved ? '#F59E0B' : '#E2E8F0'}
+              color="#FFFFFF"
             />
           </TouchableOpacity>
         </View>
@@ -103,7 +103,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
         {/* Trending pill */}
         {prompt.is_trending && (
           <View style={[styles.trendingPill, grid && styles.trendingPillGrid]}>
-            <Ionicons name="flame" size={grid ? 8 : 10} color="#F87171" />
+            <Ionicons name="flame" size={grid ? 8 : 10} color="#FFFFFF" />
             <Text style={[styles.trendingText, grid && styles.trendingTextGrid]}>
               Trending
             </Text>
@@ -142,7 +142,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             <Ionicons
               name="share-social-outline"
               size={grid ? 12 : 14}
-              color={Theme.colors.primaryLight}
+              color={Theme.colors.primary}
             />
             <Text style={[styles.shareText, grid && styles.shareTextGrid]}>Share</Text>
           </TouchableOpacity>
@@ -154,7 +154,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             <Ionicons
               name={prompt.is_locked ? 'sparkles' : 'arrow-forward'}
               size={grid ? 10 : 12}
-              color={prompt.is_locked ? '#FBBF24' : Theme.colors.success}
+              color={prompt.is_locked ? '#FF7A00' : Theme.colors.primary}
             />
           </View>
         </View>
@@ -165,11 +165,16 @@ export const PromptCard: React.FC<PromptCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Theme.colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: Theme.borderRadius.lg,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Theme.colors.border,
+    shadowColor: '#000000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 2,
   },
   cardVertical: {
     marginBottom: Theme.spacing.md,
@@ -214,15 +219,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(17, 24, 39, 0.82)',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: Theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderColor: 'rgba(255, 122, 0, 0.6)',
   },
   lockText: {
-    color: '#FDE68A',
+    color: '#FF7A00',
     fontSize: 10,
     fontWeight: '700',
   },
@@ -233,15 +238,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(6, 78, 59, 0.85)',
+    backgroundColor: 'rgba(17, 24, 39, 0.82)',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: Theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.4)',
+    borderColor: 'rgba(16, 185, 129, 0.6)',
   },
   unlockedText: {
-    color: '#A7F3D0',
+    color: '#10B981',
     fontSize: 10,
     fontWeight: '700',
   },
@@ -252,15 +257,15 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(17, 24, 39, 0.82)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   saveButtonActive: {
-    backgroundColor: 'rgba(245, 158, 11, 0.25)',
-    borderColor: '#F59E0B',
+    backgroundColor: '#E11D48',
+    borderColor: '#E11D48',
   },
   saveButtonGrid: {
     width: 24,
@@ -273,12 +278,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(255, 122, 0, 0.95)',
     paddingHorizontal: 6,
     paddingVertical: 2.5,
     borderRadius: Theme.borderRadius.sm,
     borderWidth: 1,
-    borderColor: 'rgba(248, 113, 113, 0.4)',
+    borderColor: '#FF7A00',
   },
   trendingPillGrid: {
     bottom: 6,
@@ -287,7 +292,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   trendingText: {
-    color: '#FECACA',
+    color: '#FFFFFF',
     fontSize: 9,
     fontWeight: '700',
   },
@@ -296,9 +301,11 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     padding: Theme.spacing.sm + 4,
+    backgroundColor: '#FFFFFF',
   },
   infoContainerGrid: {
     padding: 8,
+    backgroundColor: '#FFFFFF',
   },
   categoryRow: {
     flexDirection: 'row',
@@ -308,7 +315,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 11,
-    color: Theme.colors.primaryLight,
+    color: Theme.colors.primary,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,

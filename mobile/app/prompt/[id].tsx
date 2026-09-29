@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { UnlockState } from '../../components/UnlockButton';
 import { PromptViewer } from '../../components/PromptViewer';
@@ -35,6 +36,7 @@ export default function PromptDetailsScreen() {
   const { id } = useLocalSearchParams();
   const promptId = parseInt(id as string, 10);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const scrollRef = React.useRef<ScrollView>(null);
 
   const { data: prompt, isLoading, error, refetch } = usePrompt(promptId);
@@ -142,8 +144,15 @@ export default function PromptDetailsScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.loadingContainer}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.back()}
+            style={styles.loadingBackButton}
+          >
+            <Ionicons name="arrow-back" size={20} color={Theme.colors.text} />
+          </TouchableOpacity>
           <View style={{ width: '100%', aspectRatio: 4 / 5, borderRadius: Theme.borderRadius.xl, overflow: 'hidden' }}>
             <Skeleton width="100%" height="100%" />
           </View>
@@ -159,7 +168,16 @@ export default function PromptDetailsScreen() {
 
   if (error || !prompt) {
     return (
-      <ScreenContainer>
+      <ScreenContainer edges={['top', 'left', 'right', 'bottom']}>
+        <View style={{ paddingHorizontal: Theme.spacing.md, paddingTop: Theme.spacing.sm }}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.back()}
+            style={styles.loadingBackButton}
+          >
+            <Ionicons name="arrow-back" size={20} color={Theme.colors.text} />
+          </TouchableOpacity>
+        </View>
         <ErrorState
           message="Could not load prompt details. It may have been unpublished or removed."
           onRetry={refetch}
@@ -171,36 +189,46 @@ export default function PromptDetailsScreen() {
   const isUnlocked = !prompt.is_locked && Boolean(prompt.prompt_text);
 
   return (
-    <ScreenContainer noPadding>
+    <ScreenContainer noPadding edges={['left', 'right', 'bottom']}>
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Cover Image Container */}
         <View style={styles.coverWrapper}>
           <Image source={{ uri: prompt.cover_image }} style={styles.coverImage} resizeMode="cover" />
 
-          {/* Action Overlay */}
-          <View style={styles.topActionsRow}>
+          {/* Action & Navigation Overlay */}
+          <View style={[styles.topActionsRow, { top: Math.max(insets.top, 14) + 6 }]}>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={handleShare}
+              onPress={() => router.back()}
               style={styles.circleActionButton}
             >
-              <Ionicons name="share-social-outline" size={18} color="#FFFFFF" />
+              <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleSaveToggle}
-              style={[
-                styles.circleActionButton,
-                isSaved && styles.circleActionButtonActive,
-              ]}
-            >
-              <Ionicons
-                name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                size={18}
-                color={isSaved ? '#F59E0B' : '#FFFFFF'}
-              />
-            </TouchableOpacity>
+            <View style={styles.topRightActions}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleShare}
+                style={styles.circleActionButton}
+              >
+                <Ionicons name="share-social-outline" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleSaveToggle}
+                style={[
+                  styles.circleActionButton,
+                  isSaved && styles.circleActionButtonActive,
+                ]}
+              >
+                <Ionicons
+                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                  size={18}
+                  color={isSaved ? '#FFC83D' : '#FFFFFF'}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -251,7 +279,7 @@ export default function PromptDetailsScreen() {
             <View style={styles.unlockedSection}>
               {/* Unlocked status badge */}
               <View style={styles.unlockedStatusPill}>
-                <Ionicons name="checkmark-circle" size={16} color="#34D399" />
+                <Ionicons name="checkmark-circle" size={16} color={Theme.colors.success} />
                 <Text style={styles.unlockedStatusText}>Unlocked & Ready to Use</Text>
               </View>
 
@@ -271,7 +299,7 @@ export default function PromptDetailsScreen() {
               >
                 <View style={styles.singleCardHeader}>
                   <View style={styles.lockIconCircle}>
-                    <Ionicons name="lock-closed" size={24} color="#FBBF24" />
+                    <Ionicons name="lock-closed" size={24} color="#FFC83D" />
                   </View>
                   <View style={styles.singleCardTitleWrap}>
                     <Text style={styles.lockCardTitle}>Prompt Locked</Text>
@@ -290,7 +318,7 @@ export default function PromptDetailsScreen() {
                   <View style={styles.infoStripDivider} />
                   <View style={styles.infoStripItem}>
                     <Text style={styles.infoStripLabel}>Your Balance</Text>
-                    <Text style={[styles.infoStripValue, { color: hasEnoughCoins ? '#34D399' : '#FDE68A' }]}>
+                    <Text style={[styles.infoStripValue, { color: hasEnoughCoins ? Theme.colors.success : Theme.colors.coin }]}>
                       🪙 {userCoins} Coins
                     </Text>
                   </View>
@@ -298,11 +326,11 @@ export default function PromptDetailsScreen() {
 
                 {/* Unlock trigger button */}
                 <View style={styles.unlockTriggerBtn}>
-                  <Ionicons name="flash" size={16} color="#080B11" />
+                  <Ionicons name="flash" size={16} color="#FFFFFF" />
                   <Text style={styles.unlockTriggerBtnText}>
                     Unlock Prompt • Choose Option
                   </Text>
-                  <Ionicons name="chevron-forward" size={16} color="#080B11" />
+                  <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
                 </View>
 
                 <Text style={styles.cardHintText}>
@@ -365,7 +393,7 @@ export default function PromptDetailsScreen() {
             {/* Modal Header */}
             <View style={styles.smallModalHeader}>
               <View style={styles.smallModalHeaderLeft}>
-                <Ionicons name="lock-open" size={17} color="#FBBF24" />
+                <Ionicons name="lock-open" size={17} color="#FFC83D" />
                 <Text style={styles.smallModalTitle}>Unlock Prompt</Text>
               </View>
               <TouchableOpacity
@@ -415,11 +443,11 @@ export default function PromptDetailsScreen() {
 
               <View style={styles.boxActionRight}>
                 {unlockCoinsMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#F59E0B" />
+                  <ActivityIndicator size="small" color="#FFC83D" />
                 ) : hasEnoughCoins ? (
                   <View style={styles.boxActionPillActive}>
                     <Text style={styles.boxActionPillActiveText}>Unlock</Text>
-                    <Ionicons name="flash" size={11} color="#080B11" />
+                    <Ionicons name="flash" size={11} color="#FFFFFF" />
                   </View>
                 ) : (
                   <View style={styles.boxActionPillOutline}>
@@ -445,7 +473,7 @@ export default function PromptDetailsScreen() {
               style={[styles.rectangularBox, styles.boxAd]}
             >
               <View style={[styles.boxIconWrap, styles.boxIconAd]}>
-                <Ionicons name="play" size={14} color="#06B6D4" />
+                <Ionicons name="play" size={14} color={Theme.colors.success} />
               </View>
 
               <View style={styles.boxContent}>
@@ -465,9 +493,9 @@ export default function PromptDetailsScreen() {
                 {adUnlockState === 'loading_ad' ||
                   adUnlockState === 'watching_ad' ||
                   adUnlockState === 'unlocking' ? (
-                  <ActivityIndicator size="small" color="#06B6D4" />
+                  <ActivityIndicator size="small" color={Theme.colors.success} />
                 ) : adUnlockState === 'success' ? (
-                  <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                  <Ionicons name="checkmark-circle" size={18} color={Theme.colors.success} />
                 ) : (
                   <View style={styles.boxFreeBadge}>
                     <Text style={styles.boxFreeBadgeText}>FREE</Text>
@@ -494,7 +522,7 @@ export default function PromptDetailsScreen() {
               style={[styles.rectangularBox, styles.boxAddCoins]}
             >
               <View style={[styles.boxIconWrap, styles.boxIconAddCoins]}>
-                <Ionicons name="wallet-outline" size={14} color="#818CF8" />
+                <Ionicons name="wallet-outline" size={14} color={Theme.colors.primary} />
               </View>
 
               <View style={styles.boxContent}>
@@ -517,6 +545,17 @@ const styles = StyleSheet.create({
   loadingContainer: {
     padding: Theme.spacing.md,
   },
+  loadingBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: Theme.borderRadius.full,
+    backgroundColor: Theme.colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+    marginBottom: Theme.spacing.md,
+  },
   scroll: {
     paddingBottom: Theme.spacing.xxl + 24,
   },
@@ -532,8 +571,14 @@ const styles = StyleSheet.create({
   },
   topActionsRow: {
     position: 'absolute',
-    top: 14,
+    left: 14,
     right: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 10,
+  },
+  topRightActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -542,15 +587,15 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(8, 11, 17, 0.85)',
+    backgroundColor: 'rgba(17, 24, 39, 0.7)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   circleActionButtonActive: {
-    backgroundColor: 'rgba(245, 158, 11, 0.25)',
-    borderColor: '#F59E0B',
+    backgroundColor: '#E11D48',
+    borderColor: '#E11D48',
   },
   contentBody: {
     padding: Theme.spacing.md,
@@ -562,17 +607,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryPill: {
-    backgroundColor: 'rgba(99, 102, 241, 0.18)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: Theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.35)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
   },
   categoryText: {
     fontSize: 11,
     fontWeight: '700',
-    color: Theme.colors.primaryLight,
+    color: Theme.colors.primary,
     textTransform: 'uppercase',
   },
   statsBadges: {
@@ -641,8 +686,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderColor: 'rgba(16, 185, 129, 0.35)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
     borderWidth: 1,
     borderRadius: Theme.borderRadius.full,
     paddingVertical: 8,
@@ -651,7 +696,7 @@ const styles = StyleSheet.create({
     marginBottom: Theme.spacing.md,
   },
   unlockedStatusText: {
-    color: '#34D399',
+    color: Theme.colors.success,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -659,15 +704,16 @@ const styles = StyleSheet.create({
     marginBottom: Theme.spacing.lg,
   },
   singleUnlockCard: {
-    backgroundColor: Theme.colors.surfaceElevated,
+    backgroundColor: '#FFFFFF',
     borderRadius: Theme.borderRadius.xl,
     padding: Theme.spacing.md,
-    borderWidth: 1.5,
-    borderColor: 'rgba(245, 158, 11, 0.35)',
-    shadowColor: '#F59E0B',
-    shadowOpacity: 0.15,
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+    shadowColor: '#000000',
+    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 10,
+    elevation: 3,
   },
   singleCardHeader: {
     flexDirection: 'row',
@@ -679,11 +725,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.35)',
+    borderColor: 'rgba(255, 122, 0, 0.3)',
   },
   singleCardTitleWrap: {
     flex: 1,
@@ -691,7 +737,7 @@ const styles = StyleSheet.create({
   lockCardTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FDE68A',
+    color: Theme.colors.text,
     marginBottom: 2,
   },
   lockCardSubtitle: {
@@ -702,7 +748,7 @@ const styles = StyleSheet.create({
   infoStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(4, 7, 13, 0.5)',
+    backgroundColor: '#F8F9FA',
     borderRadius: Theme.borderRadius.md,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -736,16 +782,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#E11D48',
     borderRadius: Theme.borderRadius.lg,
     paddingVertical: 13,
-    shadowColor: '#F59E0B',
-    shadowOpacity: 0.35,
+    shadowColor: '#E11D48',
+    shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
+    elevation: 3,
   },
   unlockTriggerBtnText: {
-    color: '#080B11',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
   },
@@ -757,7 +804,7 @@ const styles = StyleSheet.create({
   },
   smallModalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(4, 7, 13, 0.78)',
+    backgroundColor: 'rgba(17, 24, 39, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -765,16 +812,16 @@ const styles = StyleSheet.create({
   smallModalCard: {
     width: '100%',
     maxWidth: 350,
-    backgroundColor: Theme.colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: Theme.borderRadius.xl,
     padding: 18,
     borderWidth: 1,
-    borderColor: Theme.colors.borderLight,
+    borderColor: Theme.colors.border,
     shadowColor: '#000',
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 16,
-    elevation: 12,
+    elevation: 8,
   },
   smallModalHeader: {
     flexDirection: 'row',
@@ -810,7 +857,7 @@ const styles = StyleSheet.create({
   rectangularBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Theme.colors.surfaceElevated,
+    backgroundColor: '#F8F9FA',
     borderRadius: Theme.borderRadius.md,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -819,23 +866,23 @@ const styles = StyleSheet.create({
     borderColor: Theme.colors.border,
   },
   boxCoinReady: {
-    borderColor: 'rgba(245, 158, 11, 0.35)',
+    borderColor: 'rgba(255, 122, 0, 0.4)',
   },
   boxCoinDeficit: {
-    borderColor: 'rgba(245, 158, 11, 0.2)',
+    borderColor: 'rgba(255, 122, 0, 0.2)',
   },
   boxAd: {
-    borderColor: 'rgba(6, 182, 212, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
   },
   boxAddCoins: {
-    borderColor: 'rgba(99, 102, 241, 0.25)',
+    borderColor: '#E5E7EB',
     marginBottom: 0,
   },
   boxIconWrap: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.14)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -844,10 +891,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   boxIconAd: {
-    backgroundColor: 'rgba(6, 182, 212, 0.14)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
   },
   boxIconAddCoins: {
-    backgroundColor: 'rgba(99, 102, 241, 0.14)',
+    backgroundColor: 'rgba(255, 122, 0, 0.08)',
   },
   boxContent: {
     flex: 1,
@@ -869,44 +916,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FF7A00',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: Theme.borderRadius.sm,
   },
   boxActionPillActiveText: {
-    color: '#080B11',
+    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '800',
   },
   boxActionPillOutline: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: Theme.borderRadius.sm,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.35)',
+    borderColor: 'rgba(255, 122, 0, 0.35)',
   },
   boxActionPillOutlineText: {
-    color: '#FDE68A',
+    color: '#FF7A00',
     fontSize: 11,
     fontWeight: '700',
   },
   boxFreeBadge: {
-    backgroundColor: 'rgba(6, 182, 212, 0.15)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: Theme.borderRadius.sm,
     borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.35)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
   },
   boxFreeBadgeText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#06B6D4',
+    color: '#E11D48',
   },
   boxInlineError: {
-    color: '#FECDD3',
+    color: '#E11D48',
     fontSize: 11,
     marginTop: -4,
     marginBottom: 8,

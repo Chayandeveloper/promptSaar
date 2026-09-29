@@ -22,6 +22,7 @@ import {
   useRecentPrompts,
   usePrompts,
 } from '../../hooks/usePrompts';
+import { useBanners } from '../../hooks/useBanners';
 import { useCategories } from '../../hooks/useCategories';
 import { Theme } from '../../constants/Theme';
 
@@ -31,6 +32,7 @@ export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Queries
+  const { data: bannersData, isLoading: isBannersLoading, refetch: refetchBanners } = useBanners();
   const { data: featuredData, isLoading: isFeaturedLoading, refetch: refetchFeatured } = useFeaturedPrompts();
   const { data: recentData, isLoading: isRecentLoading, refetch: refetchRecent } = useRecentPrompts();
   const { data: categoriesData, isLoading: isCatLoading, refetch: refetchCategories } = useCategories();
@@ -43,6 +45,7 @@ export default function HomeScreen() {
   const onRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([
+      refetchBanners(),
       refetchFeatured(),
       refetchRecent(),
       refetchCategories(),
@@ -108,11 +111,11 @@ export default function HomeScreen() {
           </View>
         ) : (
           <>
-            {/* Dynamic Hero Section */}
-            {isFeaturedLoading ? (
+            {/* Dynamic Hero Carousel Section */}
+            {isBannersLoading && isFeaturedLoading ? (
               <HeroSkeleton />
             ) : (
-              <HeroPrompt prompt={featuredPrompt} />
+              <HeroPrompt banners={bannersData} prompt={featuredPrompt} />
             )}
 
             {/* AdMob Banner placement */}

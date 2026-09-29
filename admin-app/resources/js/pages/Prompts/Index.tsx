@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
-import { Plus, Search, Edit, Trash2, Eye, Star, TrendingUp, Filter, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Star, TrendingUp, Filter, CheckCircle, XCircle, Sparkles } from 'lucide-react';
 
 interface Category { id: number; name: string; slug: string; }
 interface Prompt {
@@ -139,7 +139,12 @@ export default function PromptsIndex({ prompts, categories, filters, admin }: Pr
                                         </button>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <button onClick={() => router.post(`/admin/banners/set-from-prompt/${p.id}`, {}, { preserveScroll: true })}
+                                                className="p-1.5 rounded-lg transition-colors hover:bg-amber-500/20 text-amber-400"
+                                                title="Set as Top Hero Banner">
+                                                <Sparkles size={14} />
+                                            </button>
                                             <Link href={`/admin/prompts/${p.id}/edit`}
                                                 className="p-1.5 rounded-lg transition-colors hover:bg-indigo-500/20">
                                                 <Edit size={14} style={{ color: '#6366f1' }} />

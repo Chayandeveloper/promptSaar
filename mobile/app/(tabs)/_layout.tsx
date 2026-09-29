@@ -8,26 +8,32 @@ import { Theme } from '../../constants/Theme';
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
-  // Dynamic bottom clearance ensuring comfortable gap from device chin / navigation bar
+  // Generous bottom clearance ensuring the tab bar is never obscured by Android system buttons or iOS gesture bar
   const bottomPadding = Platform.OS === 'ios'
-    ? Math.max(insets.bottom, 12)
-    : Math.max(insets.bottom, 8);
-  const tabHeight = 54 + bottomPadding;
+    ? Math.max(insets.bottom, 16)
+    : insets.bottom > 0
+      ? insets.bottom + 10
+      : 20;
+  const tabHeight = 62 + bottomPadding;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Theme.colors.primaryLight,
+        tabBarActiveTintColor: Theme.colors.primary,
         tabBarInactiveTintColor: Theme.colors.textMuted,
         tabBarStyle: {
-          backgroundColor: Theme.colors.surface,
+          backgroundColor: '#FFFFFF',
           borderTopColor: Theme.colors.border,
           borderTopWidth: 1,
           height: tabHeight,
           paddingBottom: bottomPadding,
           paddingTop: 8,
           elevation: 10,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
         },
         tabBarItemStyle: {
           justifyContent: 'center',
@@ -39,7 +45,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
-          marginTop: 4,
+          marginTop: 2,
         },
       }}
     >

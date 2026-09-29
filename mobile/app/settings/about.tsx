@@ -6,7 +6,7 @@ import { Theme } from '../../constants/Theme';
 
 export default function AboutScreen() {
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={['left', 'right', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <View style={styles.brandCard}>
           <Image

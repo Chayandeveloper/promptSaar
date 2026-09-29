@@ -50,6 +50,24 @@ export interface PromptDetail extends PromptSummary {
   prompt_text: string | null; // null if locked, string if unlocked
 }
 
+export interface Banner {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  badge_text: string;
+  image_url: string;
+  cta_text: string;
+  action_type: 'prompt' | 'category' | 'url' | 'none';
+  prompt_id?: number | null;
+  category_id?: number | null;
+  category_name?: string | null;
+  category_slug?: string | null;
+  target_url?: string | null;
+  is_active: boolean;
+  order: number;
+  prompt?: PromptSummary | null;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   current_page: number;

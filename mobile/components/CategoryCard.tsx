@@ -47,19 +47,18 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, compact = 
   const getCategoryTheme = (icon?: string) => {
     switch (icon) {
       case 'code':
-        return { color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.3)' };
+        return { color: '#E11D48', bg: 'rgba(225, 29, 72, 0.08)', border: 'rgba(225, 29, 72, 0.25)' };
       case 'image':
       case 'video':
-        return { color: '#F43F5E', bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.3)' };
+        return { color: '#E11D48', bg: 'rgba(225, 29, 72, 0.08)', border: 'rgba(225, 29, 72, 0.25)' };
       case 'feather':
       case 'book-open':
-        return { color: '#A855F7', bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.3)' };
+        return { color: '#FF7A00', bg: 'rgba(255, 122, 0, 0.08)', border: 'rgba(255, 122, 0, 0.25)' };
       case 'briefcase':
-        return { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)' };
       case 'trending-up':
-        return { color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.3)' };
+        return { color: '#FF7A00', bg: 'rgba(255, 122, 0, 0.08)', border: 'rgba(255, 122, 0, 0.25)' };
       default:
-        return { color: '#818CF8', bg: 'rgba(129, 140, 248, 0.15)', border: 'rgba(129, 140, 248, 0.3)' };
+        return { color: '#E11D48', bg: 'rgba(225, 29, 72, 0.08)', border: 'rgba(225, 29, 72, 0.25)' };
     }
   };
 
@@ -90,13 +89,18 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Theme.colors.surfaceElevated,
+    backgroundColor: '#FFFFFF',
     borderRadius: Theme.borderRadius.full,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginRight: 10,
     borderWidth: 1,
     gap: 8,
+    shadowColor: '#000000',
+    shadowOpacity: 0.03,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 1,
   },
   pillCompact: {
     paddingHorizontal: 10,
@@ -117,7 +121,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   countBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: Theme.borderRadius.full,

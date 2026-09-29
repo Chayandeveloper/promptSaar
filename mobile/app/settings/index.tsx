@@ -11,7 +11,7 @@ export default function SettingsScreen() {
   const [personalizedAds, setPersonalizedAds] = useState(false);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={['left', 'right', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>PREFERENCES</Text>

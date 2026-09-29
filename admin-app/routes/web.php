@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\NotificationController;
@@ -19,6 +20,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn() => redirect()->route('admin.dashboard'));
 
 Route::get('/login', fn() => redirect()->route('admin.login'))->name('login');
+
+/*
+|--------------------------------------------------------------------------
+| Public Legal & Compliance Pages (Google Play / App Store URLs)
+|--------------------------------------------------------------------------
+*/
+Route::view('/privacy-policy', 'legal.privacy')->name('privacy.policy');
+Route::view('/privacy', 'legal.privacy');
+Route::view('/terms-and-conditions', 'legal.terms')->name('terms.conditions');
+Route::view('/terms', 'legal.terms');
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +68,15 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
         Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        // Hero Banners Management
+        Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+        Route::post('/banners', [BannerController::class, 'store'])->name('banners.store');
+        Route::put('/banners/{id}', [BannerController::class, 'update'])->name('banners.update');
+        Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
+        Route::post('/banners/{id}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
+        Route::post('/banners/set-from-prompt/{promptId}', [BannerController::class, 'setFromPrompt'])->name('banners.set-from-prompt');
+        Route::post('/banners/upload-image', [BannerController::class, 'uploadImage'])->name('banners.upload-image');
 
         // Users & Coin Ledger Management
         Route::get('/users', [UserController::class, 'index'])->name('users.index');

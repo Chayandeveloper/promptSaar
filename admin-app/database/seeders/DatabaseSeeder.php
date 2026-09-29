@@ -81,5 +81,23 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
+
+        $heroPrompt = Prompt::where('title', 'like', '%Sora%')->first() ?? Prompt::first();
+        if ($heroPrompt) {
+            \App\Models\Banner::firstOrCreate(
+                ['title' => $heroPrompt->title],
+                [
+                    'subtitle'    => $heroPrompt->description,
+                    'badge_text'  => 'FEATURED PROMPT',
+                    'image_url'   => $heroPrompt->cover_image,
+                    'cta_text'    => 'View & Unlock',
+                    'action_type' => 'prompt',
+                    'prompt_id'   => $heroPrompt->id,
+                    'category_id' => $heroPrompt->category_id,
+                    'is_active'   => true,
+                    'order'       => 1,
+                ]
+            );
+        }
     }
 }

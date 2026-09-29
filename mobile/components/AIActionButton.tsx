@@ -39,7 +39,7 @@ export const AIActionButtons: React.FC<AIActionButtonsProps> = ({ promptText }) 
       {/* Toast Notification */}
       {toastMessage && (
         <View style={styles.toast}>
-          <Ionicons name="checkmark-circle" size={16} color="#34D399" />
+          <Ionicons name="checkmark-circle" size={16} color={Theme.colors.success} />
           <Text style={styles.toastText}>{toastMessage}</Text>
         </View>
       )}
@@ -68,7 +68,7 @@ export const AIActionButtons: React.FC<AIActionButtonsProps> = ({ promptText }) 
           onPress={handleChatGPT}
           style={[styles.button, styles.serviceButton, styles.chatgptButton]}
         >
-          <Ionicons name="chatbubbles-outline" size={17} color="#10A37F" />
+          <Ionicons name="chatbubbles-outline" size={17} color={Theme.colors.success} />
           <Text style={styles.chatgptText}>Open in ChatGPT</Text>
         </TouchableOpacity>
 
@@ -78,7 +78,7 @@ export const AIActionButtons: React.FC<AIActionButtonsProps> = ({ promptText }) 
           onPress={handleGemini}
           style={[styles.button, styles.serviceButton, styles.geminiButton]}
         >
-          <Ionicons name="sparkles-outline" size={17} color="#38BDF8" />
+          <Ionicons name="sparkles-outline" size={17} color={Theme.colors.accent} />
           <Text style={styles.geminiText}>Open in Gemini</Text>
         </TouchableOpacity>
       </View>
@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(6, 78, 59, 0.95)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.4)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: Theme.borderRadius.md,
     marginBottom: 4,
   },
   toastText: {
-    color: '#D1FAE5',
+    color: Theme.colors.success,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     shadowColor: Theme.colors.primary,
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
   },
   copyButtonText: {
@@ -136,23 +136,28 @@ const styles = StyleSheet.create({
   },
   serviceButton: {
     flex: 1,
-    backgroundColor: Theme.colors.surfaceElevated,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     paddingVertical: 11,
+    shadowColor: '#000000',
+    shadowOpacity: 0.03,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 4,
+    elevation: 1,
   },
   chatgptButton: {
-    borderColor: 'rgba(16, 163, 127, 0.3)',
+    borderColor: '#E5E7EB',
   },
   chatgptText: {
-    color: '#E2E8F0',
+    color: Theme.colors.text,
     fontSize: 12,
     fontWeight: '600',
   },
   geminiButton: {
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderColor: '#E5E7EB',
   },
   geminiText: {
-    color: '#E2E8F0',
+    color: Theme.colors.text,
     fontSize: 12,
     fontWeight: '600',
   },

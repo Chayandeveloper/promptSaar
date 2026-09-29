@@ -39,11 +39,16 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: Theme.spacing.md,
     marginBottom: Theme.spacing.md,
-    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    backgroundColor: '#FFFFFF',
     borderRadius: Theme.borderRadius.lg,
     padding: Theme.spacing.sm + 2,
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 2,
   },
   adBadgeRow: {
     flexDirection: 'row',
@@ -52,7 +57,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   adPill: {
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    backgroundColor: 'rgba(255, 122, 0, 0.12)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -60,7 +65,7 @@ const styles = StyleSheet.create({
   adPillText: {
     fontSize: 9,
     fontWeight: '700',
-    color: Theme.colors.primaryLight,
+    color: '#FF7A00',
     letterSpacing: 0.5,
   },
   adUnitId: {
@@ -77,11 +82,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: Theme.borderRadius.md,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.2)',
   },
   textBox: {
     flex: 1,

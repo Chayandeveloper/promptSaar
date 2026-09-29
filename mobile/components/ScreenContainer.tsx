@@ -18,7 +18,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 }) => {
   return (
     <SafeAreaView edges={edges} style={[styles.container, style]}>
-      <StatusBar barStyle="light-content" backgroundColor={Theme.colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={Theme.colors.background} />
       <View style={[styles.inner, noPadding && { paddingHorizontal: 0 }]}>
         {children}
       </View>

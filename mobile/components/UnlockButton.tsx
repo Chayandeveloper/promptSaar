@@ -20,7 +20,7 @@ export const UnlockButton: React.FC<UnlockButtonProps> = ({
   if (state === 'success') {
     return (
       <View style={[styles.container, styles.successContainer]}>
-        <Ionicons name="checkmark-circle" size={20} color="#34D399" />
+        <Ionicons name="checkmark-circle" size={20} color={Theme.colors.success} />
         <Text style={styles.successText}>Prompt Unlocked Successfully!</Text>
       </View>
     );
@@ -33,7 +33,7 @@ export const UnlockButton: React.FC<UnlockButtonProps> = ({
       {/* Early Close Notice */}
       {state === 'early_close' && (
         <View style={styles.warningBox}>
-          <Ionicons name="alert-circle" size={16} color={Theme.colors.warning} />
+          <Ionicons name="alert-circle" size={16} color={Theme.colors.coin} />
           <Text style={styles.warningText}>
             The prompt wasn't unlocked because the advertisement was not completed.
           </Text>
@@ -57,7 +57,7 @@ export const UnlockButton: React.FC<UnlockButtonProps> = ({
         style={styles.touchable}
       >
         <LinearGradient
-          colors={['#F59E0B', '#D97706']}
+          colors={['#E11D48', '#FF7A00']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradientButton}
@@ -101,6 +101,11 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: Theme.borderRadius.lg,
     overflow: 'hidden',
+    shadowColor: '#E11D48',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   gradientButton: {
     paddingVertical: 14,
@@ -135,8 +140,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'rgba(6, 78, 59, 0.4)',
-    borderColor: 'rgba(52, 211, 153, 0.3)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
     borderWidth: 1,
     borderRadius: Theme.borderRadius.lg,
     paddingVertical: 12,
@@ -144,7 +149,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   successText: {
-    color: '#34D399',
+    color: Theme.colors.success,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -155,9 +160,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(255, 122, 0, 0.3)',
     borderRadius: Theme.borderRadius.md,
     padding: 10,
     marginBottom: 10,
@@ -165,7 +170,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     flex: 1,
-    color: '#FDE68A',
+    color: '#FF7A00',
     fontSize: 11,
     lineHeight: 15,
   },
@@ -173,9 +178,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
     borderRadius: Theme.borderRadius.md,
     padding: 10,
     marginBottom: 10,
@@ -183,7 +188,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     flex: 1,
-    color: '#FECDD3',
+    color: '#BE123C',
     fontSize: 11,
     lineHeight: 15,
   },

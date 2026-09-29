@@ -95,7 +95,7 @@ export default function EarnCoinsScreen() {
 
         {/* Big Balance Card (Section 14) */}
         <LinearGradient
-          colors={['#1E1B4B', '#111726']}
+          colors={['#E11D48', '#FF7A00']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.balanceCard}
@@ -141,7 +141,7 @@ export default function EarnCoinsScreen() {
                   ]}
                 >
                   {done ? (
-                    <Ionicons name="checkmark" size={14} color="#090D16" />
+                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                   ) : (
                     <Text style={styles.dotNumber}>{idx + 1}</Text>
                   )}
@@ -177,10 +177,10 @@ export default function EarnCoinsScreen() {
                 size={16}
                 color={
                   adState === 'success'
-                    ? '#34D399'
+                    ? Theme.colors.success
                     : adState === 'early_close'
-                    ? '#FBBF24'
-                    : '#F43F5E'
+                    ? '#FFC83D'
+                    : Theme.colors.danger
                 }
               />
               <Text
@@ -189,10 +189,10 @@ export default function EarnCoinsScreen() {
                   {
                     color:
                       adState === 'success'
-                        ? '#A7F3D0'
+                        ? Theme.colors.success
                         : adState === 'early_close'
-                        ? '#FDE68A'
-                        : '#FECDD3',
+                        ? '#FFC83D'
+                        : '#FFD1D8',
                   },
                 ]}
               >
@@ -211,7 +211,7 @@ export default function EarnCoinsScreen() {
             >
               {isBusy ? (
                 <View style={styles.btnRow}>
-                  <ActivityIndicator color="#090D16" size="small" />
+                  <ActivityIndicator color="#FFFFFF" size="small" />
                   <Text style={styles.watchAdBtnText}>
                     {adState === 'loading'
                       ? 'Loading Ad...'
@@ -222,7 +222,7 @@ export default function EarnCoinsScreen() {
                 </View>
               ) : (
                 <View style={styles.btnRow}>
-                  <Ionicons name="play" size={16} color="#090D16" />
+                  <Ionicons name="play" size={16} color="#FFFFFF" />
                   <Text style={styles.watchAdBtnText}>
                     Watch Ad & Earn {coinsPerAd} Coins
                   </Text>
@@ -232,7 +232,7 @@ export default function EarnCoinsScreen() {
           ) : (
             /* Limit Reached (Section 3) */
             <View style={styles.limitReachedBox}>
-              <Ionicons name="checkmark-done-circle" size={24} color="#34D399" />
+              <Ionicons name="checkmark-done-circle" size={24} color={Theme.colors.success} />
               <Text style={styles.limitTitle}>Daily reward limit reached.</Text>
               <Text style={styles.limitSub}>
                 Come back tomorrow to earn more coins. Your quota resets at midnight server time.
@@ -276,13 +276,15 @@ export default function EarnCoinsScreen() {
 
 const styles = StyleSheet.create({
   scroll: {
+    paddingHorizontal: Theme.spacing.md,
+    paddingTop: 4,
     paddingBottom: Theme.spacing.xxl + 24,
   },
   navBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Theme.spacing.sm,
+    paddingVertical: 6,
     marginBottom: Theme.spacing.sm,
   },
   backButton: {
@@ -304,15 +306,18 @@ const styles = StyleSheet.create({
     borderRadius: Theme.borderRadius.xl,
     padding: Theme.spacing.lg,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.3)',
     marginBottom: Theme.spacing.md,
+    shadowColor: '#E11D48',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 4,
   },
   balanceGlow: {
     width: 60,
     height: 60,
     borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
@@ -323,18 +328,18 @@ const styles = StyleSheet.create({
   balanceNumber: {
     fontSize: 40,
     fontWeight: '900',
-    color: '#FDE68A',
+    color: '#FFFFFF',
     letterSpacing: -1,
   },
   balanceLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: Theme.colors.text,
+    color: '#FFFFFF',
     marginTop: 2,
   },
   balanceSubtext: {
     fontSize: 11,
-    color: Theme.colors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
     marginTop: 6,
     lineHeight: 16,
@@ -347,6 +352,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Theme.colors.border,
     marginBottom: Theme.spacing.md,
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 1,
   },
   rewardHeader: {
     flexDirection: 'row',
@@ -365,24 +375,26 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   coinPill: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: Theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(255, 122, 0, 0.25)',
   },
   coinPillText: {
-    color: '#FDE68A',
+    color: '#FF7A00',
     fontWeight: '800',
     fontSize: 12,
   },
   progressSection: {
-    backgroundColor: Theme.colors.surfaceElevated,
+    backgroundColor: '#F8F9FA',
     borderRadius: Theme.borderRadius.lg,
     padding: Theme.spacing.md,
     alignItems: 'center',
     marginBottom: Theme.spacing.md,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   progressLabel: {
     fontSize: 11,
@@ -407,12 +419,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dotCompleted: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Theme.colors.primary,
   },
   dotPending: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#E5E7EB',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: '#D1D5DB',
   },
   dotNumber: {
     fontSize: 11,
@@ -430,23 +442,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   watchAdBtn: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: Theme.colors.primary,
     borderRadius: Theme.borderRadius.lg,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#F59E0B',
+    shadowColor: Theme.colors.primary,
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
+    elevation: 3,
   },
   watchAdBtnText: {
-    color: '#090D16',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
   },
   limitReachedBox: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderColor: 'rgba(16, 185, 129, 0.25)',
     borderWidth: 1,
     borderRadius: Theme.borderRadius.lg,
@@ -456,7 +469,7 @@ const styles = StyleSheet.create({
   limitTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#34D399',
+    color: Theme.colors.success,
     marginTop: 4,
     marginBottom: 2,
   },
@@ -475,19 +488,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   noticeSuccess: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
   },
   noticeWarning: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(255, 122, 0, 0.25)',
   },
   noticeError: {
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+    backgroundColor: 'rgba(225, 29, 72, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
   },
   noticeText: {
     fontSize: 12,
@@ -515,22 +528,24 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   earnedTodayBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: Theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 122, 0, 0.2)',
   },
   earnedTodayText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#FDE68A',
+    color: '#FF7A00',
   },
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    borderColor: 'rgba(99, 102, 241, 0.25)',
+    backgroundColor: 'rgba(225, 29, 72, 0.05)',
+    borderColor: 'rgba(225, 29, 72, 0.15)',
     borderWidth: 1,
     borderRadius: Theme.borderRadius.lg,
     padding: Theme.spacing.md,
