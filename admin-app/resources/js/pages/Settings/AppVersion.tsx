@@ -3,7 +3,7 @@ import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
 import { 
     Smartphone, Save, CheckCircle, AlertTriangle, ShieldAlert, 
-    ArrowUpCircle, ExternalLink, Wrench, RefreshCw 
+    ArrowUpCircle, ExternalLink, Wrench, RefreshCw, Clock, Lock
 } from 'lucide-react';
 
 interface Settings {
@@ -48,7 +48,7 @@ export default function AppVersionPage({ settings, admin }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/admin/settings/app');
+        // Disabled currently as requested
     };
 
     return (
@@ -59,23 +59,40 @@ export default function AppVersionPage({ settings, admin }: Props) {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            Mobile App Version & Force Update
-                        </h1>
-                        <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-                            Control version requirements, force update prompts, and maintenance mode in real-time.
+                        <div className="flex items-center gap-2.5 mb-1">
+                            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                                Mobile App Version & Force Update
+                            </h1>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                                <Clock size={12} />
+                                Coming Soon
+                            </span>
+                        </div>
+                        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+                            Preview and configure version requirements, force update triggers, and maintenance controls.
                         </p>
                     </div>
 
                     <button
-                        onClick={submit}
-                        disabled={processing}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-white text-sm shadow-lg transition-all active:scale-95 disabled:opacity-50"
-                        style={{ background: 'linear-gradient(135deg, #E11D48, #FF7A00)' }}
+                        type="button"
+                        disabled={true}
+                        title="This feature will be available soon"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm shadow-sm cursor-not-allowed bg-slate-800 text-slate-400 border border-slate-700/80 transition-all opacity-70"
                     >
-                        {processing ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
-                        Save Settings
+                        <Lock size={15} className="text-amber-400" />
+                        <span>Save Settings (Available Soon)</span>
                     </button>
+                </div>
+
+                {/* Coming Soon Notice Banner */}
+                <div className="p-4 rounded-xl flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs sm:text-sm">
+                    <Clock size={18} className="text-amber-400 shrink-0" />
+                    <div>
+                        <p className="font-semibold text-amber-200">Feature Preview Only — Will Be Soon Available</p>
+                        <p className="text-amber-300/80 text-xs mt-0.5">
+                            Saving and real-time remote updates are temporarily disabled and will be officially enabled in an upcoming release.
+                        </p>
+                    </div>
                 </div>
 
                 {recentlySuccessful && (
