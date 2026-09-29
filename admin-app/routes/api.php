@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppVersionController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PromptController;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 | Mobile API & Reward System
 |--------------------------------------------------------------------------
 */
+
+// App Version & Force Update Config
+Route::get('/app-version', [AppVersionController::class, 'check']);
 
 // Hero Banners
 Route::get('/banners', [BannerController::class, 'index']);

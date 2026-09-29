@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AppSettingController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -89,6 +90,10 @@ Route::middleware(['auth', EnsureAdmin::class])
         // Reward & Coin Settings
         Route::get('/settings/rewards', [RewardSettingController::class, 'index'])->name('settings.rewards');
         Route::put('/settings/rewards', [RewardSettingController::class, 'update'])->name('settings.rewards.update');
+
+        // App Version & Force Update Settings
+        Route::get('/settings/app', [AppSettingController::class, 'index'])->name('settings.app');
+        Route::put('/settings/app', [AppSettingController::class, 'update'])->name('settings.app.update');
 
         // Unlock analytics
         Route::get('/unlocks', [UnlockController::class, 'index'])->name('unlocks.index');

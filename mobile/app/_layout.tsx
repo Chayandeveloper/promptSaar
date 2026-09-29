@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Theme } from '../constants/Theme';
 import { notificationService } from '../services/notifications';
+import { AppUpdateModal } from '../components/AppUpdateModal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,6 +107,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <AppUpdateModal />
     </QueryClientProvider>
   );
 }
