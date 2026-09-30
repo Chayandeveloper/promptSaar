@@ -28,7 +28,9 @@ Route::get('/login', fn() => redirect()->route('admin.login'))->name('login');
 |--------------------------------------------------------------------------
 */
 Route::view('/privacy-policy', 'legal.privacy')->name('privacy.policy');
+Route::view('/privacy-policy.html', 'legal.privacy');
 Route::view('/privacy', 'legal.privacy');
+Route::redirect('/privacy policy', '/privacy-policy');
 Route::view('/terms-and-conditions', 'legal.terms')->name('terms.conditions');
 Route::view('/terms', 'legal.terms');
 
