@@ -8,13 +8,13 @@ import { Theme } from '../../constants/Theme';
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
-  // Generous bottom clearance ensuring the tab bar is never obscured by Android system buttons or iOS gesture bar
+  // Compact bottom clearance ensuring modern slim tab bar while respecting gestures
   const bottomPadding = Platform.OS === 'ios'
-    ? Math.max(insets.bottom, 16)
+    ? Math.max(insets.bottom, 8)
     : insets.bottom > 0
-      ? insets.bottom + 10
-      : 20;
-  const tabHeight = 62 + bottomPadding;
+      ? insets.bottom + 4
+      : 8;
+  const tabHeight = 50 + bottomPadding;
 
   return (
     <Tabs
@@ -28,7 +28,7 @@ export default function TabLayout() {
           borderTopWidth: 1,
           height: tabHeight,
           paddingBottom: bottomPadding,
-          paddingTop: 8,
+          paddingTop: 5,
           elevation: 10,
           shadowColor: '#000000',
           shadowOffset: { width: 0, height: -2 },
@@ -40,12 +40,12 @@ export default function TabLayout() {
           alignItems: 'center',
         },
         tabBarIconStyle: {
-          marginTop: 2,
+          marginTop: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '700',
-          marginTop: 2,
+          marginTop: 1,
         },
       }}
     >

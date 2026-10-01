@@ -22,10 +22,11 @@ export default function SavedScreen() {
       </View>
 
       {isLoading ? (
-        <View style={styles.skeletonContainer}>
-          <PromptCardSkeleton />
-          <PromptCardSkeleton />
-          <PromptCardSkeleton />
+        <View style={styles.skeletonGrid}>
+          <PromptCardSkeleton grid portrait />
+          <PromptCardSkeleton grid portrait />
+          <PromptCardSkeleton grid portrait />
+          <PromptCardSkeleton grid portrait />
         </View>
       ) : savedPrompts.length === 0 ? (
         <EmptyState
@@ -39,7 +40,9 @@ export default function SavedScreen() {
         <FlatList
           data={savedPrompts}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <PromptCard prompt={item} />}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={({ item }) => <PromptCard prompt={item} grid portrait />}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -73,11 +76,17 @@ const styles = StyleSheet.create({
     color: Theme.colors.textSecondary,
     marginTop: 2,
   },
+  row: {
+    justifyContent: 'space-between',
+  },
   listContent: {
     padding: Theme.spacing.md,
     paddingBottom: Theme.spacing.xxl + 24,
   },
-  skeletonContainer: {
+  skeletonGrid: {
     padding: Theme.spacing.md,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 });

@@ -48,7 +48,7 @@ export default function AppVersionPage({ settings, admin }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Disabled currently as requested
+        put('/admin/settings/app', { preserveScroll: true });
     };
 
     return (
@@ -75,12 +75,13 @@ export default function AppVersionPage({ settings, admin }: Props) {
 
                     <button
                         type="button"
-                        disabled={true}
-                        title="This feature will be available soon"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm shadow-sm cursor-not-allowed bg-slate-800 text-slate-400 border border-slate-700/80 transition-all opacity-70"
+                        onClick={submit}
+                        disabled={processing}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm text-white shadow-lg shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer"
+                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                     >
-                        <Lock size={15} className="text-amber-400" />
-                        <span>Save Settings (Available Soon)</span>
+                        <Save size={15} />
+                        <span>{processing ? 'Saving Changes...' : 'Save All Settings'}</span>
                     </button>
                 </div>
 
@@ -98,7 +99,7 @@ export default function AppVersionPage({ settings, admin }: Props) {
                 {recentlySuccessful && (
                     <div className="p-4 rounded-xl flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
                         <CheckCircle size={18} />
-                        App settings have been saved and are live for all mobile users!
+                        App version &amp; force update settings have been saved and are live for all mobile users!
                     </div>
                 )}
 
@@ -113,7 +114,7 @@ export default function AppVersionPage({ settings, admin }: Props) {
                                 </div>
                                 <div>
                                     <h2 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
-                                        Version Controls & Rules
+                                        Version Controls &amp; Rules
                                     </h2>
                                     <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
                                         Control which app versions are permitted to connect.
@@ -297,7 +298,7 @@ export default function AppVersionPage({ settings, admin }: Props) {
                             <div className="flex items-center gap-2">
                                 <Smartphone size={18} className="text-rose-400" />
                                 <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                    Mobile App Preview
+                                    Mobile App Update Modal Preview
                                 </h3>
                             </div>
                             <p className="text-xs" style={{ color: 'var(--color-muted)' }}>

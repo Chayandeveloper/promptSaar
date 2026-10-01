@@ -24,25 +24,56 @@ class AppSettingController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'min_version'          => 'required|string|max:20',
-            'latest_version'       => 'required|string|max:20',
-            'force_update'         => 'required|boolean',
-            'update_url'           => 'required|url|max:500',
-            'update_title'         => 'required|string|max:100',
-            'update_message'       => 'required|string|max:1000',
-            'maintenance_mode'     => 'required|boolean',
-            'maintenance_message'  => 'required|string|max:1000',
+            'min_version'          => 'nullable|string|max:20',
+            'latest_version'       => 'nullable|string|max:20',
+            'force_update'         => 'nullable|boolean',
+            'update_url'           => 'nullable|string|max:500',
+            'update_title'         => 'nullable|string|max:100',
+            'update_message'       => 'nullable|string|max:1000',
+            'maintenance_mode'     => 'nullable|boolean',
+            'maintenance_message'  => 'nullable|string|max:1000',
+            'whatsapp_url'         => 'nullable|string|max:500',
+            'instagram_url'        => 'nullable|string|max:500',
+            'telegram_url'         => 'nullable|string|max:500',
         ]);
 
-        AppSetting::set('min_version', $validated['min_version']);
-        AppSetting::set('latest_version', $validated['latest_version']);
-        AppSetting::set('force_update', $validated['force_update']);
-        AppSetting::set('update_url', $validated['update_url']);
-        AppSetting::set('update_title', $validated['update_title']);
-        AppSetting::set('update_message', $validated['update_message']);
-        AppSetting::set('maintenance_mode', $validated['maintenance_mode']);
-        AppSetting::set('maintenance_message', $validated['maintenance_message']);
+        foreach ($validated as $key => $value) {
+            if ($value !== null) {
+                AppSetting::set($key, $value);
+            }
+        }
 
-        return redirect()->back()->with('success', 'App version & force update settings updated successfully!');
+        return redirect()->back()->with('success', 'App version settings updated successfully!');
+    }
+
+    public function socialIndex(): Response
+    {
+        $settings = [
+            'whatsapp_url'  => (string) AppSetting::get('whatsapp_url', 'https://wa.me/'),
+            'instagram_url' => (string) AppSetting::get('instagram_url', 'https://instagram.com/'),
+            'telegram_url'  => (string) AppSetting::get('telegram_url', 'https://t.me/'),
+        ];
+
+        return Inertia::render('Settings/SocialChannels', [
+            'settings' => $settings,
+            'admin'    => Auth::user()->only('name', 'email', 'avatar'),
+        ]);
+    }
+
+    public function updateSocial(Request $request)
+    {
+        $validated = $request->validate([
+            'whatsapp_url'  => 'nullable|string|max:500',
+            'instagram_url' => 'nullable|string|max:500',
+            'telegram_url'  => 'nullable|string|max:500',
+        ]);
+
+        foreach ($validated as $key => $value) {
+            if ($value !== null) {
+                AppSetting::set($key, $value);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Social redirect channels updated successfully!');
     }
 }

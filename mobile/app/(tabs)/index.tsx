@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { Header } from '../../components/Header';
 import { HeroPrompt } from '../../components/HeroPrompt';
+import { SocialChannels } from '../../components/SocialChannels';
 import { CategoryList } from '../../components/CategoryList';
 import { PromptCard } from '../../components/PromptCard';
 import { SearchBar } from '../../components/SearchBar';
@@ -58,6 +59,9 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer noPadding>
+      {/* Fixed Header */}
+      <Header />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -70,9 +74,6 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Header */}
-        <Header />
-
         {/* Search Bar */}
         <SearchBar
           onSearch={(text) => setSearchQuery(text)}
@@ -90,15 +91,15 @@ export default function HomeScreen() {
 
             {isSearchLoading ? (
               <View style={styles.gridList}>
-                <PromptCardSkeleton grid />
-                <PromptCardSkeleton grid />
-                <PromptCardSkeleton grid />
-                <PromptCardSkeleton grid />
+                <PromptCardSkeleton grid portrait />
+                <PromptCardSkeleton grid portrait />
+                <PromptCardSkeleton grid portrait />
+                <PromptCardSkeleton grid portrait />
               </View>
             ) : searchData?.data && searchData.data.length > 0 ? (
               <View style={styles.gridList}>
                 {searchData.data.map((item) => (
-                  <PromptCard key={item.id} prompt={item} grid />
+                  <PromptCard key={item.id} prompt={item} grid portrait />
                 ))}
               </View>
             ) : (
@@ -117,6 +118,9 @@ export default function HomeScreen() {
             ) : (
               <HeroPrompt banners={bannersData} prompt={featuredPrompt} />
             )}
+
+            {/* Social Redirect Buttons: WhatsApp, Instagram, Telegram */}
+            <SocialChannels />
 
             {/* AdMob Banner placement */}
             <BannerAd placement="home_top" />
@@ -144,15 +148,15 @@ export default function HomeScreen() {
 
               {isRecentLoading ? (
                 <View style={styles.gridList}>
-                  <PromptCardSkeleton grid />
-                  <PromptCardSkeleton grid />
-                  <PromptCardSkeleton grid />
-                  <PromptCardSkeleton grid />
+                  <PromptCardSkeleton grid portrait />
+                  <PromptCardSkeleton grid portrait />
+                  <PromptCardSkeleton grid portrait />
+                  <PromptCardSkeleton grid portrait />
                 </View>
               ) : recentData && recentData.length > 0 ? (
                 <View style={styles.gridList}>
                   {recentData.map((item) => (
-                    <PromptCard key={item.id} prompt={item} grid />
+                    <PromptCard key={item.id} prompt={item} grid portrait />
                   ))}
                 </View>
               ) : (
@@ -171,6 +175,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   scrollContent: {
+    paddingTop: Theme.spacing.sm,
     paddingBottom: Theme.spacing.xxl + 24,
   },
   section: {

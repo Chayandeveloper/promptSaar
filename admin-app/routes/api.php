@@ -18,6 +18,16 @@ use Illuminate\Support\Facades\Route;
 // App Version & Force Update Config
 Route::get('/app-version', [AppVersionController::class, 'check']);
 
+// Social Community Links (WhatsApp, Instagram, Telegram)
+Route::get('/social-links', function () {
+    return response()->json([
+        'status'    => 'ok',
+        'whatsapp'  => \App\Models\AppSetting::get('whatsapp_url', 'https://wa.me/'),
+        'instagram' => \App\Models\AppSetting::get('instagram_url', 'https://instagram.com/'),
+        'telegram'  => \App\Models\AppSetting::get('telegram_url', 'https://t.me/'),
+    ]);
+});
+
 // Hero Banners
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/banners/active', [BannerController::class, 'active']);

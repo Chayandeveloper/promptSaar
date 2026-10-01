@@ -56,7 +56,7 @@ export default function TemplatesScreen() {
         keyExtractor={(item) => String(item.id)}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        renderItem={({ item }) => <PromptCard prompt={item} grid />}
+        renderItem={({ item }) => <PromptCard prompt={item} grid portrait />}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -69,10 +69,10 @@ export default function TemplatesScreen() {
         ListEmptyComponent={
           isLoading ? (
             <View style={styles.skeletonGrid}>
-              <PromptCardSkeleton grid />
-              <PromptCardSkeleton grid />
-              <PromptCardSkeleton grid />
-              <PromptCardSkeleton grid />
+              <PromptCardSkeleton grid portrait />
+              <PromptCardSkeleton grid portrait />
+              <PromptCardSkeleton grid portrait />
+              <PromptCardSkeleton grid portrait />
             </View>
           ) : (
             <EmptyState

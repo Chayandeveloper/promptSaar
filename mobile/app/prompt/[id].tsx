@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { UnlockState } from '../../components/UnlockButton';
 import { PromptViewer } from '../../components/PromptViewer';
+import { LockedPromptViewer } from '../../components/LockedPromptViewer';
 import { AIActionButtons } from '../../components/AIActionButton';
 import { BannerAd } from '../../components/BannerAd';
 import { ErrorState } from '../../components/ErrorState';
@@ -290,54 +291,14 @@ export default function PromptDetailsScreen() {
               <AIActionButtons promptText={prompt.prompt_text!} />
             </View>
           ) : (
-            <View style={styles.lockedSection}>
-              {/* Single Unified Unlock Card */}
-              <TouchableOpacity
-                activeOpacity={0.88}
-                onPress={() => setShowUnlockModal(true)}
-                style={styles.singleUnlockCard}
-              >
-                <View style={styles.singleCardHeader}>
-                  <View style={styles.lockIconCircle}>
-                    <Ionicons name="lock-closed" size={24} color="#FFC83D" />
-                  </View>
-                  <View style={styles.singleCardTitleWrap}>
-                    <Text style={styles.lockCardTitle}>Prompt Locked</Text>
-                    <Text style={styles.lockCardSubtitle}>
-                      Tap to unlock with coins or watch a free ad
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Coin & Cost Info Strip */}
-                <View style={styles.infoStrip}>
-                  <View style={styles.infoStripItem}>
-                    <Text style={styles.infoStripLabel}>Unlock Cost</Text>
-                    <Text style={styles.infoStripValue}>🪙 {promptCost} Coins</Text>
-                  </View>
-                  <View style={styles.infoStripDivider} />
-                  <View style={styles.infoStripItem}>
-                    <Text style={styles.infoStripLabel}>Your Balance</Text>
-                    <Text style={[styles.infoStripValue, { color: hasEnoughCoins ? Theme.colors.success : Theme.colors.coin }]}>
-                      🪙 {userCoins} Coins
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Unlock trigger button */}
-                <View style={styles.unlockTriggerBtn}>
-                  <Ionicons name="flash" size={16} color="#FFFFFF" />
-                  <Text style={styles.unlockTriggerBtnText}>
-                    Unlock Prompt • Choose Option
-                  </Text>
-                  <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
-                </View>
-
-                <Text style={styles.cardHintText}>
-                  ✨ Tap to choose: Spend coins, watch free ad, or add coins
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <LockedPromptViewer
+              promptCost={promptCost}
+              userCoins={userCoins}
+              hasEnoughCoins={hasEnoughCoins}
+              onUnlockPress={() => setShowUnlockModal(true)}
+              promptTitle={prompt.title}
+              categoryName={prompt.category?.name}
+            />
           )}
 
           {/* AdMob Banner Placement */}
@@ -357,15 +318,15 @@ export default function PromptDetailsScreen() {
 
             {isMoreLoading ? (
               <View style={styles.gridRow}>
-                <PromptCardSkeleton grid />
-                <PromptCardSkeleton grid />
-                <PromptCardSkeleton grid />
-                <PromptCardSkeleton grid />
+                <PromptCardSkeleton grid portrait />
+                <PromptCardSkeleton grid portrait />
+                <PromptCardSkeleton grid portrait />
+                <PromptCardSkeleton grid portrait />
               </View>
             ) : morePrompts.length > 0 ? (
               <View style={styles.gridRow}>
                 {morePrompts.map((item) => (
-                  <PromptCard key={item.id} prompt={item} grid />
+                  <PromptCard key={item.id} prompt={item} grid portrait />
                 ))}
               </View>
             ) : null}

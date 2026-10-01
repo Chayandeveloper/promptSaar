@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Share } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../constants/Theme';
@@ -10,12 +11,14 @@ interface PromptCardProps {
   prompt: PromptSummary;
   horizontal?: boolean;
   grid?: boolean;
+  portrait?: boolean;
 }
 
 export const PromptCard: React.FC<PromptCardProps> = ({
   prompt,
   horizontal = false,
   grid = false,
+  portrait = false,
 }) => {
   const router = useRouter();
   const toggleSave = useToggleSavePrompt();
@@ -36,7 +39,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
     try {
       await Share.share({
         title: prompt.title,
-        message: `Check out this AI Prompt: "${prompt.title}"\nPromptCraft AI`,
+        message: `Check out this AI Prompt: "${prompt.title}"\nPrompt Saar`,
       });
     } catch (error) {
       console.log('Error sharing prompt:', error);
@@ -57,7 +60,13 @@ export const PromptCard: React.FC<PromptCardProps> = ({
       ]}
     >
       {/* Cover Image Container */}
-      <View style={[styles.imageContainer, grid && styles.imageContainerGrid]}>
+      <View
+        style={[
+          styles.imageContainer,
+          grid && styles.imageContainerGrid,
+          portrait && styles.imageContainerPortrait,
+        ]}
+      >
         <Image
           source={{ uri: prompt.cover_image }}
           style={styles.image}
@@ -102,63 +111,99 @@ export const PromptCard: React.FC<PromptCardProps> = ({
 
         {/* Trending pill */}
         {prompt.is_trending && (
-          <View style={[styles.trendingPill, grid && styles.trendingPillGrid]}>
+          <View
+            style={[
+              styles.trendingPill,
+              grid && styles.trendingPillGrid,
+              portrait && styles.trendingPillPortrait,
+            ]}
+          >
             <Ionicons name="flame" size={grid ? 8 : 10} color="#FFFFFF" />
             <Text style={[styles.trendingText, grid && styles.trendingTextGrid]}>
               Trending
             </Text>
           </View>
         )}
+
+        {/* Portrait Mode: Bottom Gradient Overlay (fading away above) + Title & Share Button */}
+        {portrait && (
+          <>
+            <LinearGradient
+              colors={['transparent', 'rgba(15, 23, 42, 0.45)', 'rgba(15, 23, 42, 0.94)']}
+              locations={[0, 0.45, 1]}
+              style={styles.portraitGradient}
+            />
+            <View style={styles.portraitBottomRow}>
+              <Text style={styles.portraitTitle} numberOfLines={2}>
+                {prompt.title}
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={handleSharePress}
+                style={styles.portraitShareButton}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="share-social-outline"
+                  size={15}
+                  color="#FFFFFF"
+                />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
 
-      {/* Info Container */}
-      <View style={[styles.infoContainer, grid && styles.infoContainerGrid]}>
-        <View style={styles.categoryRow}>
-          <Text
-            style={[styles.categoryText, grid && styles.categoryTextGrid]}
-            numberOfLines={1}
-          >
-            {prompt.category?.name || 'AI Prompt'}
+      {/* Info Container for non-portrait cards */}
+      {!portrait && (
+        <View style={[styles.infoContainer, grid && styles.infoContainerGrid]}>
+          <View style={styles.categoryRow}>
+            <Text
+              style={[styles.categoryText, grid && styles.categoryTextGrid]}
+              numberOfLines={1}
+            >
+              {prompt.category?.name || 'AI Prompt'}
+            </Text>
+            <View style={styles.statsRow}>
+              <Ionicons name="eye-outline" size={grid ? 9 : 11} color={Theme.colors.textMuted} />
+              <Text style={[styles.statsText, grid && styles.statsTextGrid]}>
+                {prompt.views}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.title, grid && styles.titleGrid]} numberOfLines={2}>
+            {prompt.title}
           </Text>
-          <View style={styles.statsRow}>
-            <Ionicons name="eye-outline" size={grid ? 9 : 11} color={Theme.colors.textMuted} />
-            <Text style={[styles.statsText, grid && styles.statsTextGrid]}>
-              {prompt.views}
-            </Text>
+
+          <View style={styles.footerRow}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleSharePress}
+              style={styles.shareButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name="share-social-outline"
+                size={grid ? 12 : 14}
+                color={Theme.colors.primary}
+              />
+              <Text style={[styles.shareText, grid && styles.shareTextGrid]}>Share</Text>
+            </TouchableOpacity>
+
+            <View style={styles.actionPromptText}>
+              <Text style={[styles.actionPromptLabel, grid && styles.actionPromptLabelGrid]}>
+                {prompt.is_locked ? `🪙 ${prompt.unlock_cost || 30}` : 'Open'}
+              </Text>
+              <Ionicons
+                name={prompt.is_locked ? 'sparkles' : 'arrow-forward'}
+                size={grid ? 10 : 12}
+                color={prompt.is_locked ? '#FF7A00' : Theme.colors.primary}
+              />
+            </View>
           </View>
         </View>
-
-        <Text style={[styles.title, grid && styles.titleGrid]} numberOfLines={2}>
-          {prompt.title}
-        </Text>
-
-        <View style={styles.footerRow}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={handleSharePress}
-            style={styles.shareButton}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons
-              name="share-social-outline"
-              size={grid ? 12 : 14}
-              color={Theme.colors.primary}
-            />
-            <Text style={[styles.shareText, grid && styles.shareTextGrid]}>Share</Text>
-          </TouchableOpacity>
-
-          <View style={styles.actionPromptText}>
-            <Text style={[styles.actionPromptLabel, grid && styles.actionPromptLabelGrid]}>
-              {prompt.is_locked ? `🪙 ${prompt.unlock_cost || 30}` : 'Open'}
-            </Text>
-            <Ionicons
-              name={prompt.is_locked ? 'sparkles' : 'arrow-forward'}
-              size={grid ? 10 : 12}
-              color={prompt.is_locked ? '#FF7A00' : Theme.colors.primary}
-            />
-          </View>
-        </View>
-      </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -196,6 +241,10 @@ const styles = StyleSheet.create({
   },
   imageContainerGrid: {
     height: 110,
+  },
+  imageContainerPortrait: {
+    height: undefined,
+    aspectRatio: 9 / 16,
   },
   image: {
     width: '100%',
@@ -385,5 +434,48 @@ const styles = StyleSheet.create({
   },
   actionPromptLabelGrid: {
     fontSize: 9.5,
+  },
+  trendingPillPortrait: {
+    bottom: 52,
+  },
+  portraitGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 85,
+  },
+  portraitBottomRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    paddingTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  portraitTitle: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    lineHeight: 16.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  portraitShareButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)',
   },
 });

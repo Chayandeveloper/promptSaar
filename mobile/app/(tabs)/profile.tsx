@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Share } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Share, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/ScreenContainer';
+import { SocialChannels } from '../../components/SocialChannels';
 import { UnlockStorage, SavedStorage, getDeviceId } from '../../services/storage';
 import { useCoinBalance, useCoinTransactions } from '../../hooks/useRewards';
 import { Theme } from '../../constants/Theme';
@@ -32,29 +33,10 @@ export default function ProfileScreen() {
     loadStats();
   }, []);
 
-  const handleClearHistory = () => {
-    Alert.alert(
-      'Reset Local Data',
-      'This will remove all locally unlocked prompts and saved bookmarks on this device. Are you sure?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reset',
-          style: 'destructive',
-          onPress: async () => {
-            await UnlockStorage.clearAll();
-            await SavedStorage.clearAll();
-            await loadStats();
-          },
-        },
-      ]
-    );
-  };
-
   const handleShareApp = async () => {
     try {
       await Share.share({
-        message: 'PromptCraft — Discover and unlock curated AI prompts for ChatGPT, Claude, Midjourney & more!',
+        message: 'Prompt Saar — Discover and unlock curated AI prompts for ChatGPT, Leonardo, Midjourney & more!',
       });
     } catch (e) {
       console.warn(e);
@@ -66,17 +48,14 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Text style={styles.screenHeading}>My Account</Text>
 
-        {/* Member Card */}
+        {/* Member Card with Only App Logo */}
         <View style={styles.userCard}>
-          <View style={styles.avatarCircle}>
-            <Ionicons name="sparkles" size={28} color={Theme.colors.primary} />
-          </View>
-          <Text style={styles.userName}>Prompt Saar Explorer</Text>
-          <Text style={styles.userSubtitle}>
-            Device ID: {deviceId ? `${deviceId.substring(0, 12)}...` : 'Loading...'}
-          </Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Ad & Coin Edition</Text>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.appLogo}
+              resizeMode="contain"
+            />
           </View>
 
           {/* Statistics Row */}
@@ -101,6 +80,22 @@ export default function ProfileScreen() {
               <Text style={styles.statLabel}>Prompts Saved</Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Official Social Channels Card (Connected to Admin Panel) */}
+        <View style={styles.socialCard}>
+          <View style={styles.socialHeader}>
+            <View style={styles.socialIconWrap}>
+              <Ionicons name="chatbubbles" size={17} color="#E11D48" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.socialTitle}>Official Channels</Text>
+              <Text style={styles.socialSubtitle}>
+                WhatsApp, Instagram &amp; Telegram
+              </Text>
+            </View>
+          </View>
+          <SocialChannels noPadding iconsOnly />
         </View>
 
         {/* Rewards Section (Section 31) */}
@@ -233,17 +228,6 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.sectionHeader}>APPLICATION</Text>
 
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push('/settings')}
-            style={styles.menuItem}
-          >
-            <View style={styles.menuLeft}>
-              <Ionicons name="settings-outline" size={20} color={Theme.colors.textSecondary} />
-              <Text style={styles.menuTitle}>Settings</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
-          </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.7}
@@ -281,16 +265,6 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
           </TouchableOpacity>
         </View>
-
-        {/* Reset Local Data */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleClearHistory}
-          style={styles.clearButton}
-        >
-          <Ionicons name="trash-outline" size={18} color={Theme.colors.danger} />
-          <Text style={styles.clearText}>Clear Local App Data</Text>
-        </TouchableOpacity>
       </ScrollView>
     </ScreenContainer>
   );
@@ -317,41 +291,26 @@ const styles = StyleSheet.create({
     borderColor: Theme.colors.border,
     marginBottom: Theme.spacing.md,
   },
-  avatarCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(225, 29, 72, 0.08)',
+  logoContainer: {
+    width: 84,
+    height: 84,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Theme.spacing.sm,
+    marginBottom: Theme.spacing.md,
+    padding: 10,
     borderWidth: 1,
-    borderColor: 'rgba(225, 29, 72, 0.2)',
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
+    elevation: 3,
   },
-  userName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: Theme.colors.text,
-  },
-  userSubtitle: {
-    fontSize: 11,
-    color: Theme.colors.textMuted,
-    marginTop: 2,
-    fontFamily: 'monospace',
-  },
-  badge: {
-    backgroundColor: 'rgba(225, 29, 72, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: Theme.borderRadius.full,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(225, 29, 72, 0.2)',
-  },
-  badgeText: {
-    color: Theme.colors.primary,
-    fontSize: 10,
-    fontWeight: '700',
+  appLogo: {
+    width: '100%',
+    height: '100%',
   },
   statsRow: {
     flexDirection: 'row',
@@ -561,21 +520,43 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Theme.colors.text,
   },
-  clearButton: {
+  socialCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: Theme.borderRadius.xl,
+    padding: Theme.spacing.md,
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+    marginBottom: Theme.spacing.md,
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  socialHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(225, 29, 72, 0.08)',
-    borderColor: 'rgba(225, 29, 72, 0.2)',
-    borderWidth: 1,
-    paddingVertical: 12,
-    borderRadius: Theme.borderRadius.lg,
-    marginTop: Theme.spacing.sm,
+    gap: 10,
+    marginBottom: 12,
   },
-  clearText: {
-    color: Theme.colors.danger,
-    fontSize: 13,
-    fontWeight: '700',
+  socialIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(225, 29, 72, 0.2)',
+  },
+  socialTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: Theme.colors.text,
+  },
+  socialSubtitle: {
+    fontSize: 11,
+    color: Theme.colors.textMuted,
+    marginTop: 1,
   },
 });

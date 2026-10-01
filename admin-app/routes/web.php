@@ -97,6 +97,10 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::get('/settings/app', [AppSettingController::class, 'index'])->name('settings.app');
         Route::put('/settings/app', [AppSettingController::class, 'update'])->name('settings.app.update');
 
+        // Social Channels (WhatsApp, Instagram, Telegram)
+        Route::get('/settings/social', [AppSettingController::class, 'socialIndex'])->name('settings.social');
+        Route::put('/settings/social', [AppSettingController::class, 'updateSocial'])->name('settings.social.update');
+
         // Unlock analytics
         Route::get('/unlocks', [UnlockController::class, 'index'])->name('unlocks.index');
     });

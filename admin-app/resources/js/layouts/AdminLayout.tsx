@@ -3,7 +3,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Layers, Tag, Unlock, LogOut, Menu, X,
     Sparkles, ChevronRight, Bell, Users, Coins, Image as ImageIcon,
-    Smartphone
+    Smartphone, Share2
 } from 'lucide-react';
 
 interface Admin { name: string; email: string; avatar?: string; }
@@ -17,7 +17,8 @@ const navItems = [
     { href: '/admin/users',            label: 'Users & Coins',      icon: Users           },
     { href: '/admin/notifications',    label: 'Push Notifications', icon: Bell            },
     { href: '/admin/settings/rewards', label: 'Reward Settings',    icon: Coins           },
-    { href: '/admin/settings/app',     label: 'App & Force Update', icon: Smartphone      },
+    { href: '/admin/settings/app',     label: 'App Version',        icon: Smartphone      },
+    { href: '/admin/settings/social',  label: 'Social Channels',    icon: Share2          },
     { href: '/admin/unlocks',          label: 'Unlocks',            icon: Unlock          },
 ];
 

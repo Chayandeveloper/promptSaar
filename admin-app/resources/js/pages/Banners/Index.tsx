@@ -160,7 +160,7 @@ export default function BannersIndex({ banners, prompts, categories, admin }: Pr
                 subtitle: p.description,
                 image_url: p.cover_image,
                 prompt: p,
-            });
+            } as any);
         }
     };
 
@@ -271,7 +271,7 @@ export default function BannersIndex({ banners, prompts, categories, admin }: Pr
 
                 {/* Mobile Mock Container */}
                 <div className="max-w-md mx-auto">
-                    <div className="relative rounded-2xl overflow-hidden border border-indigo-500/40 shadow-2xl h-56 bg-slate-900 group">
+                    <div className="relative rounded-2xl overflow-hidden border border-indigo-500/40 shadow-2xl aspect-video w-full bg-slate-900 group">
                         {/* Background Image */}
                         <img
                             src={activeTopBanner?.image_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=900&q=80'}
@@ -431,7 +431,7 @@ export default function BannersIndex({ banners, prompts, categories, admin }: Pr
                         {/* Image Uploader & URL */}
                         <div>
                             <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-muted)' }}>
-                                Banner Image *
+                                Banner Image * <span className="text-indigo-400 font-semibold">(Recommended 16:9 ratio, e.g. 1920×1080 or 1280×720)</span>
                             </label>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <input

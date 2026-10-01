@@ -12,7 +12,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Explore Categories</Text>
+       
         <Text style={styles.countBadge}>{categories.length} available</Text>
       </View>
 

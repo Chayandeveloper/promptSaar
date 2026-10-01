@@ -40,7 +40,9 @@ export default function CategoryScreen() {
       <FlatList
         data={prompts}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <PromptCard prompt={item} />}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        renderItem={({ item }) => <PromptCard prompt={item} grid portrait />}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -87,10 +89,11 @@ export default function CategoryScreen() {
         }
         ListEmptyComponent={
           isLoading ? (
-            <View style={styles.skeletonBox}>
-              <PromptCardSkeleton />
-              <PromptCardSkeleton />
-              <PromptCardSkeleton />
+            <View style={styles.skeletonGrid}>
+              <PromptCardSkeleton grid portrait />
+              <PromptCardSkeleton grid portrait />
+              <PromptCardSkeleton grid portrait />
+              <PromptCardSkeleton grid portrait />
             </View>
           ) : (
             <EmptyState
@@ -167,5 +170,13 @@ const styles = StyleSheet.create({
   },
   skeletonBox: {
     gap: 12,
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+  skeletonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 });

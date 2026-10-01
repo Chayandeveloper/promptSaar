@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Prompt Saar</title>
+    <meta name="description" content="Privacy Policy for Prompt Saar mobile application operated by Fillosoft Technologies Private Limited.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://promptbaba.cloud/privacy-policy">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E11D48;
+            --primary-light: #FFE4E6;
+            --primary-dark: #BE123C;
+            --accent: #F43F5E;
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --border: #E2E8F0;
+            --text-main: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+            --shadow-brand: 0 12px 28px -6px rgba(225, 29, 72, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 48px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrapper {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Card */
+        .header-card {
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F7 100%);
+            border-radius: var(--radius-lg);
+            padding: 42px 38px;
+            border: 1px solid rgba(225, 29, 72, 0.18);
+            box-shadow: var(--shadow-brand);
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(225, 29, 72, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary);
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 999px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.9px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.25;
+        }
+
+        .meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .meta-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lead-text {
+            font-size: 15.5px;
+            color: var(--text-body);
+            margin-bottom: 22px;
+        }
+
+        .feature-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(225, 29, 72, 0.12);
+        }
+
+        .chip {
+            background: #FFFFFF;
+            border: 1px solid rgba(225, 29, 72, 0.2);
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip svg {
+            width: 14px;
+            height: 14px;
+            color: var(--primary);
+        }
+
+        /* Content Sections */
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            padding: 34px;
+            border: 1px solid var(--border);
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 14.5px;
+            color: var(--text-body);
+            margin-bottom: 14px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 14px 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        li {
+            background: var(--bg);
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-body);
+        }
+
+        li strong {
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 3px;
+            font-size: 14.5px;
+        }
+
+        .highlight-box {
+            background: #FFF8F9;
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin: 16px 0;
+            font-size: 14px;
+            color: var(--text-body);
+        }
+
+        .link-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .legal-link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 12px 18px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .legal-link-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.08);
+        }
+
+        .legal-link-btn .arrow {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .settings-path {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        /* Contact Details Card */
+        .contact-box {
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+            border-radius: var(--radius-sm);
+            padding: 22px;
+            border: 1px solid var(--border);
+            margin-top: 14px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .contact-label {
+            min-width: 140px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-val {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .contact-val a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .contact-val a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer a {
+            color: var(--text-body);
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        footer a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 20px 14px;
+            }
+            .header-card {
+                padding: 26px 20px;
+            }
+            h1 {
+                font-size: 26px;
+            }
+            .content-card {
+                padding: 22px 18px;
+            }
+            .contact-item {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .contact-label {
+                min-width: auto;
+            }
+        }
+
+        @media print {
+            body {
+                background: #FFFFFF;
+                color: #000000;
+                padding: 0;
+            }
+            .header-card, .content-card {
+                box-shadow: none;
+                border: 1px solid #CCCCCC;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Main Header -->
+        <header class="header-card">
+            <div class="brand-badge">Official Legal Document</div>
+            <h1>Privacy Policy for Prompt Saar</h1>
+            <div class="meta-info">
+                <span>📅 Effective Date: September 29, 2026</span>
+                <span>•</span>
+                <span>🔄 Last Updated: September 29, 2026</span>
+            </div>
+            <p class="lead-text">
+                Fillosoft Technologies Private Limited ("we," "our," or "us") operates the Prompt Saar mobile application (the "App"). We are committed to protecting and respecting your privacy.
+            </p>
+            <p class="lead-text" style="margin-bottom: 0;">
+                This Privacy Policy explains how we handle information when you use Prompt Saar. Because our App does not require account creation and does not directly collect or store your personal data, your privacy is protected by design.
+            </p>
+            <div class="feature-chips">
+                <div class="chip">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    No Account Required
+                </div>
+                <div class="chip">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    Zero Personal Data Stored
+                </div>
+                <div class="chip">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    No Third-Party AI Data Sharing
+                </div>
+            </div>
+        </header>
+
+        <!-- Section 1 -->
+        <section class="content-card">
+            <h2><span class="section-num">1</span> Information We Do Not Collect</h2>
+            <p>Prompt Saar is designed to be fully usable without registering or providing personal information:</p>
+            <ul>
+                <li>
+                    <strong>No Account Creation</strong>
+                    You are not required to sign up, log in, or create a profile to use Prompt Saar.
+                </li>
+                <li>
+                    <strong>No Direct Data Collection</strong>
+                    We do not collect, store, or process personal identifying information such as your name, email address, phone number, physical address, or contact lists.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="content-card">
+            <h2><span class="section-num">2</span> Third-Party Services and Automatically Collected Data</h2>
+            <p>
+                Although we do not directly collect personal data, Prompt Saar incorporates trusted third-party services for analytics and advertising purposes. These third-party tools may collect technical and usage data automatically in accordance with their respective privacy policies.
+            </p>
+
+            <h3>A. Analytics (Google Analytics for Firebase)</h3>
+            <p>We use Google Analytics (or Firebase Analytics) to understand how users interact with the App, monitor performance, and improve user experience. The data collected may include:</p>
+            <ul>
+                <li>Device model, operating system version, and unique device identifiers.</li>
+                <li>App usage metrics (e.g., screens viewed, feature interactions, app sessions).</li>
+                <li>Network state and crash reports.</li>
+            </ul>
+
+            <h3>B. Advertisements (Google AdMob)</h3>
+            <p>
+                Prompt Saar displays advertisements provided by third-party ad networks (such as Google AdMob). These ad providers may use cookies, device identifiers (e.g., Android Advertising ID or IDFA), or similar tracking technologies to serve relevant ads based on your app activity and generalized location.
+            </p>
+
+            <p>To learn more about how Google handles user data in analytics and advertising, visit:</p>
+            <div class="link-row">
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="legal-link-btn">
+                    <span>Google Privacy & Terms</span>
+                    <span class="arrow">↗</span>
+                </a>
+                <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" class="legal-link-btn">
+                    <span>How Google uses information from sites or apps that use our services</span>
+                    <span class="arrow">↗</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="content-card">
+            <h2><span class="section-num">3</span> AI Features & External Services</h2>
+            <p>
+                Prompt Saar provides prompt generation and discovery tools directly within the client app. Prompt Saar does not send your personal data or custom inputs to third-party artificial intelligence API services.
+            </p>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="content-card">
+            <h2><span class="section-num">4</span> Children's Privacy</h2>
+            <p>
+                Prompt Saar is not directed to children under the age of 13 (or 16 in certain jurisdictions). We do not knowingly collect personal information from children. If you believe that a child has provided us with personal information through third-party services, please contact us immediately, and we will take appropriate steps to remove such information.
+            </p>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="content-card">
+            <h2><span class="section-num">5</span> Data Retention & User Rights</h2>
+            <p>
+                Because Prompt Saar does not maintain user accounts or store personal data on external servers, there is no personal data held by us to retain, modify, or delete.
+            </p>
+
+            <h3 style="margin-top: 18px;">Managing Ad Identifiers</h3>
+            <p>You can manage or reset your device's advertising ID or opt out of personalized advertising directly through your device settings:</p>
+            <ul>
+                <li>
+                    <strong>Android</strong>
+                    <div class="settings-path">Settings &gt; Google &gt; Ads &gt; Reset advertising ID or Opt out of Ads Personalization</div>
+                </li>
+                <li>
+                    <strong>iOS</strong>
+                    <div class="settings-path">Settings &gt; Privacy &amp; Security &gt; Tracking</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Section 6 -->
+        <section class="content-card">
+            <h2><span class="section-num">6</span> Changes to This Privacy Policy</h2>
+            <p>
+                We may update our Privacy Policy from time to time to reflect changes in our app features or legal obligations. Any updates will be posted on this page with a revised "Last Updated" date. We encourage you to review this policy periodically.
+            </p>
+        </section>
+
+        <!-- Section 7 -->
+        <section class="content-card">
+            <h2><span class="section-num">7</span> Contact Us</h2>
+            <p>If you have any questions or concerns regarding this Privacy Policy or our privacy practices, please contact us at:</p>
+
+            <div class="contact-box">
+                <div class="contact-item">
+                    <span class="contact-label">Company Name:</span>
+                    <span class="contact-val">Fillosoft Technologies Private Limited</span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-label">Email:</span>
+                    <span class="contact-val"><a href="mailto:support@fillosoft.com">support@fillosoft.com</a></span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-label">Headquarters:</span>
+                    <span class="contact-val">Guwahati, Assam, India</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2026 Fillosoft Technologies Private Limited. All rights reserved.</p>
+            <p style="margin-top: 6px;">
+                <a href="https://promptbaba.cloud/privacy-policy">Privacy Policy</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

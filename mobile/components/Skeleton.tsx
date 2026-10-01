@@ -7,7 +7,7 @@ export const Skeleton: React.FC<{
   height?: number | string;
   borderRadius?: number;
   style?: any;
-}> = ({ width = '100%', height = 20, borderRadius = Theme.borderRadius.md, style }) => {
+}> = ({ width = '100%', height, borderRadius = Theme.borderRadius.md, style }) => {
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -29,16 +29,18 @@ export const Skeleton: React.FC<{
     return () => animation.stop();
   }, [opacity]);
 
+  const resolvedHeight = height !== undefined ? height : (style?.aspectRatio ? undefined : 20);
+
   return (
     <Animated.View
       style={[
         styles.skeleton,
         {
           width: width as any,
-          height,
           borderRadius,
           opacity,
         },
+        resolvedHeight !== undefined && { height: resolvedHeight },
         style,
       ]}
     />
@@ -48,19 +50,32 @@ export const Skeleton: React.FC<{
 export const HeroSkeleton: React.FC = () => {
   return (
     <View style={styles.heroSkeleton}>
-      <Skeleton width="100%" height={230} borderRadius={Theme.borderRadius.xl} />
+      <Skeleton width="100%" style={{ aspectRatio: 16 / 9 }} borderRadius={Theme.borderRadius.xl} />
     </View>
   );
 };
 
-export const PromptCardSkeleton: React.FC<{ grid?: boolean }> = ({ grid = false }) => {
+export const PromptCardSkeleton: React.FC<{ grid?: boolean; portrait?: boolean }> = ({
+  grid = false,
+  portrait = false,
+}) => {
   return (
     <View style={[styles.cardSkeleton, grid && styles.cardSkeletonGrid]}>
-      <Skeleton width="100%" height={grid ? 110 : 130} borderRadius={Theme.borderRadius.md} />
-      <View style={{ marginTop: 8, gap: 5 }}>
-        <Skeleton width="40%" height={10} />
-        <Skeleton width="85%" height={14} />
-      </View>
+      {portrait ? (
+        <Skeleton
+          width="100%"
+          style={{ aspectRatio: 9 / 16 }}
+          borderRadius={Theme.borderRadius.md}
+        />
+      ) : (
+        <>
+          <Skeleton width="100%" height={grid ? 110 : 130} borderRadius={Theme.borderRadius.md} />
+          <View style={{ marginTop: 8, gap: 5 }}>
+            <Skeleton width="85%" height={14} />
+            <Skeleton width="40%" height={10} />
+          </View>
+        </>
+      )}
     </View>
   );
 };

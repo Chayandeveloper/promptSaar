@@ -52,6 +52,9 @@ class AppSetting extends Model
             'update_message'       => (string) static::get('update_message', 'A new and improved version of Prompt Saar is available with new prompts, banners, and bug fixes. Please update to enjoy the best experience.'),
             'maintenance_mode'     => (bool) static::get('maintenance_mode', false),
             'maintenance_message'  => (string) static::get('maintenance_message', 'Prompt Saar is currently undergoing scheduled maintenance. Please check back shortly.'),
+            'whatsapp_url'         => (string) static::get('whatsapp_url', 'https://wa.me/'),
+            'instagram_url'        => (string) static::get('instagram_url', 'https://instagram.com/'),
+            'telegram_url'         => (string) static::get('telegram_url', 'https://t.me/'),
         ];
     }
 }
