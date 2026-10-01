@@ -18,6 +18,7 @@ import {
   useClaimAdReward,
 } from '../hooks/useRewards';
 import { adService } from '../services/ads';
+import { useAdConfig } from '../hooks/useAdConfig';
 import { Theme } from '../constants/Theme';
 
 export default function EarnCoinsScreen() {
@@ -30,13 +31,15 @@ export default function EarnCoinsScreen() {
   const [adState, setAdState] = useState<'idle' | 'loading' | 'playing' | 'claiming' | 'success' | 'early_close' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
+  const { data: adConfig } = useAdConfig();
+  const isAdFeatureEnabled = adConfig ? (adConfig.ads_enabled && adConfig.rewarded_daily_coins) : true;
   const balance = coinData?.balance ?? 0;
   const adsWatched = todayData?.ads_watched ?? 0;
   const dailyLimit = todayData?.daily_limit ?? 5;
   const coinsPerAd = todayData?.coins_per_ad ?? 10;
   const maxCoinsToday = todayData?.max_coins_today ?? dailyLimit * coinsPerAd;
   const coinsEarnedToday = todayData?.coins_earned_today ?? 0;
-  const canWatch = todayData?.can_watch && adsWatched < dailyLimit;
+  const canWatch = isAdFeatureEnabled && todayData?.can_watch && adsWatched < dailyLimit;
 
   const handleWatchAd = async () => {
     if (!canWatch) return;
@@ -229,6 +232,14 @@ export default function EarnCoinsScreen() {
                 </View>
               )}
             </TouchableOpacity>
+          ) : !isAdFeatureEnabled ? (
+            <View style={styles.limitReachedBox}>
+              <Ionicons name="pause-circle-outline" size={24} color="#FFC83D" />
+              <Text style={styles.limitTitle}>Daily ad rewards are currently paused.</Text>
+              <Text style={styles.limitSub}>
+                Rewarded videos are currently disabled. Check back soon for more coin earning opportunities!
+              </Text>
+            </View>
           ) : (
             /* Limit Reached (Section 3) */
             <View style={styles.limitReachedBox}>

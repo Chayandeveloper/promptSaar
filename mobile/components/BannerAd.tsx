@@ -3,12 +3,19 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../constants/Theme';
 import { Config } from '../constants/Config';
+import { useAdConfig } from '../hooks/useAdConfig';
 
 interface BannerAdProps {
   placement?: string;
 }
 
 export const BannerAd: React.FC<BannerAdProps> = ({ placement = 'feed' }) => {
+  const { data: adConfig } = useAdConfig();
+
+  if (adConfig && (!adConfig.ads_enabled || !adConfig.banner_ads_enabled)) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.adBadgeRow}>

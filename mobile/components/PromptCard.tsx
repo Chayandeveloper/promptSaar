@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../constants/Theme';
 import { PromptSummary } from '../types';
 import { useToggleSavePrompt, useSavedPrompts } from '../hooks/usePrompts';
+import { adService } from '../services/ads';
 
 interface PromptCardProps {
   prompt: PromptSummary;
@@ -26,7 +27,9 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   const isSaved = Boolean(prompt.is_saved) || savedPrompts.some((p) => p.id === prompt.id);
 
   const handlePress = () => {
-    router.push(`/prompt/${prompt.id}` as any);
+    adService.presentInterstitialOnPromptClick(() => {
+      router.push(`/prompt/${prompt.id}` as any);
+    });
   };
 
   const handleSavePress = (e: any) => {

@@ -57,4 +57,18 @@ class AppSetting extends Model
             'telegram_url'         => (string) static::get('telegram_url', 'https://t.me/'),
         ];
     }
+
+    public static function getAdSettings(): array
+    {
+        $adsEnabled = (bool) static::get('ads_enabled', true);
+
+        return [
+            'ads_enabled'               => $adsEnabled,
+            'interstitial_prompt_click' => $adsEnabled ? (bool) static::get('interstitial_prompt_click', true) : false,
+            'rewarded_prompt_unlock'    => $adsEnabled ? (bool) static::get('rewarded_prompt_unlock', true) : false,
+            'rewarded_daily_coins'      => $adsEnabled ? (bool) static::get('rewarded_daily_coins', true) : false,
+            'banner_ads_enabled'        => $adsEnabled ? (bool) static::get('banner_ads_enabled', true) : false,
+            'interstitial_ad_unit_id'   => (string) static::get('interstitial_ad_unit_id', 'ca-app-pub-3940256099942544/1033173712'),
+        ];
+    }
 }

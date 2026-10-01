@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { PromptSummary, Banner } from '../types';
 import { Theme } from '../constants/Theme';
+import { adService } from '../services/ads';
 
 interface HeroPromptProps {
   banners?: Banner[];
@@ -69,18 +70,25 @@ export const HeroPrompt: React.FC<HeroPromptProps> = ({
       const b = item.data;
       const targetPrompt = b.prompt;
       if (b.action_type === 'prompt' && (b.prompt_id || targetPrompt?.id)) {
-        router.push(`/prompt/${b.prompt_id || targetPrompt?.id}` as any);
+        const promptId = b.prompt_id || targetPrompt?.id;
+        adService.presentInterstitialOnPromptClick(() => {
+          router.push(`/prompt/${promptId}` as any);
+        });
       } else if (b.action_type === 'category' && b.category_slug) {
         router.push(`/category/${b.category_slug}` as any);
       } else if (b.action_type === 'url' && b.target_url) {
         Linking.openURL(b.target_url).catch(() => {});
       } else if (targetPrompt) {
-        router.push(`/prompt/${targetPrompt.id}` as any);
+        adService.presentInterstitialOnPromptClick(() => {
+          router.push(`/prompt/${targetPrompt.id}` as any);
+        });
       } else if (onExplorePress) {
         onExplorePress();
       }
     } else {
-      router.push(`/prompt/${item.data.id}` as any);
+      adService.presentInterstitialOnPromptClick(() => {
+        router.push(`/prompt/${item.data.id}` as any);
+      });
     }
   };
 

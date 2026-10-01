@@ -18,6 +18,14 @@ use Illuminate\Support\Facades\Route;
 // App Version & Force Update Config
 Route::get('/app-version', [AppVersionController::class, 'check']);
 
+// Ad Configuration (Admin toggles for all ads, interstitials, rewarded, banners)
+Route::get('/ad-config', function () {
+    return response()->json([
+        'status' => 'ok',
+        'config' => \App\Models\AppSetting::getAdSettings(),
+    ]);
+});
+
 // Social Community Links (WhatsApp, Instagram, Telegram)
 Route::get('/social-links', function () {
     return response()->json([

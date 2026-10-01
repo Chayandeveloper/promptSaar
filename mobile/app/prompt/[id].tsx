@@ -30,6 +30,7 @@ import {
   useSavedPrompts,
 } from '../../hooks/usePrompts';
 import { useCoinBalance, useUnlockWithCoins, useUnlockWithAd, useRewardConfig } from '../../hooks/useRewards';
+import { useAdConfig } from '../../hooks/useAdConfig';
 import { adService } from '../../services/ads';
 import { Theme } from '../../constants/Theme';
 
@@ -43,6 +44,8 @@ export default function PromptDetailsScreen() {
   const { data: prompt, isLoading, error, refetch } = usePrompt(promptId);
   const toggleSave = useToggleSavePrompt();
   const { data: savedPrompts = [] } = useSavedPrompts();
+  const { data: adConfig } = useAdConfig();
+  const canShowAdUnlock = adConfig ? adConfig.ads_enabled && adConfig.rewarded_prompt_unlock : true;
   const isSaved = Boolean(prompt?.is_saved) || savedPrompts.some((p) => p.id === promptId);
 
   React.useEffect(() => {
@@ -422,48 +425,50 @@ export default function PromptDetailsScreen() {
               <Text style={styles.boxInlineError}>{coinErrorMessage}</Text>
             )}
 
-            {/* Small Rectangular Box 2: Watch Ad */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              disabled={
-                adUnlockState === 'loading_ad' ||
-                adUnlockState === 'watching_ad' ||
-                adUnlockState === 'unlocking'
-              }
-              onPress={handleAdUnlockFlow}
-              style={[styles.rectangularBox, styles.boxAd]}
-            >
-              <View style={[styles.boxIconWrap, styles.boxIconAd]}>
-                <Ionicons name="play" size={14} color={Theme.colors.success} />
-              </View>
-
-              <View style={styles.boxContent}>
-                <Text style={styles.boxTitle}>Watch Short Video</Text>
-                <Text style={styles.boxSubtitle}>
-                  {adUnlockState === 'loading_ad'
-                    ? 'Preparing ad...'
-                    : adUnlockState === 'watching_ad'
-                      ? 'Playing video...'
-                      : adUnlockState === 'unlocking'
-                        ? 'Verifying...'
-                        : '100% Free • No coins needed'}
-                </Text>
-              </View>
-
-              <View style={styles.boxActionRight}>
-                {adUnlockState === 'loading_ad' ||
+            {/* Small Rectangular Box 2: Watch Ad (Controlled via Admin Panel) */}
+            {canShowAdUnlock && (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                disabled={
+                  adUnlockState === 'loading_ad' ||
                   adUnlockState === 'watching_ad' ||
-                  adUnlockState === 'unlocking' ? (
-                  <ActivityIndicator size="small" color={Theme.colors.success} />
-                ) : adUnlockState === 'success' ? (
-                  <Ionicons name="checkmark-circle" size={18} color={Theme.colors.success} />
-                ) : (
-                  <View style={styles.boxFreeBadge}>
-                    <Text style={styles.boxFreeBadgeText}>FREE</Text>
-                  </View>
-                )}
-              </View>
-            </TouchableOpacity>
+                  adUnlockState === 'unlocking'
+                }
+                onPress={handleAdUnlockFlow}
+                style={[styles.rectangularBox, styles.boxAd]}
+              >
+                <View style={[styles.boxIconWrap, styles.boxIconAd]}>
+                  <Ionicons name="play" size={14} color={Theme.colors.success} />
+                </View>
+
+                <View style={styles.boxContent}>
+                  <Text style={styles.boxTitle}>Watch Short Video</Text>
+                  <Text style={styles.boxSubtitle}>
+                    {adUnlockState === 'loading_ad'
+                      ? 'Preparing ad...'
+                      : adUnlockState === 'watching_ad'
+                        ? 'Playing video...'
+                        : adUnlockState === 'unlocking'
+                          ? 'Verifying...'
+                          : '100% Free • No coins needed'}
+                  </Text>
+                </View>
+
+                <View style={styles.boxActionRight}>
+                  {adUnlockState === 'loading_ad' ||
+                    adUnlockState === 'watching_ad' ||
+                    adUnlockState === 'unlocking' ? (
+                    <ActivityIndicator size="small" color={Theme.colors.success} />
+                  ) : adUnlockState === 'success' ? (
+                    <Ionicons name="checkmark-circle" size={18} color={Theme.colors.success} />
+                  ) : (
+                    <View style={styles.boxFreeBadge}>
+                      <Text style={styles.boxFreeBadgeText}>FREE</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            )}
 
             {(errorMessage || adUnlockState === 'early_close') && (
               <Text style={styles.boxInlineError}>

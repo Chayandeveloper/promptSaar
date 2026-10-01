@@ -76,4 +76,42 @@ class AppSettingController extends Controller
 
         return redirect()->back()->with('success', 'Social redirect channels updated successfully!');
     }
+
+    public function adsIndex(): Response
+    {
+        $settings = [
+            'ads_enabled'               => (bool) AppSetting::get('ads_enabled', true),
+            'interstitial_prompt_click' => (bool) AppSetting::get('interstitial_prompt_click', true),
+            'rewarded_prompt_unlock'    => (bool) AppSetting::get('rewarded_prompt_unlock', true),
+            'rewarded_daily_coins'      => (bool) AppSetting::get('rewarded_daily_coins', true),
+            'banner_ads_enabled'        => (bool) AppSetting::get('banner_ads_enabled', true),
+            'interstitial_ad_unit_id'   => (string) AppSetting::get('interstitial_ad_unit_id', 'ca-app-pub-3940256099942544/1033173712'),
+        ];
+
+        return Inertia::render('Settings/Ads', [
+            'settings' => $settings,
+            'admin'    => Auth::user()->only('name', 'email', 'avatar'),
+        ]);
+    }
+
+    public function updateAds(Request $request)
+    {
+        $keys = [
+            'ads_enabled',
+            'interstitial_prompt_click',
+            'rewarded_prompt_unlock',
+            'rewarded_daily_coins',
+            'banner_ads_enabled',
+        ];
+
+        foreach ($keys as $key) {
+            AppSetting::set($key, $request->boolean($key));
+        }
+
+        if ($request->filled('interstitial_ad_unit_id')) {
+            AppSetting::set('interstitial_ad_unit_id', $request->input('interstitial_ad_unit_id'));
+        }
+
+        return redirect()->back()->with('success', 'AdMob advertisement settings and controls updated successfully!');
+    }
 }

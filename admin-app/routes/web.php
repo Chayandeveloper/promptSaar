@@ -102,6 +102,10 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::get('/settings/social', [AppSettingController::class, 'socialIndex'])->name('settings.social');
         Route::put('/settings/social', [AppSettingController::class, 'updateSocial'])->name('settings.social.update');
 
+        // AdMob Ads Controls (Global on/off, Interstitial on prompt click, Rewarded, Banners)
+        Route::get('/settings/ads', [AppSettingController::class, 'adsIndex'])->name('settings.ads');
+        Route::put('/settings/ads', [AppSettingController::class, 'updateAds'])->name('settings.ads.update');
+
         // Unlock analytics
         Route::get('/unlocks', [UnlockController::class, 'index'])->name('unlocks.index');
     });
