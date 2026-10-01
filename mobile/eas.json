@@ -15,10 +15,22 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://promptbaba.cloud/api",
+        "EXPO_PUBLIC_ADMOB_APP_ID": "ca-app-pub-9010050634863664~7369837010",
+        "EXPO_PUBLIC_ADMOB_REWARDED_ID": "ca-app-pub-9010050634863664/7562991281",
+        "EXPO_PUBLIC_ADMOB_BANNER_ID": "ca-app-pub-9010050634863664/4429647201"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://promptbaba.cloud/api",
+        "EXPO_PUBLIC_ADMOB_APP_ID": "ca-app-pub-9010050634863664~7369837010",
+        "EXPO_PUBLIC_ADMOB_REWARDED_ID": "ca-app-pub-9010050634863664/7562991281",
+        "EXPO_PUBLIC_ADMOB_BANNER_ID": "ca-app-pub-9010050634863664/4429647201"
+      }
     }
   },
   "submit": {
