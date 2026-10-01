@@ -33,6 +33,7 @@ Route::view('/privacy', 'legal.privacy');
 Route::redirect('/privacy policy', '/privacy-policy');
 Route::view('/terms-and-conditions', 'legal.terms')->name('terms.conditions');
 Route::view('/terms', 'legal.terms');
+Route::get('/app-ads.txt', fn() => response("google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa0\n", 200, ['Content-Type' => 'text/plain']));
 
 /*
 |--------------------------------------------------------------------------
