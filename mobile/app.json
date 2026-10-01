@@ -13,19 +13,13 @@
     "android": {
       "package": "com.fillosoftpromptsaar.app",
       "googleServicesFile": "./google-services.json",
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "androidNavigationBar": {
-        "visible": "visible",
-        "barStyle": "dark-content",
-        "backgroundColor": "#ffffff"
-      }
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "bundler": "metro",
@@ -54,7 +48,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-9010050634863664~7369837010"
+          "androidAppId": "ca-app-pub-9010050634863664~7369837010",
+          "iosAppId": "ca-app-pub-9010050634863664~7369837010"
         }
       ]
     ],
@@ -68,5 +63,9 @@
       }
     },
     "owner": "fillosoft"
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-9010050634863664~7369837010",
+    "ios_app_id": "ca-app-pub-9010050634863664~7369837010"
   }
 }
