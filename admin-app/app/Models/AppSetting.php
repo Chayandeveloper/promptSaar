@@ -69,6 +69,7 @@ class AppSetting extends Model
             'rewarded_daily_coins'      => $adsEnabled ? (bool) static::get('rewarded_daily_coins', true) : false,
             'banner_ads_enabled'        => $adsEnabled ? (bool) static::get('banner_ads_enabled', true) : false,
             'interstitial_ad_unit_id'   => (string) static::get('interstitial_ad_unit_id', 'ca-app-pub-3940256099942544/1033173712'),
+            'banner_ad_unit_id'         => (string) static::get('banner_ad_unit_id', 'ca-app-pub-3940256099942544/6300978111'),
         ];
     }
 }

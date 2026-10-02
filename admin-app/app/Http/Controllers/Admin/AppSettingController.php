@@ -86,6 +86,7 @@ class AppSettingController extends Controller
             'rewarded_daily_coins'      => (bool) AppSetting::get('rewarded_daily_coins', true),
             'banner_ads_enabled'        => (bool) AppSetting::get('banner_ads_enabled', true),
             'interstitial_ad_unit_id'   => (string) AppSetting::get('interstitial_ad_unit_id', 'ca-app-pub-3940256099942544/1033173712'),
+            'banner_ad_unit_id'         => (string) AppSetting::get('banner_ad_unit_id', 'ca-app-pub-3940256099942544/6300978111'),
         ];
 
         return Inertia::render('Settings/Ads', [
@@ -110,6 +111,10 @@ class AppSettingController extends Controller
 
         if ($request->filled('interstitial_ad_unit_id')) {
             AppSetting::set('interstitial_ad_unit_id', $request->input('interstitial_ad_unit_id'));
+        }
+
+        if ($request->filled('banner_ad_unit_id')) {
+            AppSetting::set('banner_ad_unit_id', $request->input('banner_ad_unit_id'));
         }
 
         return redirect()->back()->with('success', 'AdMob advertisement settings and controls updated successfully!');
