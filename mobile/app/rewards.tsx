@@ -48,30 +48,34 @@ export default function EarnCoinsScreen() {
     setStatusMessage(null);
 
     try {
-      await adService.presentRewardedAd({
-        onAdLoaded: () => {
-          setAdState('playing');
-        },
-        onRewardEarned: async () => {
-          setAdState('claiming');
-          try {
-            const res = await claimRewardMutation.mutateAsync();
-            setAdState('success');
-            setStatusMessage(res.message || `+${coinsPerAd} coins added!`);
-          } catch (err: any) {
+      await adService.presentRewardedAd(
+        {
+          onAdLoaded: () => {
+            setAdState('playing');
+          },
+          onRewardEarned: async () => {
+            setAdState('claiming');
+            try {
+              const res = await claimRewardMutation.mutateAsync();
+              setAdState('success');
+              setStatusMessage(res.message || `+${coinsPerAd} coins added!`);
+            } catch (err: any) {
+              setAdState('error');
+              setStatusMessage(err.message || 'Server error claiming coins.');
+            }
+          },
+          onAdDismissedEarly: () => {
+            setAdState('early_close');
+            setStatusMessage('Advertisement not completed. No coins were added.');
+          },
+          onAdFailedToLoad: (err) => {
             setAdState('error');
-            setStatusMessage(err.message || 'Server error claiming coins.');
-          }
+            setStatusMessage(err || "Couldn't load ad. Please try again.");
+          },
         },
-        onAdDismissedEarly: () => {
-          setAdState('early_close');
-          setStatusMessage('Advertisement not completed. No coins were added.');
-        },
-        onAdFailedToLoad: (err) => {
-          setAdState('error');
-          setStatusMessage(err || "Couldn't load ad. Please try again.");
-        },
-      });
+        false,
+        'daily_coins'
+      );
     } catch (e: any) {
       setAdState('error');
       setStatusMessage(e.message || 'Failed to display ad.');

@@ -14,7 +14,9 @@ interface Settings {
     banner_ads_enabled: boolean;
     interstitial_ad_unit_id: string;
     banner_ad_unit_id: string;
-    rewarded_ad_unit_id: string;
+    rewarded_ad_unit_id?: string;
+    rewarded_prompt_unlock_id: string;
+    rewarded_daily_coins_id: string;
 }
 
 interface Admin {
@@ -43,7 +45,8 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
         banner_ads_enabled: settings.banner_ads_enabled ?? true,
         interstitial_ad_unit_id: settings.interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
         banner_ad_unit_id: settings.banner_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
-        rewarded_ad_unit_id: settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
+        rewarded_prompt_unlock_id: settings.rewarded_prompt_unlock_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
+        rewarded_daily_coins_id: settings.rewarded_daily_coins_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
     });
 
     const submit = (e: React.FormEvent) => {
@@ -315,21 +318,41 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
 
                         <div>
                             <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
-                                Android Rewarded Ad Unit ID (Prompt Unlock & Daily Coins)
+                                Android Rewarded Ad Unit ID (Prompt Unlock)
                             </label>
                             <input
                                 type="text"
-                                value={data.rewarded_ad_unit_id}
-                                onChange={(e) => setData('rewarded_ad_unit_id', e.target.value)}
+                                value={data.rewarded_prompt_unlock_id}
+                                onChange={(e) => setData('rewarded_prompt_unlock_id', e.target.value)}
                                 placeholder="ca-app-pub-9010050634863664/7562991281"
                                 className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                                 style={inputStyle}
                             />
-                            {errors.rewarded_ad_unit_id && (
-                                <p className="text-red-400 text-xs mt-1">{errors.rewarded_ad_unit_id}</p>
+                            {errors.rewarded_prompt_unlock_id && (
+                                <p className="text-red-400 text-xs mt-1">{errors.rewarded_prompt_unlock_id}</p>
                             )}
                             <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
-                                Live Rewarded ID: <code className="text-indigo-400 font-mono">ca-app-pub-9010050634863664/7562991281</code>.
+                                Live Rewarded ID for unlocking prompts: <code className="text-indigo-400 font-mono">ca-app-pub-9010050634863664/7562991281</code>.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android Rewarded Ad Unit ID (Daily Free Coins)
+                            </label>
+                            <input
+                                type="text"
+                                value={data.rewarded_daily_coins_id}
+                                onChange={(e) => setData('rewarded_daily_coins_id', e.target.value)}
+                                placeholder="ca-app-pub-9010050634863664/7562991281"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                style={inputStyle}
+                            />
+                            {errors.rewarded_daily_coins_id && (
+                                <p className="text-red-400 text-xs mt-1">{errors.rewarded_daily_coins_id}</p>
+                            )}
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Live Rewarded ID for daily bonus coins: <code className="text-indigo-400 font-mono">ca-app-pub-9010050634863664/7562991281</code>.
                             </p>
                         </div>
                     </div>

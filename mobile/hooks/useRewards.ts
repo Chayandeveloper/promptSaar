@@ -115,12 +115,7 @@ export function useUnlockWithAd() {
   return useMutation({
     mutationFn: ({ promptId, eventId }: { promptId: number; eventId?: string }) =>
       rewardsService.unlockWithAd(promptId, eventId),
-    onSuccess: async (data, { promptId }) => {
-      // Store local unlock cache
-      if (data.prompt_text) {
-        await UnlockStorage.addUnlockedPrompt(promptId, data.prompt_text);
-      }
-
+    onSuccess: async (_data, { promptId }) => {
       // Invalidate prompt queries
       queryClient.invalidateQueries({ queryKey: ['prompt', promptId] });
       queryClient.invalidateQueries({ queryKey: ['prompts'] });

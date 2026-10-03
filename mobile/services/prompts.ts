@@ -52,4 +52,12 @@ export const promptsService = {
       deviceId ? { device_id: deviceId } : undefined
     );
   },
+
+  async relockPrompt(id: number): Promise<void> {
+    try {
+      await api.post(`/prompts/${id}/relock`);
+    } catch {
+      // Best-effort relock request
+    }
+  },
 };

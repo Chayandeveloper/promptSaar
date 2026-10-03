@@ -9,6 +9,8 @@ export interface AdConfig {
   interstitial_ad_unit_id: string;
   banner_ad_unit_id?: string;
   rewarded_ad_unit_id?: string;
+  rewarded_prompt_unlock_id?: string;
+  rewarded_daily_coins_id?: string;
 }
 
 import { Config } from '../constants/Config';
@@ -22,6 +24,8 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   interstitial_ad_unit_id: 'ca-app-pub-9010050634863664/9136172220',
   banner_ad_unit_id: Config.ADMOB.BANNER_ID,
   rewarded_ad_unit_id: Config.ADMOB.REWARDED_ID,
+  rewarded_prompt_unlock_id: Config.ADMOB.REWARDED_ID,
+  rewarded_daily_coins_id: Config.ADMOB.REWARDED_ID,
 };
 
 class AdConfigService {
@@ -40,6 +44,8 @@ class AdConfigService {
           interstitial_ad_unit_id: response.config.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_ad_unit_id,
           banner_ad_unit_id: response.config.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_ad_unit_id,
           rewarded_ad_unit_id: response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_ad_unit_id,
+          rewarded_prompt_unlock_id: response.config.rewarded_prompt_unlock_id || response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_prompt_unlock_id,
+          rewarded_daily_coins_id: response.config.rewarded_daily_coins_id || response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_daily_coins_id,
         };
         return this.cachedConfig;
       }

@@ -61,6 +61,7 @@ export function usePrompt(id: number) {
       };
     },
     enabled: Boolean(id),
+    staleTime: 0,
   });
 }
 

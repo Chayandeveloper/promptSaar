@@ -57,9 +57,19 @@ class AdMobService {
     }
   }
 
-  getRewardedUnitId(): string {
+  getRewardedUnitId(type: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'): string {
+    const config = adConfigService.getConfig();
+    if (type === 'prompt_unlock') {
+      return (
+        config.rewarded_prompt_unlock_id ||
+        config.rewarded_ad_unit_id ||
+        this.rewardedAdUnitId ||
+        'ca-app-pub-9010050634863664/7562991281'
+      );
+    }
     return (
-      adConfigService.getConfig().rewarded_ad_unit_id ||
+      config.rewarded_daily_coins_id ||
+      config.rewarded_ad_unit_id ||
       this.rewardedAdUnitId ||
       'ca-app-pub-9010050634863664/7562991281'
     );
@@ -148,7 +158,11 @@ class AdMobService {
   /**
    * Shows a Rewarded Ad when unlocking a prompt or claiming daily coins.
    */
-  async presentRewardedAd(callbacks: RewardedAdCallbacks, simulateEarlyClose = false): Promise<void> {
+  async presentRewardedAd(
+    callbacks: RewardedAdCallbacks,
+    simulateEarlyClose = false,
+    placement: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'
+  ): Promise<void> {
     // Check master ads switch
     if (!adConfigService.isMasterEnabled()) {
       callbacks.onRewardEarned();
@@ -158,7 +172,7 @@ class AdMobService {
     // Native APK build where Google Mobile Ads SDK is present:
     if (this.isNativeAvailable && RewardedAd && RewardedAdEventType) {
       try {
-        const adUnitId = this.getRewardedUnitId();
+        const adUnitId = this.getRewardedUnitId(placement);
         const rewarded = RewardedAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
         });

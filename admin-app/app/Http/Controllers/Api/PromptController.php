@@ -235,4 +235,31 @@ class PromptController extends Controller
     {
         return $this->unlockWithAd($id, $request);
     }
+
+    /**
+     * POST /api/prompts/{id}/relock
+     * Relocks the prompt when user exits the details view so it must be unlocked again next time.
+     */
+    public function relock(int $id, Request $request): JsonResponse
+    {
+        $user = $this->rewardService->resolveUser($request);
+        $deviceId = $request->input('device_id') ?? $request->header('X-Device-Id');
+
+        PromptUnlock::where('prompt_id', $id)
+            ->where(function ($q) use ($user, $deviceId) {
+                $q->where('user_id', $user->id);
+                if ($user->device_id) {
+                    $q->orWhere('device_id', $user->device_id);
+                }
+                if ($deviceId) {
+                    $q->orWhere('device_id', $deviceId);
+                }
+            })
+            ->delete();
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Prompt relocked successfully.',
+        ]);
+    }
 }

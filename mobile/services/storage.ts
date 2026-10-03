@@ -87,6 +87,21 @@ export const UnlockStorage = {
     }
   },
 
+  async removeUnlockedPrompt(promptId: number): Promise<void> {
+    try {
+      const ids = await this.getUnlockedIds();
+      await Storage.setItem(
+        Config.STORAGE_KEYS.UNLOCKED_IDS,
+        JSON.stringify(ids.filter((id) => id !== promptId))
+      );
+      const texts = await this.getUnlockedTexts();
+      delete texts[String(promptId)];
+      await Storage.setItem('promptcraft_unlocked_texts', JSON.stringify(texts));
+    } catch {
+      // Storage remove error safe handling
+    }
+  },
+
   async clearAll(): Promise<void> {
     await Storage.removeItem(Config.STORAGE_KEYS.UNLOCKED_IDS);
     await Storage.removeItem('promptcraft_unlocked_texts');

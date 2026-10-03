@@ -258,30 +258,7 @@ class RewardService
     {
         $prompt = Prompt::with('category')->where('is_published', true)->findOrFail($promptId);
 
-        // Check if already unlocked
-        $existing = PromptUnlock::where('prompt_id', $prompt->id)
-            ->where(function ($q) use ($user, $deviceId) {
-                $q->where('user_id', $user->id);
-                if ($user->device_id) {
-                    $q->orWhere('device_id', $user->device_id);
-                }
-                if ($deviceId) {
-                    $q->orWhere('device_id', $deviceId);
-                }
-            })
-            ->first();
-
-        if (!$existing) {
-            PromptUnlock::create([
-                'prompt_id'     => $prompt->id,
-                'user_id'       => $user->id,
-                'device_id'     => $deviceId ?? $user->device_id,
-                'unlock_method' => 'ad',
-                'coins_spent'   => 0,
-                'unlocked_at'   => now(),
-            ]);
-
-            $prompt->increment('unlock_count');
+        $prompt->increment('unlock_count');
 
             if ($eventId) {
                 AdRewardEvent::create([

@@ -62,10 +62,11 @@ Route::get('/prompts/trending', [PromptController::class, 'trending']);
 Route::get('/prompts/recent', [PromptController::class, 'recent']);
 Route::get('/prompts/{id}', [PromptController::class, 'show'])->whereNumber('id');
 
-// Prompt Unlocks (Option 1: Coins, Option 2: Rewarded Ad)
+// Prompt Unlocks (Option 1: Coins, Option 2: Rewarded Ad, Option 3: Relock on exit)
 Route::post('/prompts/{id}/unlock-with-coins', [PromptController::class, 'unlockWithCoins'])->whereNumber('id');
 Route::post('/prompts/{id}/unlock-with-ad', [PromptController::class, 'unlockWithAd'])->whereNumber('id');
 Route::post('/prompts/{id}/unlock', [PromptController::class, 'unlock'])->whereNumber('id'); // Legacy compatibility
+Route::post('/prompts/{id}/relock', [PromptController::class, 'relock'])->whereNumber('id');
 
 // Admin Reward API Endpoints (Section 22)
 Route::prefix('admin')->group(function () {

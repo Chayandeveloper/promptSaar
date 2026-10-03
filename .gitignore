@@ -14,7 +14,7 @@
 **/.expo/
 **/dist/
 **/web-build/
-**/public/build/
+# **/public/build/
 **/public/storage
 **/storage/framework/cache/
 **/storage/framework/sessions/

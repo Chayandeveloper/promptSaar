@@ -9,9 +9,13 @@ import {
   ActivityIndicator,
   Share,
   Modal,
+  BackHandler,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
+import { UnlockStorage } from '../../services/storage';
+import { promptsService } from '../../services/prompts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { UnlockState } from '../../components/UnlockButton';
@@ -64,6 +68,7 @@ export default function PromptDetailsScreen() {
   const isMoreLoading = isCategoryLoading || (rawCatPrompts.length < 2 && isRecentLoading);
 
   // Coin & Unlock hooks
+  const queryClient = useQueryClient();
   const { data: coinData } = useCoinBalance();
   const { data: rewardConfig } = useRewardConfig();
   const unlockCoinsMutation = useUnlockWithCoins();
@@ -73,6 +78,42 @@ export default function PromptDetailsScreen() {
   const [adUnlockState, setAdUnlockState] = useState<UnlockState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [coinErrorMessage, setCoinErrorMessage] = useState<string | null>(null);
+
+  // Track session-only unlock state so leaving the screen relocks the prompt
+  const [sessionUnlockedText, setSessionUnlockedText] = useState<string | null>(null);
+  const [wasUnlockedDuringSession, setWasUnlockedDuringSession] = useState(false);
+  const isLeavingRef = React.useRef(false);
+
+  // Full back handler: Re-locks prompt and shows interstitial ad if unlocked
+  const handleGoBack = React.useCallback(() => {
+    if (isLeavingRef.current) return;
+    isLeavingRef.current = true;
+
+    // 1. Re-lock this prompt so next time user clicks it, it must be unlocked again
+    UnlockStorage.removeUnlockedPrompt(promptId).catch(() => {});
+    promptsService.relockPrompt(promptId).catch(() => {});
+    queryClient.removeQueries({ queryKey: ['prompt', promptId] });
+    queryClient.invalidateQueries({ queryKey: ['prompts'] });
+
+    // 2. If prompt was unlocked, show interstitial ad when going back
+    if (wasUnlockedDuringSession || Boolean(sessionUnlockedText)) {
+      adService.presentInterstitialOnPromptClick(() => {
+        router.back();
+      });
+    } else {
+      router.back();
+    }
+  }, [promptId, wasUnlockedDuringSession, sessionUnlockedText, router, queryClient]);
+
+  // Intercept Android hardware back press / gesture
+  React.useEffect(() => {
+    const onHardwareBack = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const userCoins = coinData?.balance ?? 0;
   const promptCost = prompt?.unlock_cost ?? rewardConfig?.default_prompt_cost ?? 20;
@@ -101,7 +142,11 @@ export default function PromptDetailsScreen() {
   const handleCoinUnlockFlow = async () => {
     setCoinErrorMessage(null);
     try {
-      await unlockCoinsMutation.mutateAsync(promptId);
+      const res = await unlockCoinsMutation.mutateAsync(promptId);
+      if (res?.prompt_text) {
+        setSessionUnlockedText(res.prompt_text);
+      }
+      setWasUnlockedDuringSession(true);
       setShowUnlockModal(false);
     } catch (err: any) {
       const msg = err?.data?.message || err.message || 'Failed to unlock with coins.';
@@ -115,31 +160,39 @@ export default function PromptDetailsScreen() {
     setErrorMessage(null);
 
     try {
-      await adService.presentRewardedAd({
-        onAdLoaded: () => {
-          setAdUnlockState('watching_ad');
-        },
-        onRewardEarned: async () => {
-          setAdUnlockState('unlocking');
-          try {
-            await unlockAdMutation.mutateAsync({ promptId });
-            setAdUnlockState('success');
-            setTimeout(() => {
-              setShowUnlockModal(false);
-            }, 1200);
-          } catch (err: any) {
-            setErrorMessage(err.message || 'Server failed to record ad unlock.');
+      await adService.presentRewardedAd(
+        {
+          onAdLoaded: () => {
+            setAdUnlockState('watching_ad');
+          },
+          onRewardEarned: async () => {
+            setAdUnlockState('unlocking');
+            try {
+              const res = await unlockAdMutation.mutateAsync({ promptId });
+              if (res?.prompt_text) {
+                setSessionUnlockedText(res.prompt_text);
+              }
+              setWasUnlockedDuringSession(true);
+              setAdUnlockState('success');
+              setTimeout(() => {
+                setShowUnlockModal(false);
+              }, 1200);
+            } catch (err: any) {
+              setErrorMessage(err.message || 'Server failed to record ad unlock.');
+              setAdUnlockState('error');
+            }
+          },
+          onAdDismissedEarly: () => {
+            setAdUnlockState('early_close');
+          },
+          onAdFailedToLoad: (err) => {
+            setErrorMessage(err || "Couldn't load ad.");
             setAdUnlockState('error');
-          }
+          },
         },
-        onAdDismissedEarly: () => {
-          setAdUnlockState('early_close');
-        },
-        onAdFailedToLoad: (err) => {
-          setErrorMessage(err || "Couldn't load ad.");
-          setAdUnlockState('error');
-        },
-      });
+        false,
+        'prompt_unlock'
+      );
     } catch (err: any) {
       setErrorMessage(err.message || 'Ad playback encountered an error.');
       setAdUnlockState('error');
@@ -152,7 +205,7 @@ export default function PromptDetailsScreen() {
         <View style={styles.loadingContainer}>
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.back()}
+            onPress={handleGoBack}
             style={styles.loadingBackButton}
           >
             <Ionicons name="arrow-back" size={20} color={Theme.colors.text} />
@@ -176,7 +229,7 @@ export default function PromptDetailsScreen() {
         <View style={{ paddingHorizontal: Theme.spacing.md, paddingTop: Theme.spacing.sm }}>
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.back()}
+            onPress={handleGoBack}
             style={styles.loadingBackButton}
           >
             <Ionicons name="arrow-back" size={20} color={Theme.colors.text} />
@@ -190,7 +243,8 @@ export default function PromptDetailsScreen() {
     );
   }
 
-  const isUnlocked = !prompt.is_locked && Boolean(prompt.prompt_text);
+  const isUnlocked = Boolean(sessionUnlockedText) || (!prompt.is_locked && Boolean(prompt.prompt_text));
+  const activePromptText = sessionUnlockedText || prompt.prompt_text || '';
 
   return (
     <ScreenContainer noPadding edges={['left', 'right', 'bottom']}>
@@ -203,7 +257,7 @@ export default function PromptDetailsScreen() {
           <View style={[styles.topActionsRow, { top: Math.max(insets.top, 14) + 6 }]}>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => router.back()}
+              onPress={handleGoBack}
               style={styles.circleActionButton}
             >
               <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
@@ -288,10 +342,10 @@ export default function PromptDetailsScreen() {
               </View>
 
               {/* Full prompt viewer */}
-              <PromptViewer promptText={prompt.prompt_text!} />
+              <PromptViewer promptText={activePromptText} />
 
               {/* Action buttons (Copy, ChatGPT, Gemini) */}
-              <AIActionButtons promptText={prompt.prompt_text!} />
+              <AIActionButtons promptText={activePromptText} />
             </View>
           ) : (
             <LockedPromptViewer
