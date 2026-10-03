@@ -95,7 +95,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <SocialChannels noPadding iconsOnly />
+          <SocialChannels noPadding />
         </View>
 
         {/* Rewards Section (Section 31) */}
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   },
   socialCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: Theme.borderRadius.xl,
+    borderRadius: 12,
     padding: Theme.spacing.md,
     borderWidth: 1,
     borderColor: Theme.colors.border,
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   socialIconWrap: {
     width: 32,
     height: 32,
-    borderRadius: 10,
+    borderRadius: 6,
     backgroundColor: 'rgba(225, 29, 72, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
