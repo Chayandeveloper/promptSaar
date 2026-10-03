@@ -72,30 +72,27 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
       <TouchableOpacity
         activeOpacity={0.82}
         onPress={() => handleOpen('whatsapp')}
-        style={[styles.rectButton, styles.whatsappBtn, iconsOnly && styles.rectButtonIconsOnly]}
+        style={[styles.rectButton, styles.whatsappBtn]}
       >
-        <FontAwesome name="whatsapp" size={iconsOnly ? 22 : 18} color="#FFFFFF" />
-        {!iconsOnly && <Text style={styles.btnLabel}>WhatsApp</Text>}
+        <FontAwesome name="whatsapp" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Instagram Button */}
       <TouchableOpacity
         activeOpacity={0.82}
         onPress={() => handleOpen('instagram')}
-        style={[styles.rectButton, styles.instagramBtn, iconsOnly && styles.rectButtonIconsOnly]}
+        style={[styles.rectButton, styles.instagramBtn]}
       >
-        <FontAwesome name="instagram" size={iconsOnly ? 21 : 18} color="#FFFFFF" />
-        {!iconsOnly && <Text style={styles.btnLabel}>Instagram</Text>}
+        <FontAwesome name="instagram" size={22} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Telegram Button */}
       <TouchableOpacity
         activeOpacity={0.82}
         onPress={() => handleOpen('telegram')}
-        style={[styles.rectButton, styles.telegramBtn, iconsOnly && styles.rectButtonIconsOnly]}
+        style={[styles.rectButton, styles.telegramBtn]}
       >
-        <FontAwesome name="telegram" size={iconsOnly ? 20 : 17} color="#FFFFFF" />
-        {!iconsOnly && <Text style={styles.btnLabel}>Telegram</Text>}
+        <FontAwesome name="telegram" size={21} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -112,30 +109,15 @@ const styles = StyleSheet.create({
   },
   rectButton: {
     flex: 1,
-    flexDirection: 'row',
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
     borderRadius: 8,
     elevation: 2,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 4,
-  },
-  rectButtonIconsOnly: {
-    height: 44,
-    gap: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-  btnLabel: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.2,
   },
   whatsappBtn: {
     backgroundColor: '#25D366',

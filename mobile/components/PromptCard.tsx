@@ -193,10 +193,10 @@ export const PromptCard: React.FC<PromptCardProps> = ({
 
             <View style={styles.actionPromptText}>
               <Text style={[styles.actionPromptLabel, grid && styles.actionPromptLabelGrid]}>
-                {prompt.is_locked ? `🪙 ${prompt.unlock_cost || 30}` : 'Open'}
+                {prompt.is_locked ? 'Unlock' : 'Open'}
               </Text>
               <Ionicons
-                name={prompt.is_locked ? 'sparkles' : 'arrow-forward'}
+                name={prompt.is_locked ? 'lock-closed' : 'arrow-forward'}
                 size={grid ? 10 : 12}
                 color={prompt.is_locked ? '#FF7A00' : Theme.colors.primary}
               />
@@ -265,13 +265,12 @@ const styles = StyleSheet.create({
     right: 6,
   },
   lockPill: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.82)',
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    borderRadius: Theme.borderRadius.full,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(17, 24, 39, 0.85)',
     borderWidth: 1,
     borderColor: 'rgba(255, 122, 0, 0.6)',
   },
