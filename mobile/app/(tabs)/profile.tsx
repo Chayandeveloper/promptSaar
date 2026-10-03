@@ -48,7 +48,7 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Text style={styles.screenHeading}>My Account</Text>
 
-        {/* Member Card with Only App Logo */}
+        {/* Member Card with App Logo */}
         <View style={styles.userCard}>
           <View style={styles.logoContainer}>
             <Image
@@ -57,29 +57,8 @@ export default function ProfileScreen() {
               resizeMode="contain"
             />
           </View>
-
-          {/* Statistics Row */}
-          <View style={styles.statsRow}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => router.push('/(tabs)')}
-              style={styles.statBox}
-            >
-              <Text style={styles.statNumber}>{unlockedCount}</Text>
-              <Text style={styles.statLabel}>Prompts Unlocked</Text>
-            </TouchableOpacity>
-
-            <View style={styles.statDivider} />
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => router.push('/(tabs)/saved')}
-              style={styles.statBox}
-            >
-              <Text style={styles.statNumber}>{savedCount}</Text>
-              <Text style={styles.statLabel}>Prompts Saved</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.brandTitle}>Prompt Saar</Text>
+          <Text style={styles.brandSubtitle}>Curated AI Prompts &amp; Tools</Text>
         </View>
 
         {/* Official Social Channels Card (Connected to Admin Panel) */}
@@ -312,34 +291,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginTop: Theme.spacing.lg,
-    paddingTop: Theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Theme.colors.border,
-  },
-  statBox: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 22,
+  brandTitle: {
+    fontSize: 18,
     fontWeight: '800',
     color: Theme.colors.text,
+    marginTop: 10,
+    letterSpacing: -0.3,
   },
-  statLabel: {
-    fontSize: 11,
-    color: Theme.colors.textSecondary,
+  brandSubtitle: {
+    fontSize: 12,
+    color: Theme.colors.textMuted,
     marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: Theme.colors.border,
   },
   rewardsCard: {
     backgroundColor: Theme.colors.surface,
