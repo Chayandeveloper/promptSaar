@@ -9,13 +9,6 @@ export const Header: React.FC = () => {
   const { data: coinData } = useCoinBalance();
   const coins = coinData?.balance ?? 0;
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning 👋';
-    if (hour < 18) return 'Good afternoon ☀️';
-    return 'Good evening 🌙';
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.leftBrandRow}>
@@ -25,13 +18,12 @@ export const Header: React.FC = () => {
           resizeMode="contain"
         />
         <View style={styles.textContainer}>
-          <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.title}>Prompt Saar</Text>
         </View>
       </View>
 
       <View style={styles.rightActions}>
-        {/* Compact Coin Balance Indicator (Section 30) */}
+        {/* Compact Coin Balance Indicator */}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push('/rewards')}
@@ -39,16 +31,6 @@ export const Header: React.FC = () => {
         >
           <Text style={styles.coinIcon}>🪙</Text>
           <Text style={styles.coinCount}>{coins}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => router.push('/(tabs)/profile')}
-          style={styles.avatarButton}
-        >
-          <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarInitial}>✨</Text>
-          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -83,12 +65,6 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
-  greeting: {
-    fontSize: 14,
-    color: Theme.colors.textSecondary,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
   title: {
     fontSize: 20,
     fontWeight: '800',
@@ -118,24 +94,5 @@ const styles = StyleSheet.create({
     color: '#FF7A00',
     fontSize: 13,
     fontWeight: '800',
-  },
-  avatarButton: {
-    padding: 2,
-    borderRadius: Theme.borderRadius.full,
-    borderWidth: 1.5,
-    borderColor: Theme.colors.primary,
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: Theme.borderRadius.full,
-    backgroundColor: 'rgba(225, 29, 72, 0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Theme.colors.primary,
   },
 });
