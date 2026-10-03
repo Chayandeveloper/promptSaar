@@ -73,16 +73,19 @@ export default function TemplatesScreen() {
         ) : templates.length > 0 ? (
           <>
             <View style={styles.gridList}>
-              {templates.map((item, index) => (
-                <React.Fragment key={item.id}>
-                  <PromptCard prompt={item} grid portrait />
-                  {(index + 1) % 8 === 0 && (
-                    <View style={styles.inFeedAdContainer}>
+              {templates.flatMap((item, index) => {
+                const items = [
+                  <PromptCard key={`tmpl-${item.id}`} prompt={item} grid portrait />
+                ];
+                if ((index + 1) % 8 === 0) {
+                  items.push(
+                    <View key={`tmpl-ad-${index}`} style={styles.inFeedAdContainer}>
                       <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
                     </View>
-                  )}
-                </React.Fragment>
-              ))}
+                  );
+                }
+                return items;
+              })}
             </View>
             <BannerAd placement="templates_bottom" />
           </>

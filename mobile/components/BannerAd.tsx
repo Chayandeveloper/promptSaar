@@ -61,11 +61,15 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {
+    const selectedSize = isFeed
+      ? BannerAdSize.BANNER
+      : BannerAdSize.ANCHORED_ADAPTIVE_BANNER;
+
     return (
       <View style={[styles.container, style]}>
         <RNBannerAd
           unitId={adUnitId}
-          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          size={selectedSize}
           requestOptions={{
             requestNonPersonalizedAdsOnly: true,
           }}

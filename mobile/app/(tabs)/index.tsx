@@ -100,16 +100,19 @@ export default function HomeScreen() {
               </View>
             ) : searchData?.data && searchData.data.length > 0 ? (
               <View style={styles.gridList}>
-                {searchData.data.map((item, index) => (
-                  <React.Fragment key={item.id}>
-                    <PromptCard prompt={item} grid portrait />
-                    {(index + 1) % 8 === 0 && (
-                      <View style={styles.inFeedAdContainer}>
+                {searchData.data.flatMap((item, index) => {
+                  const items = [
+                    <PromptCard key={`search-${item.id}`} prompt={item} grid portrait />
+                  ];
+                  if ((index + 1) % 8 === 0) {
+                    items.push(
+                      <View key={`search-ad-${index}`} style={styles.inFeedAdContainer}>
                         <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
                       </View>
-                    )}
-                  </React.Fragment>
-                ))}
+                    );
+                  }
+                  return items;
+                })}
               </View>
             ) : (
               <EmptyState
@@ -164,16 +167,19 @@ export default function HomeScreen() {
                 </View>
               ) : recentData && recentData.length > 0 ? (
                 <View style={styles.gridList}>
-                  {recentData.map((item, index) => (
-                    <React.Fragment key={item.id}>
-                      <PromptCard prompt={item} grid portrait />
-                      {(index + 1) % 8 === 0 && (
-                        <View style={styles.inFeedAdContainer}>
+                  {recentData.flatMap((item, index) => {
+                    const items = [
+                      <PromptCard key={`recent-${item.id}`} prompt={item} grid portrait />
+                    ];
+                    if ((index + 1) % 8 === 0) {
+                      items.push(
+                        <View key={`recent-ad-${index}`} style={styles.inFeedAdContainer}>
                           <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
                         </View>
-                      )}
-                    </React.Fragment>
-                  ))}
+                      );
+                    }
+                    return items;
+                  })}
                 </View>
               ) : (
                 <EmptyState

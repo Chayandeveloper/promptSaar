@@ -94,16 +94,19 @@ export default function CategoryScreen() {
           </View>
         ) : prompts.length > 0 ? (
           <View style={styles.gridList}>
-            {prompts.map((item, index) => (
-              <React.Fragment key={item.id}>
-                <PromptCard prompt={item} grid portrait />
-                {(index + 1) % 8 === 0 && (
-                  <View style={styles.inFeedAdContainer}>
+            {prompts.flatMap((item, index) => {
+              const items = [
+                <PromptCard key={`cat-prompt-${item.id}`} prompt={item} grid portrait />
+              ];
+              if ((index + 1) % 8 === 0) {
+                items.push(
+                  <View key={`cat-ad-${index}`} style={styles.inFeedAdContainer}>
                     <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
                   </View>
-                )}
-              </React.Fragment>
-            ))}
+                );
+              }
+              return items;
+            })}
           </View>
         ) : (
           <EmptyState
