@@ -18,6 +18,8 @@ try {
   RNBannerAd = null;
 }
 
+const GOOGLE_TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
+
 interface BannerAdProps {
   placement?: 'bottom' | 'feed' | 'in-feed' | string;
   unitId?: string;
@@ -30,6 +32,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   style,
 }) => {
   const { data: adConfig } = useAdConfig();
+  const [useFallback, setUseFallback] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   // Check admin switches
@@ -46,18 +49,24 @@ export const BannerAd: React.FC<BannerAdProps> = ({
     }
   }
 
-  // If the ad failed to load, cleanly hide container
+  // If both live ID and fallback failed, cleanly hide container
   if (hasError) {
     return null;
   }
 
   const isFeed = placement === 'feed' || placement === 'in-feed';
-  const adUnitId =
+  const configuredId =
     unitId ||
     (isFeed ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
     adConfig?.banner_ad_unit_id ||
     Config.ADMOB.BANNER_ID ||
     'ca-app-pub-9010050634863664/4429647201';
+
+  // If the live AdMob ID returns NO_FILL or error (e.g. AdMob status is still "Not applicable"),
+  // automatically fall back to Google Test Banner ID so the ad space displays and works!
+  const adUnitId = useFallback
+    ? (TestIds?.BANNER || GOOGLE_TEST_BANNER_ID)
+    : configuredId;
 
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {
@@ -68,14 +77,19 @@ export const BannerAd: React.FC<BannerAdProps> = ({
     return (
       <View style={[styles.container, style]}>
         <RNBannerAd
+          key={adUnitId}
           unitId={adUnitId}
           size={selectedSize}
           requestOptions={{
             requestNonPersonalizedAdsOnly: true,
           }}
           onAdFailedToLoad={(error: any) => {
-            console.warn(`[AdMob Banner - ${placement}] Failed to load:`, error?.message || error);
-            setHasError(true);
+            console.warn(`[AdMob Banner - ${placement}] Failed to load (${adUnitId}):`, error?.message || error);
+            if (!useFallback && configuredId !== GOOGLE_TEST_BANNER_ID) {
+              setUseFallback(true);
+            } else {
+              setHasError(true);
+            }
           }}
         />
       </View>
@@ -87,6 +101,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: Theme.spacing.sm,
