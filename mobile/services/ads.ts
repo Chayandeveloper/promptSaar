@@ -58,11 +58,19 @@ class AdMobService {
   }
 
   getRewardedUnitId(): string {
-    return this.rewardedAdUnitId;
+    return (
+      adConfigService.getConfig().rewarded_ad_unit_id ||
+      this.rewardedAdUnitId ||
+      'ca-app-pub-9010050634863664/7562991281'
+    );
   }
 
   getBannerUnitId(): string {
-    return this.bannerAdUnitId;
+    return (
+      adConfigService.getConfig().banner_ad_unit_id ||
+      this.bannerAdUnitId ||
+      'ca-app-pub-9010050634863664/4429647201'
+    );
   }
 
   /**
@@ -91,8 +99,7 @@ class AdMobService {
         const config = adConfigService.getConfig();
         const adUnitId =
           config.interstitial_ad_unit_id ||
-          TestIds?.INTERSTITIAL ||
-          'ca-app-pub-3940256099942544/1033173712';
+          'ca-app-pub-9010050634863664/6017296705';
 
         const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
@@ -151,7 +158,7 @@ class AdMobService {
     // Native APK build where Google Mobile Ads SDK is present:
     if (this.isNativeAvailable && RewardedAd && RewardedAdEventType) {
       try {
-        const adUnitId = this.rewardedAdUnitId || TestIds?.REWARDED || 'ca-app-pub-3940256099942544/5224354917';
+        const adUnitId = this.getRewardedUnitId();
         const rewarded = RewardedAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
         });

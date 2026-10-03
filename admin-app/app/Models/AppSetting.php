@@ -68,8 +68,9 @@ class AppSetting extends Model
             'rewarded_prompt_unlock'    => $adsEnabled ? (bool) static::get('rewarded_prompt_unlock', true) : false,
             'rewarded_daily_coins'      => $adsEnabled ? (bool) static::get('rewarded_daily_coins', true) : false,
             'banner_ads_enabled'        => $adsEnabled ? (bool) static::get('banner_ads_enabled', true) : false,
-            'interstitial_ad_unit_id'   => (string) static::get('interstitial_ad_unit_id', 'ca-app-pub-3940256099942544/1033173712'),
-            'banner_ad_unit_id'         => (string) static::get('banner_ad_unit_id', 'ca-app-pub-3940256099942544/6300978111'),
+            'interstitial_ad_unit_id'   => (string) static::get('interstitial_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'banner_ad_unit_id'         => (string) static::get('banner_ad_unit_id', 'ca-app-pub-9010050634863664/4429647201'),
+            'rewarded_ad_unit_id'       => (string) static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281'),
         ];
     }
 }

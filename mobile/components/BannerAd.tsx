@@ -40,8 +40,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({ placement = 'feed' }) => {
   const adUnitId =
     adConfig?.banner_ad_unit_id ||
     Config.ADMOB.BANNER_ID ||
-    TestIds?.BANNER ||
-    'ca-app-pub-3940256099942544/6300978111';
+    'ca-app-pub-9010050634863664/4429647201';
 
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {

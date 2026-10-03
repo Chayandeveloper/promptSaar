@@ -8,7 +8,10 @@ export interface AdConfig {
   banner_ads_enabled: boolean;
   interstitial_ad_unit_id: string;
   banner_ad_unit_id?: string;
+  rewarded_ad_unit_id?: string;
 }
+
+import { Config } from '../constants/Config';
 
 export const DEFAULT_AD_CONFIG: AdConfig = {
   ads_enabled: true,
@@ -16,8 +19,9 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   rewarded_prompt_unlock: true,
   rewarded_daily_coins: true,
   banner_ads_enabled: true,
-  interstitial_ad_unit_id: 'ca-app-pub-3940256099942544/1033173712',
-  banner_ad_unit_id: 'ca-app-pub-3940256099942544/6300978111',
+  interstitial_ad_unit_id: 'ca-app-pub-9010050634863664/9136172220',
+  banner_ad_unit_id: Config.ADMOB.BANNER_ID,
+  rewarded_ad_unit_id: Config.ADMOB.REWARDED_ID,
 };
 
 class AdConfigService {
@@ -35,6 +39,7 @@ class AdConfigService {
           banner_ads_enabled: Boolean(response.config.banner_ads_enabled),
           interstitial_ad_unit_id: response.config.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_ad_unit_id,
           banner_ad_unit_id: response.config.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_ad_unit_id,
+          rewarded_ad_unit_id: response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_ad_unit_id,
         };
         return this.cachedConfig;
       }

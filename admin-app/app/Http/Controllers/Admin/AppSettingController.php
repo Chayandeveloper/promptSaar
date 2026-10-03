@@ -85,8 +85,9 @@ class AppSettingController extends Controller
             'rewarded_prompt_unlock'    => (bool) AppSetting::get('rewarded_prompt_unlock', true),
             'rewarded_daily_coins'      => (bool) AppSetting::get('rewarded_daily_coins', true),
             'banner_ads_enabled'        => (bool) AppSetting::get('banner_ads_enabled', true),
-            'interstitial_ad_unit_id'   => (string) AppSetting::get('interstitial_ad_unit_id', 'ca-app-pub-3940256099942544/1033173712'),
-            'banner_ad_unit_id'         => (string) AppSetting::get('banner_ad_unit_id', 'ca-app-pub-3940256099942544/6300978111'),
+            'interstitial_ad_unit_id'   => (string) AppSetting::get('interstitial_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'banner_ad_unit_id'         => (string) AppSetting::get('banner_ad_unit_id', 'ca-app-pub-9010050634863664/4429647201'),
+            'rewarded_ad_unit_id'       => (string) AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281'),
         ];
 
         return Inertia::render('Settings/Ads', [
@@ -115,6 +116,10 @@ class AppSettingController extends Controller
 
         if ($request->filled('banner_ad_unit_id')) {
             AppSetting::set('banner_ad_unit_id', $request->input('banner_ad_unit_id'));
+        }
+
+        if ($request->filled('rewarded_ad_unit_id')) {
+            AppSetting::set('rewarded_ad_unit_id', $request->input('rewarded_ad_unit_id'));
         }
 
         return redirect()->back()->with('success', 'AdMob advertisement settings and controls updated successfully!');

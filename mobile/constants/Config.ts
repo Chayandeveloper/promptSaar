@@ -14,9 +14,9 @@ const getBackendUrl = () => {
 export const Config = {
   API_URL: getBackendUrl(),
   ADMOB: {
-    APP_ID:      process.env.EXPO_PUBLIC_ADMOB_APP_ID      || 'ca-app-pub-3940256099942544~3347511713',
-    REWARDED_ID: process.env.EXPO_PUBLIC_ADMOB_REWARDED_ID || 'ca-app-pub-3940256099942544/5224354917',
-    BANNER_ID:   process.env.EXPO_PUBLIC_ADMOB_BANNER_ID   || 'ca-app-pub-3940256099942544/6300978111',
+    APP_ID:      process.env.EXPO_PUBLIC_ADMOB_APP_ID      || 'ca-app-pub-9010050634863664~7369837010',
+    REWARDED_ID: process.env.EXPO_PUBLIC_ADMOB_REWARDED_ID || 'ca-app-pub-9010050634863664/7562991281',
+    BANNER_ID:   process.env.EXPO_PUBLIC_ADMOB_BANNER_ID   || 'ca-app-pub-9010050634863664/4429647201',
   },
   STORAGE_KEYS: {
     HAS_ONBOARDED:   'promptcraft_has_onboarded',
