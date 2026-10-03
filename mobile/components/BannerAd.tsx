@@ -19,16 +19,31 @@ try {
 }
 
 interface BannerAdProps {
-  placement?: string;
+  placement?: 'bottom' | 'feed' | 'in-feed' | string;
+  unitId?: string;
+  style?: any;
 }
 
-export const BannerAd: React.FC<BannerAdProps> = ({ placement = 'feed' }) => {
+export const BannerAd: React.FC<BannerAdProps> = ({
+  placement = 'bottom',
+  unitId,
+  style,
+}) => {
   const { data: adConfig } = useAdConfig();
   const [hasError, setHasError] = useState(false);
 
-  // If ads are disabled in admin settings
-  if (adConfig && (!adConfig.ads_enabled || !adConfig.banner_ads_enabled)) {
-    return null;
+  // Check admin switches
+  if (adConfig) {
+    if (!adConfig.ads_enabled) {
+      return null;
+    }
+    const isFeed = placement === 'feed' || placement === 'in-feed';
+    if (isFeed && !adConfig.feed_ad_enabled) {
+      return null;
+    }
+    if (!isFeed && !adConfig.banner_ads_enabled) {
+      return null;
+    }
   }
 
   // If the ad failed to load, cleanly hide container
@@ -36,8 +51,10 @@ export const BannerAd: React.FC<BannerAdProps> = ({ placement = 'feed' }) => {
     return null;
   }
 
-  // Priority: Backend remote config -> Config.ts -> TestIds.BANNER -> Default Google Test Banner ID
+  const isFeed = placement === 'feed' || placement === 'in-feed';
   const adUnitId =
+    unitId ||
+    (isFeed ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
     adConfig?.banner_ad_unit_id ||
     Config.ADMOB.BANNER_ID ||
     'ca-app-pub-9010050634863664/4429647201';
@@ -45,7 +62,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({ placement = 'feed' }) => {
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, style]}>
         <RNBannerAd
           unitId={adUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -72,4 +89,3 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
 });
-

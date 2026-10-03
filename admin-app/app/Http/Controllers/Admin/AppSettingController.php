@@ -81,15 +81,21 @@ class AppSettingController extends Controller
     {
         $settings = [
             'ads_enabled'               => (bool) AppSetting::get('ads_enabled', true),
-            'interstitial_prompt_click' => (bool) AppSetting::get('interstitial_prompt_click', true),
-            'rewarded_prompt_unlock'    => (bool) AppSetting::get('rewarded_prompt_unlock', true),
-            'rewarded_daily_coins'      => (bool) AppSetting::get('rewarded_daily_coins', true),
-            'banner_ads_enabled'        => (bool) AppSetting::get('banner_ads_enabled', true),
-            'interstitial_ad_unit_id'    => (string) AppSetting::get('interstitial_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
-            'banner_ad_unit_id'          => (string) AppSetting::get('banner_ad_unit_id', 'ca-app-pub-9010050634863664/4429647201'),
-            'rewarded_ad_unit_id'        => (string) AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281'),
-            'rewarded_prompt_unlock_id' => (string) AppSetting::get('rewarded_prompt_unlock_id', AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
-            'rewarded_daily_coins_id'   => (string) AppSetting::get('rewarded_daily_coins_id', AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
+            'interstitial_prompt_click'   => (bool) AppSetting::get('interstitial_prompt_click', true),
+            'interstitial_prompt_back'    => (bool) AppSetting::get('interstitial_prompt_back', true),
+            'rewarded_prompt_unlock'      => (bool) AppSetting::get('rewarded_prompt_unlock', true),
+            'rewarded_daily_coins'        => (bool) AppSetting::get('rewarded_daily_coins', true),
+            'banner_ads_enabled'          => (bool) AppSetting::get('banner_ads_enabled', true),
+            'feed_ad_enabled'             => (bool) AppSetting::get('feed_ad_enabled', true),
+            'app_open_ad_enabled'         => (bool) AppSetting::get('app_open_ad_enabled', true),
+            'interstitial_ad_unit_id'     => (string) AppSetting::get('interstitial_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'interstitial_prompt_back_id' => (string) AppSetting::get('interstitial_prompt_back_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'banner_ad_unit_id'           => (string) AppSetting::get('banner_ad_unit_id', 'ca-app-pub-9010050634863664/4843372292'),
+            'feed_ad_unit_id'             => (string) AppSetting::get('feed_ad_unit_id', 'ca-app-pub-9010050634863664/4843372292'),
+            'app_open_ad_unit_id'         => (string) AppSetting::get('app_open_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'rewarded_ad_unit_id'         => (string) AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281'),
+            'rewarded_prompt_unlock_id'   => (string) AppSetting::get('rewarded_prompt_unlock_id', AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
+            'rewarded_daily_coins_id'     => (string) AppSetting::get('rewarded_daily_coins_id', AppSetting::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
         ];
 
         return Inertia::render('Settings/Ads', [
@@ -103,33 +109,33 @@ class AppSettingController extends Controller
         $keys = [
             'ads_enabled',
             'interstitial_prompt_click',
+            'interstitial_prompt_back',
             'rewarded_prompt_unlock',
             'rewarded_daily_coins',
             'banner_ads_enabled',
+            'feed_ad_enabled',
+            'app_open_ad_enabled',
         ];
 
         foreach ($keys as $key) {
             AppSetting::set($key, $request->boolean($key));
         }
 
-        if ($request->filled('interstitial_ad_unit_id')) {
-            AppSetting::set('interstitial_ad_unit_id', $request->input('interstitial_ad_unit_id'));
-        }
+        $idKeys = [
+            'interstitial_ad_unit_id',
+            'interstitial_prompt_back_id',
+            'banner_ad_unit_id',
+            'feed_ad_unit_id',
+            'app_open_ad_unit_id',
+            'rewarded_ad_unit_id',
+            'rewarded_prompt_unlock_id',
+            'rewarded_daily_coins_id',
+        ];
 
-        if ($request->filled('banner_ad_unit_id')) {
-            AppSetting::set('banner_ad_unit_id', $request->input('banner_ad_unit_id'));
-        }
-
-        if ($request->filled('rewarded_ad_unit_id')) {
-            AppSetting::set('rewarded_ad_unit_id', $request->input('rewarded_ad_unit_id'));
-        }
-
-        if ($request->filled('rewarded_prompt_unlock_id')) {
-            AppSetting::set('rewarded_prompt_unlock_id', $request->input('rewarded_prompt_unlock_id'));
-        }
-
-        if ($request->filled('rewarded_daily_coins_id')) {
-            AppSetting::set('rewarded_daily_coins_id', $request->input('rewarded_daily_coins_id'));
+        foreach ($idKeys as $idKey) {
+            if ($request->filled($idKey)) {
+                AppSetting::set($idKey, $request->input($idKey));
+            }
         }
 
         return redirect()->back()->with('success', 'AdMob advertisement settings and controls updated successfully!');

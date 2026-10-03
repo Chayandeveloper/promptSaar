@@ -95,15 +95,11 @@ export default function PromptDetailsScreen() {
     queryClient.removeQueries({ queryKey: ['prompt', promptId] });
     queryClient.invalidateQueries({ queryKey: ['prompts'] });
 
-    // 2. If prompt was unlocked, show interstitial ad when going back
-    if (wasUnlockedDuringSession || Boolean(sessionUnlockedText)) {
-      adService.presentInterstitialOnPromptClick(() => {
-        router.back();
-      });
-    } else {
+    // 2. Show interstitial ad on prompt back if enabled in admin panel
+    adService.presentInterstitialOnPromptBack(() => {
       router.back();
-    }
-  }, [promptId, wasUnlockedDuringSession, sessionUnlockedText, router, queryClient]);
+    });
+  }, [promptId, router, queryClient]);
 
   // Intercept Android hardware back press / gesture
   React.useEffect(() => {

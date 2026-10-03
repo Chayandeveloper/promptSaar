@@ -64,15 +64,21 @@ class AppSetting extends Model
 
         return [
             'ads_enabled'               => $adsEnabled,
-            'interstitial_prompt_click' => $adsEnabled ? (bool) static::get('interstitial_prompt_click', true) : false,
-            'rewarded_prompt_unlock'    => $adsEnabled ? (bool) static::get('rewarded_prompt_unlock', true) : false,
-            'rewarded_daily_coins'      => $adsEnabled ? (bool) static::get('rewarded_daily_coins', true) : false,
-            'banner_ads_enabled'        => $adsEnabled ? (bool) static::get('banner_ads_enabled', true) : false,
-            'interstitial_ad_unit_id'    => (string) static::get('interstitial_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
-            'banner_ad_unit_id'          => (string) static::get('banner_ad_unit_id', 'ca-app-pub-9010050634863664/4429647201'),
-            'rewarded_ad_unit_id'        => (string) static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281'),
-            'rewarded_prompt_unlock_id' => (string) static::get('rewarded_prompt_unlock_id', static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
-            'rewarded_daily_coins_id'   => (string) static::get('rewarded_daily_coins_id', static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
+            'interstitial_prompt_click'   => $adsEnabled ? (bool) static::get('interstitial_prompt_click', true) : false,
+            'interstitial_prompt_back'    => $adsEnabled ? (bool) static::get('interstitial_prompt_back', true) : false,
+            'rewarded_prompt_unlock'      => $adsEnabled ? (bool) static::get('rewarded_prompt_unlock', true) : false,
+            'rewarded_daily_coins'        => $adsEnabled ? (bool) static::get('rewarded_daily_coins', true) : false,
+            'banner_ads_enabled'          => $adsEnabled ? (bool) static::get('banner_ads_enabled', true) : false,
+            'feed_ad_enabled'             => $adsEnabled ? (bool) static::get('feed_ad_enabled', true) : false,
+            'app_open_ad_enabled'         => $adsEnabled ? (bool) static::get('app_open_ad_enabled', true) : false,
+            'interstitial_ad_unit_id'     => (string) static::get('interstitial_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'interstitial_prompt_back_id' => (string) static::get('interstitial_prompt_back_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'banner_ad_unit_id'           => (string) static::get('banner_ad_unit_id', 'ca-app-pub-9010050634863664/4843372292'),
+            'feed_ad_unit_id'             => (string) static::get('feed_ad_unit_id', 'ca-app-pub-9010050634863664/4843372292'),
+            'app_open_ad_unit_id'         => (string) static::get('app_open_ad_unit_id', 'ca-app-pub-9010050634863664/9136172220'),
+            'rewarded_ad_unit_id'         => (string) static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281'),
+            'rewarded_prompt_unlock_id'   => (string) static::get('rewarded_prompt_unlock_id', static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
+            'rewarded_daily_coins_id'     => (string) static::get('rewarded_daily_coins_id', static::get('rewarded_ad_unit_id', 'ca-app-pub-9010050634863664/7562991281')),
         ];
     }
 }

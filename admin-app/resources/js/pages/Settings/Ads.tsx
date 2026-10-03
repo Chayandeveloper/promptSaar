@@ -3,17 +3,24 @@ import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
 import {
     Tv, Save, CheckCircle, Sparkles,
-    PlaySquare, Layers, Coins, RefreshCw, Info
+    PlaySquare, Layers, Coins, RefreshCw, Info,
+    ArrowLeft, Smartphone, LayoutGrid
 } from 'lucide-react';
 
 interface Settings {
     ads_enabled: boolean;
     interstitial_prompt_click: boolean;
+    interstitial_prompt_back: boolean;
     rewarded_prompt_unlock: boolean;
     rewarded_daily_coins: boolean;
     banner_ads_enabled: boolean;
+    feed_ad_enabled: boolean;
+    app_open_ad_enabled: boolean;
     interstitial_ad_unit_id: string;
+    interstitial_prompt_back_id: string;
     banner_ad_unit_id: string;
+    feed_ad_unit_id: string;
+    app_open_ad_unit_id: string;
     rewarded_ad_unit_id?: string;
     rewarded_prompt_unlock_id: string;
     rewarded_daily_coins_id: string;
@@ -40,11 +47,17 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
     const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
         ads_enabled: settings.ads_enabled ?? true,
         interstitial_prompt_click: settings.interstitial_prompt_click ?? true,
+        interstitial_prompt_back: settings.interstitial_prompt_back ?? true,
         rewarded_prompt_unlock: settings.rewarded_prompt_unlock ?? true,
         rewarded_daily_coins: settings.rewarded_daily_coins ?? true,
         banner_ads_enabled: settings.banner_ads_enabled ?? true,
+        feed_ad_enabled: settings.feed_ad_enabled ?? true,
+        app_open_ad_enabled: settings.app_open_ad_enabled ?? true,
         interstitial_ad_unit_id: settings.interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
+        interstitial_prompt_back_id: settings.interstitial_prompt_back_id || 'ca-app-pub-9010050634863664/9136172220',
         banner_ad_unit_id: settings.banner_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
+        feed_ad_unit_id: settings.feed_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
+        app_open_ad_unit_id: settings.app_open_ad_unit_id || 'ca-app-pub-3940256099942544/9257395921',
         rewarded_prompt_unlock_id: settings.rewarded_prompt_unlock_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
         rewarded_daily_coins_id: settings.rewarded_daily_coins_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
     });
@@ -180,7 +193,35 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             </label>
                         </div>
 
-                        {/* 2. Rewarded Ad for Prompt Unlock */}
+                        {/* 2. Interstitial on Prompt Back */}
+                        <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <ArrowLeft size={16} className="text-orange-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Interstitial Ad on Prompt Back / Exit
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                                        Fullscreen
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    When a user taps back or exits from the prompt details screen, display a full-screen interstitial ad before returning.
+                                </p>
+                            </div>
+
+                            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(data.interstitial_prompt_back)}
+                                    onChange={(e) => setData('interstitial_prompt_back', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                            </label>
+                        </div>
+
+                        {/* 3. Rewarded Ad for Prompt Unlock */}
                         <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -208,7 +249,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             </label>
                         </div>
 
-                        {/* 3. Rewarded Ad for Daily Free Coins */}
+                        {/* 4. Rewarded Ad for Daily Free Coins */}
                         <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -236,20 +277,20 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             </label>
                         </div>
 
-                        {/* 4. Banner Ads */}
-                        <div className="flex items-start justify-between gap-4 py-3">
+                        {/* 5. Banner Ads */}
+                        <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                     <Layers size={16} className="text-sky-400" />
                                     <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                        Banner Ads
+                                        Bottom Banner Ads
                                     </span>
                                     <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
                                         Banner
                                     </span>
                                 </div>
                                 <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                                    Show AdMob banner ads at the bottom or designated slots of app screens.
+                                    Show AdMob banner ads anchored at the bottom of app screens (e.g. prompt details).
                                 </p>
                             </div>
 
@@ -261,6 +302,62 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                                     className="sr-only peer"
                                 />
                                 <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+                            </label>
+                        </div>
+
+                        {/* 6. In-Feed Ads (Every 8 prompts) */}
+                        <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <LayoutGrid size={16} className="text-cyan-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        In-Feed Banner Ads (After Every 8 Prompts)
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                        Feed
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    Display an in-line advertisement after every 8 prompt cards when users scroll feeds (Home, Categories, etc.).
+                                </p>
+                            </div>
+
+                            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(data.feed_ad_enabled)}
+                                    onChange={(e) => setData('feed_ad_enabled', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                            </label>
+                        </div>
+
+                        {/* 7. App Open Ad */}
+                        <div className="flex items-start justify-between gap-4 py-3">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <Smartphone size={16} className="text-purple-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        App Open Ad (On Launch)
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                        App Open
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    Display a full-screen ad when the app is launched or opened by the user.
+                                </p>
+                            </div>
+
+                            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(data.app_open_ad_enabled)}
+                                    onChange={(e) => setData('app_open_ad_enabled', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                             </label>
                         </div>
                     </div>
@@ -278,7 +375,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
 
                         <div>
                             <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
-                                Android Interstitial Ad Unit ID
+                                Android Interstitial Ad Unit ID (Prompt Click)
                             </label>
                             <input
                                 type="text"
@@ -298,7 +395,27 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
 
                         <div>
                             <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
-                                Android Banner Ad Unit ID
+                                Android Interstitial Ad Unit ID (Prompt Back / Exit)
+                            </label>
+                            <input
+                                type="text"
+                                value={data.interstitial_prompt_back_id}
+                                onChange={(e) => setData('interstitial_prompt_back_id', e.target.value)}
+                                placeholder="ca-app-pub-9010050634863664/9136172220"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                style={inputStyle}
+                            />
+                            {errors.interstitial_prompt_back_id && (
+                                <p className="text-red-400 text-xs mt-1">{errors.interstitial_prompt_back_id}</p>
+                            )}
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Interstitial shown when user exits prompt details screen.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android Bottom Banner Ad Unit ID
                             </label>
                             <input
                                 type="text"
@@ -313,6 +430,46 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             )}
                             <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
                                 Live Banner ID: <code className="text-indigo-400 font-mono">ca-app-pub-9010050634863664/4429647201</code>.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android In-Feed Ad Unit ID (Every 8 Prompts)
+                            </label>
+                            <input
+                                type="text"
+                                value={data.feed_ad_unit_id}
+                                onChange={(e) => setData('feed_ad_unit_id', e.target.value)}
+                                placeholder="ca-app-pub-9010050634863664/4429647201"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                style={inputStyle}
+                            />
+                            {errors.feed_ad_unit_id && (
+                                <p className="text-red-400 text-xs mt-1">{errors.feed_ad_unit_id}</p>
+                            )}
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Banner Ad Unit ID displayed inside the prompt feed list every 8 cards.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android App Open Ad Unit ID
+                            </label>
+                            <input
+                                type="text"
+                                value={data.app_open_ad_unit_id}
+                                onChange={(e) => setData('app_open_ad_unit_id', e.target.value)}
+                                placeholder="ca-app-pub-3940256099942544/9257395921"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                style={inputStyle}
+                            />
+                            {errors.app_open_ad_unit_id && (
+                                <p className="text-red-400 text-xs mt-1">{errors.app_open_ad_unit_id}</p>
+                            )}
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                App Open ad shown when launching the application. Google test ID: <code className="text-indigo-400 font-mono">ca-app-pub-3940256099942544/9257395921</code>.
                             </p>
                         </div>
 

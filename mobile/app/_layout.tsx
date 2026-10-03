@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Theme } from '../constants/Theme';
 import { notificationService } from '../services/notifications';
+import { adService } from '../services/ads';
 import { AppUpdateModal } from '../components/AppUpdateModal';
 
 const queryClient = new QueryClient({
@@ -16,6 +17,11 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   useEffect(() => {
+    // Present App Open Ad on app launch if enabled by admin
+    adService.presentAppOpenAd().catch((err) => {
+      console.log('[AdMob] App open ad error:', err);
+    });
+
     // Register push notification token with backend (safe non-blocking)
     notificationService.registerForPushNotifications().catch((err) => {
       console.log('[NotificationService] Skipped push registration:', err?.message || err);

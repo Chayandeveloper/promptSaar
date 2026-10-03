@@ -25,12 +25,14 @@ import {
 } from '../../hooks/usePrompts';
 import { useBanners } from '../../hooks/useBanners';
 import { useCategories } from '../../hooks/useCategories';
+import { useAdConfig } from '../../hooks/useAdConfig';
 import { Theme } from '../../constants/Theme';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data: adConfig } = useAdConfig();
 
   // Queries
   const { data: bannersData, isLoading: isBannersLoading, refetch: refetchBanners } = useBanners();
@@ -98,8 +100,15 @@ export default function HomeScreen() {
               </View>
             ) : searchData?.data && searchData.data.length > 0 ? (
               <View style={styles.gridList}>
-                {searchData.data.map((item) => (
-                  <PromptCard key={item.id} prompt={item} grid portrait />
+                {searchData.data.map((item, index) => (
+                  <React.Fragment key={item.id}>
+                    <PromptCard prompt={item} grid portrait />
+                    {(index + 1) % 8 === 0 && (
+                      <View style={styles.inFeedAdContainer}>
+                        <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
+                      </View>
+                    )}
+                  </React.Fragment>
                 ))}
               </View>
             ) : (
@@ -155,8 +164,15 @@ export default function HomeScreen() {
                 </View>
               ) : recentData && recentData.length > 0 ? (
                 <View style={styles.gridList}>
-                  {recentData.map((item) => (
-                    <PromptCard key={item.id} prompt={item} grid portrait />
+                  {recentData.map((item, index) => (
+                    <React.Fragment key={item.id}>
+                      <PromptCard prompt={item} grid portrait />
+                      {(index + 1) % 8 === 0 && (
+                        <View style={styles.inFeedAdContainer}>
+                          <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
+                        </View>
+                      )}
+                    </React.Fragment>
                   ))}
                 </View>
               ) : (
@@ -223,5 +239,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: Theme.spacing.md,
     marginBottom: Theme.spacing.lg,
+  },
+  inFeedAdContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: Theme.spacing.sm,
   },
 });

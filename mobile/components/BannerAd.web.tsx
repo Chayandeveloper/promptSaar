@@ -1,7 +1,9 @@
 import React from 'react';
 
 interface BannerAdProps {
-  placement?: string;
+  placement?: 'bottom' | 'feed' | 'in-feed' | string;
+  unitId?: string;
+  style?: any;
 }
 
 /**

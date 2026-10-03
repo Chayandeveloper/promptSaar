@@ -21,9 +21,28 @@ class WebAdMobService {
     return Config.ADMOB.BANNER_ID;
   }
 
+  getFeedAdUnitId(): string {
+    return Config.ADMOB.BANNER_ID;
+  }
+
+  getAppOpenAdUnitId(): string {
+    return 'ca-app-pub-3940256099942544/9257395921';
+  }
+
+  getInterstitialPromptBackUnitId(): string {
+    return 'ca-app-pub-9010050634863664/9136172220';
+  }
+
   async presentInterstitialOnPromptClick(onDismissed: () => void): Promise<void> {
-    // Web mock immediately invokes dismiss
     onDismissed();
+  }
+
+  async presentInterstitialOnPromptBack(onDismissed: () => void): Promise<void> {
+    onDismissed();
+  }
+
+  async presentAppOpenAd(onDismissed?: () => void): Promise<void> {
+    onDismissed?.();
   }
 
   async presentRewardedAd(

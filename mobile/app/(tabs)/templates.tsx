@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   RefreshControl,
 } from 'react-native';
 import { ScreenContainer } from '../../components/ScreenContainer';
@@ -13,10 +13,12 @@ import { EmptyState } from '../../components/EmptyState';
 import { PromptCardSkeleton } from '../../components/Skeleton';
 import { BannerAd } from '../../components/BannerAd';
 import { usePrompts } from '../../hooks/usePrompts';
+import { useAdConfig } from '../../hooks/useAdConfig';
 import { Theme } from '../../constants/Theme';
 
 export default function TemplatesScreen() {
   const [filterQuery, setFilterQuery] = useState('');
+  const { data: adConfig } = useAdConfig();
 
   const { data: promptsData, isLoading, refetch, isRefetching } = usePrompts(
     filterQuery.trim() ? { search: filterQuery.trim() } : undefined
@@ -50,13 +52,8 @@ export default function TemplatesScreen() {
         <Text style={styles.countBadge}>{total} template{total === 1 ? '' : 's'}</Text>
       </View>
 
-      {/* Templates List (2 in each row) */}
-      <FlatList
-        data={templates}
-        keyExtractor={(item) => String(item.id)}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        renderItem={({ item }) => <PromptCard prompt={item} grid portrait />}
+      {/* Templates List */}
+      <ScrollView
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -65,28 +62,42 @@ export default function TemplatesScreen() {
             tintColor={Theme.colors.primaryLight}
           />
         }
-        ListFooterComponent={<BannerAd placement="templates_bottom" />}
-        ListEmptyComponent={
-          isLoading ? (
-            <View style={styles.skeletonGrid}>
-              <PromptCardSkeleton grid portrait />
-              <PromptCardSkeleton grid portrait />
-              <PromptCardSkeleton grid portrait />
-              <PromptCardSkeleton grid portrait />
+      >
+        {isLoading ? (
+          <View style={styles.skeletonGrid}>
+            <PromptCardSkeleton grid portrait />
+            <PromptCardSkeleton grid portrait />
+            <PromptCardSkeleton grid portrait />
+            <PromptCardSkeleton grid portrait />
+          </View>
+        ) : templates.length > 0 ? (
+          <>
+            <View style={styles.gridList}>
+              {templates.map((item, index) => (
+                <React.Fragment key={item.id}>
+                  <PromptCard prompt={item} grid portrait />
+                  {(index + 1) % 8 === 0 && (
+                    <View style={styles.inFeedAdContainer}>
+                      <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
+                    </View>
+                  )}
+                </React.Fragment>
+              ))}
             </View>
-          ) : (
-            <EmptyState
-              icon="layers-outline"
-              title="No Templates Found"
-              message={
-                filterQuery.trim()
-                  ? `No templates matched "${filterQuery.trim()}". Try a different keyword.`
-                  : 'No prompt templates available at the moment.'
-              }
-            />
-          )
-        }
-      />
+            <BannerAd placement="templates_bottom" />
+          </>
+        ) : (
+          <EmptyState
+            icon="layers-outline"
+            title="No Templates Found"
+            message={
+              filterQuery.trim()
+                ? `No templates matched "${filterQuery.trim()}". Try a different keyword.`
+                : 'No prompt templates available at the moment.'
+            }
+          />
+        )}
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -130,12 +141,20 @@ const styles = StyleSheet.create({
     color: Theme.colors.textMuted,
     fontWeight: '500',
   },
-  row: {
-    justifyContent: 'space-between',
-  },
   listContent: {
     padding: Theme.spacing.md,
     paddingBottom: Theme.spacing.xxl + 24,
+  },
+  gridList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  inFeedAdContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: Theme.spacing.sm,
   },
   skeletonGrid: {
     flexDirection: 'row',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenContainer } from '../../components/ScreenContainer';
@@ -8,7 +8,9 @@ import { SearchBar } from '../../components/SearchBar';
 import { EmptyState } from '../../components/EmptyState';
 import { PromptCardSkeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { BannerAd } from '../../components/BannerAd';
 import { useCategoryPrompts } from '../../hooks/usePrompts';
+import { useAdConfig } from '../../hooks/useAdConfig';
 import { Theme } from '../../constants/Theme';
 
 export default function CategoryScreen() {
@@ -16,6 +18,7 @@ export default function CategoryScreen() {
   const categorySlug = slug as string;
 
   const [search, setSearch] = useState('');
+  const { data: adConfig } = useAdConfig();
   const { data, isLoading, error, refetch, isRefetching } = useCategoryPrompts(
     categorySlug,
     search ? { search } : undefined
@@ -37,12 +40,7 @@ export default function CategoryScreen() {
 
   return (
     <ScreenContainer noPadding edges={['left', 'right', 'bottom']}>
-      <FlatList
-        data={prompts}
-        keyExtractor={(item) => String(item.id)}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        renderItem={({ item }) => <PromptCard prompt={item} grid portrait />}
+      <ScrollView
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -51,59 +49,70 @@ export default function CategoryScreen() {
             tintColor={Theme.colors.primaryLight}
           />
         }
-        ListHeaderComponent={
-          <View style={styles.headerContainer}>
-            {/* Category Banner without photos */}
-            {category && (
-              <LinearGradient
-                colors={['#E11D48', '#BE123C']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.bannerCard}
-              >
-                <Text style={styles.categoryTitle}>{category.name}</Text>
-                {category.description && (
-                  <Text style={styles.categoryDesc}>{category.description}</Text>
-                )}
-                <View style={styles.countBadge}>
-                  <Text style={styles.countText}>
-                    {data?.prompts?.total || 0} Prompts Available
-                  </Text>
-                </View>
-              </LinearGradient>
-            )}
+      >
+        <View style={styles.headerContainer}>
+          {/* Category Banner */}
+          {category && (
+            <LinearGradient
+              colors={['#E11D48', '#BE123C']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.bannerCard}
+            >
+              <Text style={styles.categoryTitle}>{category.name}</Text>
+              {category.description && (
+                <Text style={styles.categoryDesc}>{category.description}</Text>
+              )}
+              <View style={styles.countBadge}>
+                <Text style={styles.countText}>
+                  {data?.prompts?.total || 0} Prompts Available
+                </Text>
+              </View>
+            </LinearGradient>
+          )}
 
-            {/* In-category Search */}
-            <SearchBar
-              onSearch={setSearch}
-              placeholder={`Search in ${category?.name || 'this category'}...`}
-            />
+          {/* In-category Search */}
+          <SearchBar
+            onSearch={setSearch}
+            placeholder={`Search in ${category?.name || 'this category'}...`}
+          />
 
-            <View style={styles.promptsHeader}>
-              <Text style={styles.promptsTitle}>Prompts</Text>
-              <Text style={styles.promptsSubtitle}>
-                {data?.prompts?.total || 0} results
-              </Text>
-            </View>
+          <View style={styles.promptsHeader}>
+            <Text style={styles.promptsTitle}>Prompts</Text>
+            <Text style={styles.promptsSubtitle}>
+              {data?.prompts?.total || 0} results
+            </Text>
           </View>
-        }
-        ListEmptyComponent={
-          isLoading ? (
-            <View style={styles.skeletonGrid}>
-              <PromptCardSkeleton grid portrait />
-              <PromptCardSkeleton grid portrait />
-              <PromptCardSkeleton grid portrait />
-              <PromptCardSkeleton grid portrait />
-            </View>
-          ) : (
-            <EmptyState
-              icon="search-outline"
-              title="No Prompts Found"
-              message={`No prompts match your query in this category.`}
-            />
-          )
-        }
-      />
+        </View>
+
+        {isLoading ? (
+          <View style={styles.gridList}>
+            <PromptCardSkeleton grid portrait />
+            <PromptCardSkeleton grid portrait />
+            <PromptCardSkeleton grid portrait />
+            <PromptCardSkeleton grid portrait />
+          </View>
+        ) : prompts.length > 0 ? (
+          <View style={styles.gridList}>
+            {prompts.map((item, index) => (
+              <React.Fragment key={item.id}>
+                <PromptCard prompt={item} grid portrait />
+                {(index + 1) % 8 === 0 && (
+                  <View style={styles.inFeedAdContainer}>
+                    <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
+                  </View>
+                )}
+              </React.Fragment>
+            ))}
+          </View>
+        ) : (
+          <EmptyState
+            icon="search-outline"
+            title="No Prompts Found"
+            message={`No prompts match your query in this category.`}
+          />
+        )}
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -168,15 +177,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Theme.colors.textMuted,
   },
-  skeletonBox: {
-    gap: 12,
-  },
-  row: {
-    justifyContent: 'space-between',
-  },
-  skeletonGrid: {
+  gridList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+  },
+  inFeedAdContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: Theme.spacing.sm,
   },
 });

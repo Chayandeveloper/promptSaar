@@ -12,6 +12,7 @@ export interface RewardedAdCallbacks {
 let MobileAds: any = null;
 let RewardedAd: any = null;
 let InterstitialAd: any = null;
+let AppOpenAd: any = null;
 let RewardedAdEventType: any = null;
 let AdEventType: any = null;
 let TestIds: any = null;
@@ -22,6 +23,7 @@ try {
   MobileAds = gma.default;
   RewardedAd = gma.RewardedAd;
   InterstitialAd = gma.InterstitialAd;
+  AppOpenAd = gma.AppOpenAd;
   RewardedAdEventType = gma.RewardedAdEventType;
   AdEventType = gma.AdEventType;
   TestIds = gma.TestIds;
@@ -33,6 +35,7 @@ class AdMobService {
   private rewardedAdUnitId: string;
   private bannerAdUnitId: string;
   private isNativeAvailable: boolean = false;
+  private appOpenAdShown: boolean = false;
 
   constructor() {
     this.rewardedAdUnitId = Config.ADMOB.REWARDED_ID;
@@ -83,13 +86,35 @@ class AdMobService {
     );
   }
 
+  getFeedAdUnitId(): string {
+    return (
+      adConfigService.getConfig().feed_ad_unit_id ||
+      this.bannerAdUnitId ||
+      'ca-app-pub-9010050634863664/4429647201'
+    );
+  }
+
+  getAppOpenAdUnitId(): string {
+    return (
+      adConfigService.getConfig().app_open_ad_unit_id ||
+      'ca-app-pub-3940256099942544/9257395921'
+    );
+  }
+
+  getInterstitialPromptBackUnitId(): string {
+    const config = adConfigService.getConfig();
+    return (
+      config.interstitial_prompt_back_id ||
+      config.interstitial_ad_unit_id ||
+      'ca-app-pub-9010050634863664/9136172220'
+    );
+  }
+
   /**
    * Shows an Interstitial Ad when a prompt is clicked.
    * If interstitial ads are disabled from admin panel, directly calls onDismissed() immediately.
-   * When ad is shown and closed (or if it fails/times out), calls onDismissed() to navigate to prompt details.
    */
   async presentInterstitialOnPromptClick(onDismissed: () => void): Promise<void> {
-    // 1. Check admin switch: if master ads or prompt click interstitial is OFF, navigate immediately
     if (!adConfigService.isInterstitialOnPromptClickEnabled()) {
       onDismissed();
       return;
@@ -103,19 +128,17 @@ class AdMobService {
       }
     };
 
-    // 2. Native APK execution with Google Mobile Ads SDK
     if (this.isNativeAvailable && InterstitialAd && AdEventType) {
       try {
         const config = adConfigService.getConfig();
         const adUnitId =
           config.interstitial_ad_unit_id ||
-          'ca-app-pub-9010050634863664/6017296705';
+          'ca-app-pub-9010050634863664/9136172220';
 
         const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
         });
 
-        // 3.5s safety timeout so slow networks never block the user from seeing the prompt
         const fallbackTimer = setTimeout(() => {
           safeDismiss();
         }, 3500);
@@ -151,7 +174,180 @@ class AdMobService {
       }
     }
 
-    // 3. Expo Go / development environment simulation
+    safeDismiss();
+  }
+
+  /**
+   * Shows an Interstitial Ad when the user presses back from prompt details.
+   * Controlled independently by admin setting `interstitial_prompt_back`.
+   */
+  async presentInterstitialOnPromptBack(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnPromptBackEnabled()) {
+      onDismissed();
+      return;
+    }
+
+    let hasDismissed = false;
+    const safeDismiss = () => {
+      if (!hasDismissed) {
+        hasDismissed = true;
+        onDismissed();
+      }
+    };
+
+    if (this.isNativeAvailable && InterstitialAd && AdEventType) {
+      try {
+        const adUnitId = this.getInterstitialPromptBackUnitId();
+
+        const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+          requestNonPersonalizedAdsOnly: true,
+        });
+
+        // 3.5s safety timeout
+        const fallbackTimer = setTimeout(() => {
+          safeDismiss();
+        }, 3500);
+
+        const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+          clearTimeout(fallbackTimer);
+          interstitial.show().catch(() => {
+            safeDismiss();
+          });
+        });
+
+        const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+          clearTimeout(fallbackTimer);
+          unsubLoaded();
+          unsubClosed();
+          unsubError();
+          safeDismiss();
+        });
+
+        const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
+          clearTimeout(fallbackTimer);
+          unsubLoaded();
+          unsubClosed();
+          unsubError();
+          safeDismiss();
+        });
+
+        interstitial.load();
+        return;
+      } catch (err: any) {
+        safeDismiss();
+        return;
+      }
+    }
+
+    safeDismiss();
+  }
+
+  /**
+   * Shows an App Open Ad when app opens / mounts.
+   * Controlled independently by admin switch `app_open_ad_enabled` and `app_open_ad_unit_id`.
+   */
+  async presentAppOpenAd(onDismissed?: () => void): Promise<void> {
+    // Prevent duplicate launch triggers during the same cold start
+    if (this.appOpenAdShown) {
+      onDismissed?.();
+      return;
+    }
+
+    // Refresh ad configuration asynchronously in background
+    adConfigService.fetchConfig().catch(() => {});
+
+    if (!adConfigService.isAppOpenAdEnabled()) {
+      onDismissed?.();
+      return;
+    }
+
+    this.appOpenAdShown = true;
+
+    let hasDismissed = false;
+    const safeDismiss = () => {
+      if (!hasDismissed) {
+        hasDismissed = true;
+        onDismissed?.();
+      }
+    };
+
+    if (this.isNativeAvailable && Platform.OS !== 'web') {
+      try {
+        const adUnitId = this.getAppOpenAdUnitId();
+
+        // 1. Try AppOpenAd class if exported by native module
+        if (AppOpenAd && AdEventType) {
+          const appOpenAd = AppOpenAd.createForAdRequest(adUnitId, {
+            requestNonPersonalizedAdsOnly: true,
+          });
+
+          const timer = setTimeout(() => {
+            safeDismiss();
+          }, 4000);
+
+          const unsubLoaded = appOpenAd.addAdEventListener(AdEventType.LOADED, () => {
+            clearTimeout(timer);
+            appOpenAd.show().catch(() => {
+              safeDismiss();
+            });
+          });
+
+          const unsubClosed = appOpenAd.addAdEventListener(AdEventType.CLOSED, () => {
+            clearTimeout(timer);
+            unsubLoaded();
+            unsubClosed();
+            unsubError();
+            safeDismiss();
+          });
+
+          const unsubError = appOpenAd.addAdEventListener(AdEventType.ERROR, () => {
+            clearTimeout(timer);
+            unsubLoaded();
+            unsubClosed();
+            unsubError();
+            safeDismiss();
+          });
+
+          appOpenAd.load();
+          return;
+        }
+
+        // 2. Fallback to InterstitialAd if AppOpenAd is not provided by the build
+        if (InterstitialAd && AdEventType) {
+          const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+            requestNonPersonalizedAdsOnly: true,
+          });
+
+          const timer = setTimeout(() => {
+            safeDismiss();
+          }, 3500);
+
+          const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+            clearTimeout(timer);
+            interstitial.show().catch(() => {
+              safeDismiss();
+            });
+          });
+
+          const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+            clearTimeout(timer);
+            safeDismiss();
+          });
+
+          const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
+            clearTimeout(timer);
+            safeDismiss();
+          });
+
+          interstitial.load();
+          return;
+        }
+      } catch (e) {
+        safeDismiss();
+        return;
+      }
+    }
+
     safeDismiss();
   }
 
@@ -163,13 +359,11 @@ class AdMobService {
     simulateEarlyClose = false,
     placement: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'
   ): Promise<void> {
-    // Check master ads switch
     if (!adConfigService.isMasterEnabled()) {
       callbacks.onRewardEarned();
       return;
     }
 
-    // Native APK build where Google Mobile Ads SDK is present:
     if (this.isNativeAvailable && RewardedAd && RewardedAdEventType) {
       try {
         const adUnitId = this.getRewardedUnitId(placement);
