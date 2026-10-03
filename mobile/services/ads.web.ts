@@ -22,26 +22,65 @@ class WebAdMobService {
   }
 
   getFeedAdUnitId(): string {
-    return Config.ADMOB.BANNER_ID;
+    return (
+      adConfigService.getConfig().feed_ad_unit_id ||
+      Config.ADMOB.BANNER_ID ||
+      'ca-app-pub-9010050634863664/4429647201'
+    );
   }
 
   getAppOpenAdUnitId(): string {
-    return 'ca-app-pub-3940256099942544/9257395921';
+    return (
+      adConfigService.getConfig().app_open_ad_unit_id ||
+      'ca-app-pub-3940256099942544/9257395921'
+    );
   }
 
   getInterstitialPromptBackUnitId(): string {
-    return 'ca-app-pub-9010050634863664/9136172220';
+    const config = adConfigService.getConfig();
+    return (
+      config.interstitial_prompt_back_id ||
+      config.interstitial_ad_unit_id ||
+      'ca-app-pub-9010050634863664/9136172220'
+    );
   }
 
   async presentInterstitialOnPromptClick(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnPromptClickEnabled()) {
+      onDismissed();
+      return;
+    }
+    const unitId = adConfigService.getConfig().interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220';
+    console.log(
+      `%c[AdMob Web Preview] 🎬 Interstitial Ad (Prompt Click) Triggered! Unit ID: ${unitId}`,
+      'background: #f59e0b; color: #000; font-weight: bold; padding: 4px;'
+    );
     onDismissed();
   }
 
   async presentInterstitialOnPromptBack(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnPromptBackEnabled()) {
+      onDismissed();
+      return;
+    }
+    const unitId = this.getInterstitialPromptBackUnitId();
+    console.log(
+      `%c[AdMob Web Preview] 🔙 Interstitial Ad (Prompt Back) Triggered! Unit ID: ${unitId}`,
+      'background: #ea580c; color: #fff; font-weight: bold; padding: 4px;'
+    );
     onDismissed();
   }
 
   async presentAppOpenAd(onDismissed?: () => void): Promise<void> {
+    if (!adConfigService.isAppOpenAdEnabled()) {
+      onDismissed?.();
+      return;
+    }
+    const unitId = this.getAppOpenAdUnitId();
+    console.log(
+      `%c[AdMob Web Preview] 📱 App Open Ad Triggered on Launch! Unit ID: ${unitId}`,
+      'background: #9333ea; color: #fff; font-weight: bold; padding: 4px;'
+    );
     onDismissed?.();
   }
 
