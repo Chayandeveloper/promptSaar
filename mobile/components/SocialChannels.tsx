@@ -72,15 +72,9 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
       <TouchableOpacity
         activeOpacity={0.82}
         onPress={() => handleOpen('whatsapp')}
-        style={[
-          styles.button,
-          styles.whatsappBtn,
-          iconsOnly && styles.buttonIconsOnly,
-        ]}
+        style={[styles.rectButton, styles.whatsappBtn, iconsOnly && styles.rectButtonIconsOnly]}
       >
-        <View style={[styles.iconRect, styles.whatsappIconRect, iconsOnly && styles.iconRectIconsOnly]}>
-          <FontAwesome name="whatsapp" size={iconsOnly ? 20 : 16} color="#FFFFFF" />
-        </View>
+        <FontAwesome name="whatsapp" size={iconsOnly ? 22 : 18} color="#FFFFFF" />
         {!iconsOnly && <Text style={styles.btnLabel}>WhatsApp</Text>}
       </TouchableOpacity>
 
@@ -88,15 +82,9 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
       <TouchableOpacity
         activeOpacity={0.82}
         onPress={() => handleOpen('instagram')}
-        style={[
-          styles.button,
-          styles.instagramBtn,
-          iconsOnly && styles.buttonIconsOnly,
-        ]}
+        style={[styles.rectButton, styles.instagramBtn, iconsOnly && styles.rectButtonIconsOnly]}
       >
-        <View style={[styles.iconRect, styles.instagramIconRect, iconsOnly && styles.iconRectIconsOnly]}>
-          <FontAwesome name="instagram" size={iconsOnly ? 19 : 16} color="#FFFFFF" />
-        </View>
+        <FontAwesome name="instagram" size={iconsOnly ? 21 : 18} color="#FFFFFF" />
         {!iconsOnly && <Text style={styles.btnLabel}>Instagram</Text>}
       </TouchableOpacity>
 
@@ -104,15 +92,9 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
       <TouchableOpacity
         activeOpacity={0.82}
         onPress={() => handleOpen('telegram')}
-        style={[
-          styles.button,
-          styles.telegramBtn,
-          iconsOnly && styles.buttonIconsOnly,
-        ]}
+        style={[styles.rectButton, styles.telegramBtn, iconsOnly && styles.rectButtonIconsOnly]}
       >
-        <View style={[styles.iconRect, styles.telegramIconRect, iconsOnly && styles.iconRectIconsOnly]}>
-          <FontAwesome name="telegram" size={iconsOnly ? 18 : 15} color="#FFFFFF" />
-        </View>
+        <FontAwesome name="telegram" size={iconsOnly ? 20 : 17} color="#FFFFFF" />
         {!iconsOnly && <Text style={styles.btnLabel}>Telegram</Text>}
       </TouchableOpacity>
     </View>
@@ -128,64 +110,40 @@ const styles = StyleSheet.create({
     marginBottom: Theme.spacing.md + 2,
     gap: 10,
   },
-  button: {
+  rectButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 7,
+    gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 8,
-    backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    elevation: 2,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  rectButtonIconsOnly: {
+    height: 44,
+    gap: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   btnLabel: {
     fontSize: 12,
-    fontWeight: '700',
-    color: Theme.colors.text,
+    fontWeight: '800',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
   },
-  iconRect: {
-    width: 30,
-    height: 24,
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   whatsappBtn: {
-    borderColor: 'rgba(37, 211, 102, 0.3)',
-  },
-  whatsappIconRect: {
     backgroundColor: '#25D366',
   },
   instagramBtn: {
-    borderColor: 'rgba(225, 48, 108, 0.3)',
-  },
-  instagramIconRect: {
     backgroundColor: '#E1306C',
   },
   telegramBtn: {
-    borderColor: 'rgba(0, 136, 204, 0.3)',
-  },
-  telegramIconRect: {
     backgroundColor: '#0088CC',
-  },
-  buttonIconsOnly: {
-    paddingVertical: 10,
-    paddingHorizontal: 0,
-    gap: 0,
-    borderRadius: 8,
-  },
-  iconRectIconsOnly: {
-    width: 44,
-    height: 32,
-    borderRadius: 6,
   },
 });

@@ -80,10 +80,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
         <View style={[styles.topBadgeRow, grid && styles.topBadgeRowGrid]}>
           {prompt.is_locked ? (
             <View style={styles.lockPill}>
-              <Ionicons name="lock-closed" size={grid ? 8 : 10} color="#FF7A00" />
-              <Text style={[styles.lockText, grid && styles.lockTextGrid]}>
-                🪙 {prompt.unlock_cost || 30}
-              </Text>
+              <Ionicons name="lock-closed" size={grid ? 10 : 12} color="#FF7A00" />
             </View>
           ) : (
             <View style={styles.unlockedPill}>
@@ -270,10 +267,10 @@ const styles = StyleSheet.create({
   lockPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
     backgroundColor: 'rgba(17, 24, 39, 0.82)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
     borderRadius: Theme.borderRadius.full,
     borderWidth: 1,
     borderColor: 'rgba(255, 122, 0, 0.6)',

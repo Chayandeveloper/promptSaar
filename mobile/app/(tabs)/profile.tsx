@@ -74,7 +74,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <SocialChannels noPadding />
+          <SocialChannels noPadding iconsOnly />
         </View>
 
         {/* Rewards Section (Section 31) */}
