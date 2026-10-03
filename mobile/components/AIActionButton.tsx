@@ -25,12 +25,12 @@ export const AIActionButtons: React.FC<AIActionButtonsProps> = ({ promptText }) 
   };
 
   const handleChatGPT = async () => {
-    showToast('Copied to clipboard! Launching ChatGPT...');
+    showToast('✓ Prompt copied & loaded! Opening ChatGPT...');
     await aiLinksService.openChatGPT(promptText);
   };
 
   const handleGemini = async () => {
-    showToast('Copied to clipboard! Launching Gemini...');
+    showToast('✓ Prompt copied & loaded! Opening Gemini...');
     await aiLinksService.openGemini(promptText);
   };
 

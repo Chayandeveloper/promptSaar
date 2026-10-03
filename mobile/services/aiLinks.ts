@@ -3,48 +3,51 @@ import * as Clipboard from 'expo-clipboard';
 
 export const aiLinksService = {
   /**
-   * Copies the prompt to clipboard and opens ChatGPT with app deep link or web fallback.
+   * Copies the prompt to clipboard and opens ChatGPT with the prompt parameter.
    */
   async openChatGPT(promptText: string): Promise<boolean> {
     try {
+      // 1. Copy the full prompt to system clipboard so user can also 1-tap paste
       await Clipboard.setStringAsync(promptText);
 
-      const deepLink = 'chatgpt://';
-      const webUrl = 'https://chatgpt.com/';
+      const encodedPrompt = encodeURIComponent(promptText);
+      // https://chatgpt.com/?q= is supported by ChatGPT to pre-fill prompt into input
+      const targetUrl = `https://chatgpt.com/?q=${encodedPrompt}`;
 
-      const canOpen = await Linking.canOpenURL(deepLink).catch(() => false);
-      if (canOpen) {
-        await Linking.openURL(deepLink);
-      } else {
-        await Linking.openURL(webUrl);
-      }
+      await Linking.openURL(targetUrl);
       return true;
     } catch (e) {
       console.warn('Error opening ChatGPT:', e);
-      return false;
+      try {
+        await Linking.openURL('https://chatgpt.com/');
+        return true;
+      } catch (err) {
+        return false;
+      }
     }
   },
 
   /**
-   * Copies the prompt to clipboard and opens Gemini with app deep link or web fallback.
+   * Copies the prompt to clipboard and opens Gemini with the prompt parameter.
    */
   async openGemini(promptText: string): Promise<boolean> {
     try {
+      // 1. Copy the full prompt to system clipboard so user can also 1-tap paste
       await Clipboard.setStringAsync(promptText);
 
-      const deepLink = 'gemini://';
-      const webUrl = 'https://gemini.google.com/app';
+      const encodedPrompt = encodeURIComponent(promptText);
+      const targetUrl = `https://gemini.google.com/app?q=${encodedPrompt}`;
 
-      const canOpen = await Linking.canOpenURL(deepLink).catch(() => false);
-      if (canOpen) {
-        await Linking.openURL(deepLink);
-      } else {
-        await Linking.openURL(webUrl);
-      }
+      await Linking.openURL(targetUrl);
       return true;
     } catch (e) {
       console.warn('Error opening Gemini:', e);
-      return false;
+      try {
+        await Linking.openURL('https://gemini.google.com/app');
+        return true;
+      } catch (err) {
+        return false;
+      }
     }
   },
 
