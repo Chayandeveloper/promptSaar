@@ -114,6 +114,9 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   rectangleContainer: {
+    width: '90%',
+    maxWidth: 320,
+    alignSelf: 'center',
     minHeight: 250,
     marginVertical: Theme.spacing.md,
   },
