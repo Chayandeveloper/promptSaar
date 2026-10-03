@@ -318,9 +318,9 @@ export default function PromptDetailsScreen() {
 
         {/* Content Body */}
         <View style={styles.contentBody}>
-          {/* Category & Stats Row */}
-          <View style={styles.categoryStatsRow}>
-            {prompt.category && (
+          {/* Category Pill */}
+          {prompt.category && (
+            <View style={styles.categoryStatsRow}>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push(`/category/${prompt.category?.slug}` as any)}
@@ -328,15 +328,8 @@ export default function PromptDetailsScreen() {
               >
                 <Text style={styles.categoryText}>{prompt.category.name}</Text>
               </TouchableOpacity>
-            )}
-
-            <View style={styles.statsBadges}>
-              <View style={styles.statBadge}>
-                <Ionicons name="eye-outline" size={13} color={Theme.colors.textMuted} />
-                <Text style={styles.statBadgeText}>{prompt.views} views</Text>
-              </View>
             </View>
-          </View>
+          )}
 
           {/* Title */}
           <Text style={styles.title}>{prompt.title}</Text>
