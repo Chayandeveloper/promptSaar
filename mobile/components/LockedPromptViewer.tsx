@@ -1,17 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../constants/Theme';
 
 interface LockedPromptViewerProps {
-  promptCost: number;
+  promptCost?: number;
   userCoins: number;
   hasEnoughCoins: boolean;
   onUnlockPress: () => void;
   promptTitle?: string;
   categoryName?: string;
+  isUnlocking?: boolean;
 }
 
 export const LockedPromptViewer: React.FC<LockedPromptViewerProps> = ({
@@ -21,6 +22,7 @@ export const LockedPromptViewer: React.FC<LockedPromptViewerProps> = ({
   onUnlockPress,
   promptTitle,
   categoryName,
+  isUnlocking = false,
 }) => {
   return (
     <View style={styles.container}>
@@ -40,6 +42,7 @@ export const LockedPromptViewer: React.FC<LockedPromptViewerProps> = ({
       <TouchableOpacity
         activeOpacity={0.92}
         onPress={onUnlockPress}
+        disabled={isUnlocking}
         style={styles.contentBox}
       >
         {/* Background Simulated AI Prompt Text (Blurred) */}
@@ -104,27 +107,22 @@ export const LockedPromptViewer: React.FC<LockedPromptViewerProps> = ({
             Unlock to reveal the full prompt text, parameters &amp; AI export tools.
           </Text>
 
-          {/* Coin & Cost Badge */}
-          <View style={styles.costBadgeRow}>
-            <View style={styles.costChip}>
-              <Text style={styles.costChipText}>🪙 {promptCost} Coins</Text>
-            </View>
-            <Text style={styles.costOrText}>or</Text>
-            <View style={styles.freeChip}>
-              <Ionicons name="play-circle" size={13} color="#E11D48" />
-              <Text style={styles.freeChipText}>Free Ad</Text>
-            </View>
-          </View>
-
           {/* Primary Unlock CTA Button */}
           <TouchableOpacity
             activeOpacity={0.85}
+            disabled={isUnlocking}
             onPress={onUnlockPress}
-            style={styles.unlockCTAButton}
+            style={[styles.unlockCTAButton, isUnlocking && { opacity: 0.85 }]}
           >
-            <Ionicons name="flash" size={16} color="#FFFFFF" />
-            <Text style={styles.unlockCTAText}>Unlock Prompt Now</Text>
-            <Ionicons name="chevron-forward" size={15} color="#FFFFFF" />
+            {isUnlocking ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="flash" size={16} color="#FFFFFF" />
+            )}
+            <Text style={styles.unlockCTAText}>
+              {isUnlocking ? 'Unlocking...' : 'Unlock Prompt Now'}
+            </Text>
+            {!isUnlocking && <Ionicons name="chevron-forward" size={15} color="#FFFFFF" />}
           </TouchableOpacity>
 
           {/* User Balance Hint */}

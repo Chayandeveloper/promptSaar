@@ -10,6 +10,7 @@ import {
   Share,
   Modal,
   BackHandler,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -147,6 +148,7 @@ export default function PromptDetailsScreen() {
     } catch (err: any) {
       const msg = err?.data?.message || err.message || 'Failed to unlock with coins.';
       setCoinErrorMessage(msg);
+      Alert.alert('Unlock Error', msg);
     }
   };
 
@@ -176,14 +178,17 @@ export default function PromptDetailsScreen() {
             } catch (err: any) {
               setErrorMessage(err.message || 'Server failed to record ad unlock.');
               setAdUnlockState('error');
+              Alert.alert('Unlock Error', err.message || 'Server failed to record ad unlock.');
             }
           },
           onAdDismissedEarly: () => {
             setAdUnlockState('early_close');
+            Alert.alert('Incomplete Video', 'Please watch the complete video to unlock this prompt.');
           },
           onAdFailedToLoad: (err) => {
             setErrorMessage(err || "Couldn't load ad.");
             setAdUnlockState('error');
+            Alert.alert('Ad Unavailable', 'Rewarded ad could not be loaded at the moment. Please try again shortly or earn coins from Rewards.');
           },
         },
         false,
@@ -192,8 +197,33 @@ export default function PromptDetailsScreen() {
     } catch (err: any) {
       setErrorMessage(err.message || 'Ad playback encountered an error.');
       setAdUnlockState('error');
+      Alert.alert('Ad Error', 'Failed to play rewarded ad.');
     }
   };
+
+  // Auto-Unlock Flow: If coins are available, use coins automatically; if not, use the rewarded ad!
+  const handleAutoUnlock = async () => {
+    if (
+      unlockCoinsMutation.isPending ||
+      adUnlockState === 'loading_ad' ||
+      adUnlockState === 'watching_ad' ||
+      adUnlockState === 'unlocking'
+    ) {
+      return;
+    }
+
+    if (hasEnoughCoins) {
+      await handleCoinUnlockFlow();
+    } else {
+      await handleAdUnlockFlow();
+    }
+  };
+
+  const isUnlocking =
+    unlockCoinsMutation.isPending ||
+    adUnlockState === 'loading_ad' ||
+    adUnlockState === 'watching_ad' ||
+    adUnlockState === 'unlocking';
 
   if (isLoading) {
     return (
@@ -348,7 +378,8 @@ export default function PromptDetailsScreen() {
               promptCost={promptCost}
               userCoins={userCoins}
               hasEnoughCoins={hasEnoughCoins}
-              onUnlockPress={() => setShowUnlockModal(true)}
+              onUnlockPress={handleAutoUnlock}
+              isUnlocking={isUnlocking}
               promptTitle={prompt.title}
               categoryName={prompt.category?.name}
             />
