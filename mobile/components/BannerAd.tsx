@@ -57,7 +57,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   }
 
   const isFeed = placement === 'feed' || placement === 'in-feed';
-  const isRectangle = size === 'medium_rectangle' || placement === 'home_top';
+  const isRectangle = size === 'medium_rectangle' || placement === 'home_top' || isFeed;
 
   const configuredId =
     unitId ||

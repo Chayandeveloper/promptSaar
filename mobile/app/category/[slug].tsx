@@ -101,7 +101,11 @@ export default function CategoryScreen() {
               if ((index + 1) % 8 === 0) {
                 items.push(
                   <View key={`cat-ad-${index}`} style={styles.inFeedAdContainer}>
-                    <BannerAd placement="in-feed" unitId={adConfig?.feed_ad_unit_id} />
+                    <BannerAd
+                      placement="in-feed"
+                      size="medium_rectangle"
+                      unitId={adConfig?.feed_ad_unit_id}
+                    />
                   </View>
                 );
               }
