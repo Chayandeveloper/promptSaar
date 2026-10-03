@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, StyleProp, ViewStyle } from 'react-native';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import { useSocialLinks } from '../hooks/useSocialLinks';
 import { Theme } from '../constants/Theme';
 
@@ -60,7 +60,6 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
         await Linking.openURL(target);
       }
     } catch (e) {
-      // Fallback
       Linking.openURL(target).catch(() => {
         Alert.alert('Unable to open link', `Could not open ${channel}. Please try again later.`);
       });
@@ -79,8 +78,8 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
           iconsOnly && styles.buttonIconsOnly,
         ]}
       >
-        <View style={[styles.iconCircle, styles.whatsappIconCircle, iconsOnly && styles.iconCircleIconsOnly]}>
-          <FontAwesome name="whatsapp" size={iconsOnly ? 22 : 19} color="#FFFFFF" />
+        <View style={[styles.iconRect, styles.whatsappIconRect, iconsOnly && styles.iconRectIconsOnly]}>
+          <FontAwesome name="whatsapp" size={iconsOnly ? 20 : 16} color="#FFFFFF" />
         </View>
         {!iconsOnly && <Text style={styles.btnLabel}>WhatsApp</Text>}
       </TouchableOpacity>
@@ -95,8 +94,8 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
           iconsOnly && styles.buttonIconsOnly,
         ]}
       >
-        <View style={[styles.iconCircle, styles.instagramIconCircle, iconsOnly && styles.iconCircleIconsOnly]}>
-          <FontAwesome name="instagram" size={iconsOnly ? 21 : 19} color="#FFFFFF" />
+        <View style={[styles.iconRect, styles.instagramIconRect, iconsOnly && styles.iconRectIconsOnly]}>
+          <FontAwesome name="instagram" size={iconsOnly ? 19 : 16} color="#FFFFFF" />
         </View>
         {!iconsOnly && <Text style={styles.btnLabel}>Instagram</Text>}
       </TouchableOpacity>
@@ -111,8 +110,8 @@ export const SocialChannels: React.FC<SocialChannelsProps> = ({
           iconsOnly && styles.buttonIconsOnly,
         ]}
       >
-        <View style={[styles.iconCircle, styles.telegramIconCircle, iconsOnly && styles.iconCircleIconsOnly]}>
-          <FontAwesome name="telegram" size={iconsOnly ? 20 : 18} color="#FFFFFF" />
+        <View style={[styles.iconRect, styles.telegramIconRect, iconsOnly && styles.iconRectIconsOnly]}>
+          <FontAwesome name="telegram" size={iconsOnly ? 18 : 15} color="#FFFFFF" />
         </View>
         {!iconsOnly && <Text style={styles.btnLabel}>Telegram</Text>}
       </TouchableOpacity>
@@ -138,7 +137,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 8,
     backgroundColor: '#FFFFFF',
-    borderRadius: Theme.borderRadius.lg,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     shadowColor: '#000000',
@@ -153,40 +152,40 @@ const styles = StyleSheet.create({
     color: Theme.colors.text,
     letterSpacing: -0.2,
   },
-  iconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  iconRect: {
+    width: 30,
+    height: 24,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   whatsappBtn: {
     borderColor: 'rgba(37, 211, 102, 0.3)',
   },
-  whatsappIconCircle: {
+  whatsappIconRect: {
     backgroundColor: '#25D366',
   },
   instagramBtn: {
     borderColor: 'rgba(225, 48, 108, 0.3)',
   },
-  instagramIconCircle: {
+  instagramIconRect: {
     backgroundColor: '#E1306C',
   },
   telegramBtn: {
     borderColor: 'rgba(0, 136, 204, 0.3)',
   },
-  telegramIconCircle: {
+  telegramIconRect: {
     backgroundColor: '#0088CC',
   },
   buttonIconsOnly: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 0,
     gap: 0,
-    borderRadius: Theme.borderRadius.xl,
+    borderRadius: 8,
   },
-  iconCircleIconsOnly: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  iconRectIconsOnly: {
+    width: 44,
+    height: 32,
+    borderRadius: 6,
   },
 });
