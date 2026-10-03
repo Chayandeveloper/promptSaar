@@ -260,14 +260,13 @@ class RewardService
 
         $prompt->increment('unlock_count');
 
-            if ($eventId) {
-                AdRewardEvent::create([
-                    'user_id'      => $user->id,
-                    'event_id'     => $eventId,
-                    'reward_type'  => 'prompt_unlock',
-                    'reference_id' => (string) $prompt->id,
-                ]);
-            }
+        if ($eventId) {
+            AdRewardEvent::create([
+                'user_id'      => $user->id,
+                'event_id'     => $eventId,
+                'reward_type'  => 'prompt_unlock',
+                'reference_id' => (string) $prompt->id,
+            ]);
         }
 
         return [
