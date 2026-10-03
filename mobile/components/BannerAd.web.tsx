@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAdConfig } from '../hooks/useAdConfig';
 import { Config } from '../constants/Config';
 
 interface BannerAdProps {
-  placement?: 'bottom' | 'feed' | 'in-feed' | string;
+  placement?: 'bottom' | 'feed' | 'in-feed' | 'home_top' | string;
+  size?: 'banner' | 'large_banner' | 'medium_rectangle' | 'adaptive';
   unitId?: string;
   style?: any;
 }
@@ -16,6 +18,7 @@ interface BannerAdProps {
  */
 export const BannerAd: React.FC<BannerAdProps> = ({
   placement = 'bottom',
+  size,
   unitId,
   style,
 }) => {
@@ -36,6 +39,8 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   }
 
   const isFeed = placement === 'feed' || placement === 'in-feed';
+  const isRectangle = size === 'medium_rectangle' || placement === 'home_top';
+
   const effectiveId =
     unitId ||
     (isFeed ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
@@ -44,13 +49,26 @@ export const BannerAd: React.FC<BannerAdProps> = ({
     'ca-app-pub-9010050634863664/4429647201';
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, isRectangle && styles.rectangleContainer, style]}>
       <View style={styles.adHeader}>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>AdMob {isFeed ? 'In-Feed Ad' : 'Banner Ad'}</Text>
+          <Text style={styles.badgeText}>
+            AdMob {isRectangle ? 'Medium Rectangle Ad' : isFeed ? 'In-Feed Ad' : 'Banner Ad'}
+          </Text>
         </View>
         <Text style={styles.placementTag}>[{placement}]</Text>
       </View>
+
+      {isRectangle && (
+        <View style={styles.rectContentBox}>
+          <View style={styles.rectIconWrap}>
+            <Ionicons name="megaphone-outline" size={28} color="#6366F1" />
+          </View>
+          <Text style={styles.rectTitle}>Sponsored Ad Space (300 × 250)</Text>
+          <Text style={styles.rectSubtitle}>High-engagement rectangle banner placement</Text>
+        </View>
+      )}
+
       <Text style={styles.idText} numberOfLines={1}>
         Unit ID: {effectiveId}
       </Text>
@@ -75,11 +93,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  rectangleContainer: {
+    minHeight: 220,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(99, 102, 241, 0.06)',
+    borderRadius: 16,
+  },
   adHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 4,
+    marginBottom: 6,
+  },
+  rectContentBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 12,
+  },
+  rectIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(99, 102, 241, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  rectTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4F46E5',
+    marginBottom: 2,
+  },
+  rectSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
   },
   badge: {
     backgroundColor: '#6366F1',
@@ -102,7 +151,7 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 10,
     fontFamily: 'monospace',
-    marginTop: 3,
+    marginTop: 4,
   },
   noteText: {
     color: '#64748B',

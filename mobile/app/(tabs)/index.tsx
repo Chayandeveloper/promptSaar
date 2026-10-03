@@ -134,8 +134,8 @@ export default function HomeScreen() {
             {/* Social Redirect Buttons: WhatsApp, Instagram, Telegram */}
             <SocialChannels />
 
-            {/* AdMob Banner placement */}
-            <BannerAd placement="home_top" />
+            {/* AdMob Banner placement (Medium Rectangle Ad) */}
+            <BannerAd placement="home_top" size="medium_rectangle" />
 
             {/* Horizontally scrollable Categories */}
             {isCatLoading ? (

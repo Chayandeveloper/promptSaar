@@ -21,13 +21,15 @@ try {
 const GOOGLE_TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
 
 interface BannerAdProps {
-  placement?: 'bottom' | 'feed' | 'in-feed' | string;
+  placement?: 'bottom' | 'feed' | 'in-feed' | 'home_top' | string;
+  size?: 'banner' | 'large_banner' | 'medium_rectangle' | 'adaptive';
   unitId?: string;
   style?: any;
 }
 
 export const BannerAd: React.FC<BannerAdProps> = ({
   placement = 'bottom',
+  size,
   unitId,
   style,
 }) => {
@@ -55,6 +57,8 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   }
 
   const isFeed = placement === 'feed' || placement === 'in-feed';
+  const isRectangle = size === 'medium_rectangle' || placement === 'home_top';
+
   const configuredId =
     unitId ||
     (isFeed ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
@@ -70,14 +74,16 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {
-    const selectedSize = isFeed
+    const selectedSize = isRectangle
+      ? BannerAdSize.MEDIUM_RECTANGLE
+      : isFeed
       ? BannerAdSize.BANNER
       : BannerAdSize.ANCHORED_ADAPTIVE_BANNER;
 
     return (
-      <View style={[styles.container, style]}>
+      <View style={[styles.container, isRectangle && styles.rectangleContainer, style]}>
         <RNBannerAd
-          key={adUnitId}
+          key={`${adUnitId}-${selectedSize}`}
           unitId={adUnitId}
           size={selectedSize}
           requestOptions={{
@@ -106,5 +112,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: Theme.spacing.sm,
     minHeight: 50,
+  },
+  rectangleContainer: {
+    minHeight: 250,
+    marginVertical: Theme.spacing.md,
   },
 });
