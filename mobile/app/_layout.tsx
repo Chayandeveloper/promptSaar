@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as Updates from 'expo-updates';
 import { Theme } from '../constants/Theme';
 import { notificationService } from '../services/notifications';
 import { adService } from '../services/ads';
@@ -18,6 +19,22 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   useEffect(() => {
+    // Check for OTA update on launch and reload automatically if new bundle is available
+    async function checkOTA() {
+      try {
+        if (!__DEV__ && Updates.isEnabled) {
+          const check = await Updates.checkForUpdateAsync();
+          if (check.isAvailable) {
+            await Updates.fetchUpdateAsync();
+            await Updates.reloadAsync();
+          }
+        }
+      } catch (err) {
+        console.log('[Updates] Auto-check error:', err);
+      }
+    }
+    checkOTA();
+
     // Present App Open Ad on app launch if enabled by admin
     adService.presentAppOpenAd().catch((err) => {
       console.log('[AdMob] App open ad error:', err);
