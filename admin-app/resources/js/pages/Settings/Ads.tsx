@@ -57,7 +57,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
         interstitial_prompt_back_id: settings.interstitial_prompt_back_id || 'ca-app-pub-9010050634863664/9136172220',
         banner_ad_unit_id: settings.banner_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
         feed_ad_unit_id: settings.feed_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
-        app_open_ad_unit_id: settings.app_open_ad_unit_id || 'ca-app-pub-3940256099942544/9257395921',
+        app_open_ad_unit_id: settings.app_open_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
         rewarded_prompt_unlock_id: settings.rewarded_prompt_unlock_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
         rewarded_daily_coins_id: settings.rewarded_daily_coins_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
     });
@@ -333,20 +333,20 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             </label>
                         </div>
 
-                        {/* 7. App Open Ad */}
+                        {/* 7. App Launch Interstitial Ad */}
                         <div className="flex items-start justify-between gap-4 py-3">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                     <Smartphone size={16} className="text-purple-400" />
                                     <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                        App Open Ad (On Launch)
+                                        Full-Screen Interstitial Ad (On Launch)
                                     </span>
                                     <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                                        App Open
+                                        Fullscreen
                                     </span>
                                 </div>
                                 <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                                    Display a full-screen ad when the app is launched or opened by the user.
+                                    Display a full-screen interstitial ad when the application is launched by the user.
                                 </p>
                             </div>
 
@@ -455,13 +455,13 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
 
                         <div>
                             <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
-                                Android App Open Ad Unit ID
+                                Android Launch Interstitial Ad Unit ID
                             </label>
                             <input
                                 type="text"
                                 value={data.app_open_ad_unit_id}
                                 onChange={(e) => setData('app_open_ad_unit_id', e.target.value)}
-                                placeholder="ca-app-pub-3940256099942544/9257395921"
+                                placeholder="ca-app-pub-9010050634863664/9136172220"
                                 className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                                 style={inputStyle}
                             />
@@ -469,7 +469,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                                 <p className="text-red-400 text-xs mt-1">{errors.app_open_ad_unit_id}</p>
                             )}
                             <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
-                                App Open ad shown when launching the application. Google test ID: <code className="text-indigo-400 font-mono">ca-app-pub-3940256099942544/9257395921</code>.
+                                Full-screen Interstitial ad shown when launching the application. Live ID: <code className="text-indigo-400 font-mono">ca-app-pub-9010050634863664/9136172220</code>.
                             </p>
                         </div>
 

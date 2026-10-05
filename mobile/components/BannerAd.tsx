@@ -35,7 +35,6 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 }) => {
   const { data: adConfig } = useAdConfig();
   const [useFallback, setUseFallback] = useState(false);
-  const [hasError, setHasError] = useState(false);
 
   // Check admin switches
   if (adConfig) {
@@ -51,23 +50,17 @@ export const BannerAd: React.FC<BannerAdProps> = ({
     }
   }
 
-  // If both live ID and fallback failed, cleanly hide container
-  if (hasError) {
-    return null;
-  }
-
   const isFeed = placement === 'feed' || placement === 'in-feed';
   const isRectangle = size === 'medium_rectangle' || placement === 'home_top' || isFeed;
 
   const configuredId =
     unitId ||
-    (isFeed ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
+    (isRectangle ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
     adConfig?.banner_ad_unit_id ||
     Config.ADMOB.BANNER_ID ||
     'ca-app-pub-9010050634863664/4429647201';
 
-  // If the live AdMob ID returns NO_FILL or error (e.g. AdMob status is still "Not applicable"),
-  // automatically fall back to Google Test Banner ID so the ad space displays and works!
+  // Try live ID first; if AdMob returns NO_FILL, fall back to Google Test ID so space is not blank
   const adUnitId = useFallback
     ? (TestIds?.BANNER || GOOGLE_TEST_BANNER_ID)
     : configuredId;
@@ -93,8 +86,6 @@ export const BannerAd: React.FC<BannerAdProps> = ({
             console.warn(`[AdMob Banner - ${placement}] Failed to load (${adUnitId}):`, error?.message || error);
             if (!useFallback && configuredId !== GOOGLE_TEST_BANNER_ID) {
               setUseFallback(true);
-            } else {
-              setHasError(true);
             }
           }}
         />

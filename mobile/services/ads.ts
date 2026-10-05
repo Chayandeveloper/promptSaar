@@ -36,6 +36,22 @@ class AdMobService {
   private bannerAdUnitId: string;
   private isNativeAvailable: boolean = false;
   private appOpenAdShown: boolean = false;
+  private adLoadingListeners: Set<(isLoading: boolean) => void> = new Set();
+
+  onAdLoadingChange(listener: (isLoading: boolean) => void): () => void {
+    this.adLoadingListeners.add(listener);
+    return () => {
+      this.adLoadingListeners.delete(listener);
+    };
+  }
+
+  setAdLoading(isLoading: boolean): void {
+    this.adLoadingListeners.forEach((listener) => {
+      try {
+        listener(isLoading);
+      } catch (e) {}
+    });
+  }
 
   constructor() {
     this.rewardedAdUnitId = Config.ADMOB.REWARDED_ID;
@@ -95,9 +111,16 @@ class AdMobService {
   }
 
   getAppOpenAdUnitId(): string {
+    const config = adConfigService.getConfig();
+    if (
+      config.app_open_ad_unit_id &&
+      config.app_open_ad_unit_id !== 'ca-app-pub-3940256099942544/9257395921'
+    ) {
+      return config.app_open_ad_unit_id;
+    }
     return (
-      adConfigService.getConfig().app_open_ad_unit_id ||
-      'ca-app-pub-3940256099942544/9257395921'
+      config.interstitial_ad_unit_id ||
+      'ca-app-pub-9010050634863664/9136172220'
     );
   }
 
@@ -122,6 +145,7 @@ class AdMobService {
 
     let hasDismissed = false;
     const safeDismiss = () => {
+      this.setAdLoading(false);
       if (!hasDismissed) {
         hasDismissed = true;
         onDismissed();
@@ -135,6 +159,9 @@ class AdMobService {
           config.interstitial_ad_unit_id ||
           'ca-app-pub-9010050634863664/9136172220';
 
+        // Show immediate loader so user gets instant visual feedback
+        this.setAdLoading(true);
+
         const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
         });
@@ -145,6 +172,8 @@ class AdMobService {
 
         const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
           clearTimeout(fallbackTimer);
+          // Dismiss loader right before presenting the ad
+          this.setAdLoading(false);
           interstitial.show().catch(() => {
             safeDismiss();
           });
@@ -275,7 +304,45 @@ class AdMobService {
       try {
         const adUnitId = this.getAppOpenAdUnitId();
 
-        // 1. Try AppOpenAd class if exported by native module
+        // Use full-screen Interstitial Ad on app launch
+        if (InterstitialAd && AdEventType) {
+          const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+            requestNonPersonalizedAdsOnly: true,
+          });
+
+          const timer = setTimeout(() => {
+            safeDismiss();
+          }, 4000);
+
+          const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+            clearTimeout(timer);
+            interstitial.show().catch(() => {
+              safeDismiss();
+            });
+          });
+
+          const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+            clearTimeout(timer);
+            unsubLoaded();
+            unsubClosed();
+            unsubError();
+            safeDismiss();
+          });
+
+          const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, (err: any) => {
+            console.warn('[AdMob Launch Interstitial] Failed to load:', err);
+            clearTimeout(timer);
+            unsubLoaded();
+            unsubClosed();
+            unsubError();
+            safeDismiss();
+          });
+
+          interstitial.load();
+          return;
+        }
+
+        // Fallback to AppOpenAd if InterstitialAd is not available
         if (AppOpenAd && AdEventType) {
           const appOpenAd = AppOpenAd.createForAdRequest(adUnitId, {
             requestNonPersonalizedAdsOnly: true,
@@ -311,40 +378,8 @@ class AdMobService {
           appOpenAd.load();
           return;
         }
-
-        // 2. Fallback to InterstitialAd if AppOpenAd is not provided by the build
-        if (InterstitialAd && AdEventType) {
-          const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-            requestNonPersonalizedAdsOnly: true,
-          });
-
-          const timer = setTimeout(() => {
-            safeDismiss();
-          }, 3500);
-
-          const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-            clearTimeout(timer);
-            interstitial.show().catch(() => {
-              safeDismiss();
-            });
-          });
-
-          const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-            clearTimeout(timer);
-            safeDismiss();
-          });
-
-          const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
-            clearTimeout(timer);
-            safeDismiss();
-          });
-
-          interstitial.load();
-          return;
-        }
       } catch (e) {
         safeDismiss();
-        return;
       }
     }
 
@@ -372,11 +407,36 @@ class AdMobService {
         });
 
         let earned = false;
+        let isSettled = false;
+
+        // 5-second safety timeout: if ad network hangs or fails silently, trigger failure callback
+        const loadTimeout = setTimeout(() => {
+          if (!isSettled) {
+            isSettled = true;
+            cleanup();
+            callbacks.onAdFailedToLoad('Rewarded ad load timed out.');
+          }
+        }, 5000);
+
+        const cleanup = () => {
+          clearTimeout(loadTimeout);
+          try {
+            unsubscribeLoaded();
+            unsubscribeEarned();
+            unsubscribeClosed();
+            unsubscribeError();
+          } catch (_) {}
+        };
 
         const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+          clearTimeout(loadTimeout);
           callbacks.onAdLoaded?.();
           rewarded.show().catch((err: any) => {
-            callbacks.onAdFailedToLoad(err?.message || 'Failed to show rewarded ad.');
+            if (!isSettled) {
+              isSettled = true;
+              cleanup();
+              callbacks.onAdFailedToLoad(err?.message || 'Failed to show rewarded ad.');
+            }
           });
         });
 
@@ -386,21 +446,18 @@ class AdMobService {
         });
 
         const unsubscribeClosed = rewarded.addAdEventListener(AdEventType.CLOSED, () => {
-          unsubscribeLoaded();
-          unsubscribeEarned();
-          unsubscribeClosed();
-          unsubscribeError();
+          cleanup();
           if (!earned) {
             callbacks.onAdDismissedEarly();
           }
         });
 
         const unsubscribeError = rewarded.addAdEventListener(AdEventType.ERROR, (error: any) => {
-          unsubscribeLoaded();
-          unsubscribeEarned();
-          unsubscribeClosed();
-          unsubscribeError();
-          callbacks.onAdFailedToLoad(error?.message || 'Rewarded ad failed to load.');
+          if (!isSettled) {
+            isSettled = true;
+            cleanup();
+            callbacks.onAdFailedToLoad(error?.message || 'Rewarded ad failed to load.');
+          }
         });
 
         rewarded.load();

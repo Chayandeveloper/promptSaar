@@ -13,6 +13,12 @@ class WebAdMobService {
     adConfigService.fetchConfig().catch(() => {});
   }
 
+  onAdLoadingChange(_listener: (isLoading: boolean) => void): () => void {
+    return () => {};
+  }
+
+  setAdLoading(_isLoading: boolean): void {}
+
   getRewardedUnitId(_type: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'): string {
     return Config.ADMOB.REWARDED_ID;
   }

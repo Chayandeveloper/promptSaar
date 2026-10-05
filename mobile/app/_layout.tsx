@@ -5,6 +5,7 @@ import { Theme } from '../constants/Theme';
 import { notificationService } from '../services/notifications';
 import { adService } from '../services/ads';
 import { AppUpdateModal } from '../components/AppUpdateModal';
+import { AdLoadingOverlay } from '../components/AdLoadingOverlay';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -114,6 +115,7 @@ export default function RootLayout() {
         />
       </Stack>
       <AppUpdateModal />
+      <AdLoadingOverlay />
     </QueryClientProvider>
   );
 }

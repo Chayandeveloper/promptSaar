@@ -152,7 +152,27 @@ export default function PromptDetailsScreen() {
     }
   };
 
-  // Option 2 — Watch rewarded advertisement
+  // Helper to record prompt unlock on backend and reveal text
+  const completeServerUnlock = async () => {
+    setAdUnlockState('unlocking');
+    try {
+      const res = await unlockAdMutation.mutateAsync({ promptId });
+      if (res?.prompt_text) {
+        setSessionUnlockedText(res.prompt_text);
+      }
+      setWasUnlockedDuringSession(true);
+      setAdUnlockState('success');
+      setTimeout(() => {
+        setShowUnlockModal(false);
+      }, 1200);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Server failed to record unlock.');
+      setAdUnlockState('error');
+      Alert.alert('Unlock Error', err.message || 'Server failed to record unlock.');
+    }
+  };
+
+  // Option 2 — Watch rewarded advertisement (with automatic unlock fallback if ad does not appear)
   const handleAdUnlockFlow = async () => {
     setAdUnlockState('loading_ad');
     setErrorMessage(null);
@@ -164,40 +184,25 @@ export default function PromptDetailsScreen() {
             setAdUnlockState('watching_ad');
           },
           onRewardEarned: async () => {
-            setAdUnlockState('unlocking');
-            try {
-              const res = await unlockAdMutation.mutateAsync({ promptId });
-              if (res?.prompt_text) {
-                setSessionUnlockedText(res.prompt_text);
-              }
-              setWasUnlockedDuringSession(true);
-              setAdUnlockState('success');
-              setTimeout(() => {
-                setShowUnlockModal(false);
-              }, 1200);
-            } catch (err: any) {
-              setErrorMessage(err.message || 'Server failed to record ad unlock.');
-              setAdUnlockState('error');
-              Alert.alert('Unlock Error', err.message || 'Server failed to record ad unlock.');
-            }
+            await completeServerUnlock();
           },
           onAdDismissedEarly: () => {
             setAdUnlockState('early_close');
             Alert.alert('Incomplete Video', 'Please watch the complete video to unlock this prompt.');
           },
-          onAdFailedToLoad: (err) => {
-            setErrorMessage(err || "Couldn't load ad.");
-            setAdUnlockState('error');
-            Alert.alert('Ad Unavailable', 'Rewarded ad could not be loaded at the moment. Please try again shortly or earn coins from Rewards.');
+          onAdFailedToLoad: async (err) => {
+            // Ad failed to load / did not appear -> unlock prompt automatically so user is never blocked!
+            console.log('[Prompt Unlock] Ad did not appear, unlocking prompt automatically:', err);
+            await completeServerUnlock();
           },
         },
         false,
         'prompt_unlock'
       );
     } catch (err: any) {
-      setErrorMessage(err.message || 'Ad playback encountered an error.');
-      setAdUnlockState('error');
-      Alert.alert('Ad Error', 'Failed to play rewarded ad.');
+      // Ad presentation error / failure -> fallback unlock prompt automatically
+      console.log('[Prompt Unlock] Ad error, unlocking prompt automatically:', err);
+      await completeServerUnlock();
     }
   };
 
@@ -378,8 +383,8 @@ export default function PromptDetailsScreen() {
             />
           )}
 
-          {/* AdMob Banner Placement */}
-          <BannerAd placement="prompt_detail_bottom" />
+          {/* AdMob Banner Placement (Medium Rectangle 300x250) */}
+          <BannerAd placement="prompt_detail_bottom" size="medium_rectangle" />
 
           {/* More Prompts Section */}
           <View style={styles.morePromptsSection}>
