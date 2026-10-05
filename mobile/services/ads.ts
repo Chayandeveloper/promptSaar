@@ -36,19 +36,19 @@ class AdMobService {
   private bannerAdUnitId: string;
   private isNativeAvailable: boolean = false;
   private appOpenAdShown: boolean = false;
-  private adLoadingListeners: Set<(isLoading: boolean) => void> = new Set();
+  private adLoadingListeners: Set<(isLoading: boolean, title?: string, subtitle?: string) => void> = new Set();
 
-  onAdLoadingChange(listener: (isLoading: boolean) => void): () => void {
+  onAdLoadingChange(listener: (isLoading: boolean, title?: string, subtitle?: string) => void): () => void {
     this.adLoadingListeners.add(listener);
     return () => {
       this.adLoadingListeners.delete(listener);
     };
   }
 
-  setAdLoading(isLoading: boolean): void {
+  setAdLoading(isLoading: boolean, title?: string, subtitle?: string): void {
     this.adLoadingListeners.forEach((listener) => {
       try {
-        listener(isLoading);
+        listener(isLoading, title, subtitle);
       } catch (e) {}
     });
   }
@@ -399,6 +399,11 @@ class AdMobService {
       return;
     }
 
+    if (placement === 'prompt_unlock' && !adConfigService.isRewardedPromptUnlockEnabled()) {
+      callbacks.onRewardEarned();
+      return;
+    }
+
     if (this.isNativeAvailable && RewardedAd && RewardedAdEventType) {
       try {
         const adUnitId = this.getRewardedUnitId(placement);
@@ -409,14 +414,17 @@ class AdMobService {
         let earned = false;
         let isSettled = false;
 
-        // 5-second safety timeout: if ad network hangs or fails silently, trigger failure callback
+        // Show immediate loader so user gets instant visual feedback
+        this.setAdLoading(true, 'Unlocking Prompt...', 'Please wait a moment');
+
+        // 3-second safety timeout: if ad network hangs or fails silently, trigger failure callback to unlock automatically
         const loadTimeout = setTimeout(() => {
           if (!isSettled) {
             isSettled = true;
             cleanup();
             callbacks.onAdFailedToLoad('Rewarded ad load timed out.');
           }
-        }, 5000);
+        }, 3000);
 
         const cleanup = () => {
           clearTimeout(loadTimeout);
@@ -430,6 +438,8 @@ class AdMobService {
 
         const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
           clearTimeout(loadTimeout);
+          // Dismiss loader right as ad appears on screen
+          this.setAdLoading(false);
           callbacks.onAdLoaded?.();
           rewarded.show().catch((err: any) => {
             if (!isSettled) {
@@ -442,11 +452,13 @@ class AdMobService {
 
         const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
           earned = true;
+          this.setAdLoading(true, 'Unlocking Prompt...', 'Revealing full prompt...');
           callbacks.onRewardEarned();
         });
 
         const unsubscribeClosed = rewarded.addAdEventListener(AdEventType.CLOSED, () => {
           cleanup();
+          this.setAdLoading(false);
           if (!earned) {
             callbacks.onAdDismissedEarly();
           }
@@ -468,16 +480,18 @@ class AdMobService {
     }
 
     // Fallback simulation (for Expo Go & web development)
+    this.setAdLoading(true, 'Unlocking Prompt...', 'Please wait a moment');
     callbacks.onAdLoaded?.();
     return new Promise((resolve) => {
       setTimeout(() => {
+        this.setAdLoading(false);
         if (simulateEarlyClose) {
           callbacks.onAdDismissedEarly();
         } else {
           callbacks.onRewardEarned();
         }
         resolve();
-      }, 2000);
+      }, 1200);
     });
   }
 }

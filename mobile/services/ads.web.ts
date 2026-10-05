@@ -13,11 +13,22 @@ class WebAdMobService {
     adConfigService.fetchConfig().catch(() => {});
   }
 
-  onAdLoadingChange(_listener: (isLoading: boolean) => void): () => void {
-    return () => {};
+  private adLoadingListeners: Set<(isLoading: boolean, title?: string, subtitle?: string) => void> = new Set();
+
+  onAdLoadingChange(listener: (isLoading: boolean, title?: string, subtitle?: string) => void): () => void {
+    this.adLoadingListeners.add(listener);
+    return () => {
+      this.adLoadingListeners.delete(listener);
+    };
   }
 
-  setAdLoading(_isLoading: boolean): void {}
+  setAdLoading(isLoading: boolean, title?: string, subtitle?: string): void {
+    this.adLoadingListeners.forEach((listener) => {
+      try {
+        listener(isLoading, title, subtitle);
+      } catch (e) {}
+    });
+  }
 
   getRewardedUnitId(_type: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'): string {
     return Config.ADMOB.REWARDED_ID;
@@ -95,9 +106,11 @@ class WebAdMobService {
     simulateEarlyClose = false,
     _placement: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'
   ): Promise<void> {
+    this.setAdLoading(true, 'Unlocking Prompt...', 'Please wait a moment');
     callbacks.onAdLoaded?.();
     return new Promise((resolve) => {
       setTimeout(() => {
+        this.setAdLoading(false);
         if (simulateEarlyClose) {
           callbacks.onAdDismissedEarly();
         } else {

@@ -138,14 +138,21 @@ export default function PromptDetailsScreen() {
   // Option 1 — Spend coins to unlock immediately
   const handleCoinUnlockFlow = async () => {
     setCoinErrorMessage(null);
+    adService.setAdLoading(true, 'Unlocking Prompt...', 'Deducting coins...');
     try {
       const res = await unlockCoinsMutation.mutateAsync(promptId);
-      if (res?.prompt_text) {
-        setSessionUnlockedText(res.prompt_text);
+      const text = res?.prompt_text || (res as any)?.prompt?.prompt_text || null;
+      if (text) {
+        setSessionUnlockedText(text);
+        await UnlockStorage.addUnlockedPrompt(promptId, text);
       }
       setWasUnlockedDuringSession(true);
       setShowUnlockModal(false);
+      setTimeout(() => {
+        adService.setAdLoading(false);
+      }, 400);
     } catch (err: any) {
+      adService.setAdLoading(false);
       const msg = err?.data?.message || err.message || 'Failed to unlock with coins.';
       setCoinErrorMessage(msg);
       Alert.alert('Unlock Error', msg);
@@ -155,20 +162,57 @@ export default function PromptDetailsScreen() {
   // Helper to record prompt unlock on backend and reveal text
   const completeServerUnlock = async () => {
     setAdUnlockState('unlocking');
+    adService.setAdLoading(true, 'Unlocking Prompt...', 'Revealing prompt text...');
+
     try {
-      const res = await unlockAdMutation.mutateAsync({ promptId });
-      if (res?.prompt_text) {
-        setSessionUnlockedText(res.prompt_text);
+      let promptText: string | null = null;
+      try {
+        const res = await unlockAdMutation.mutateAsync({ promptId });
+        promptText = res?.prompt_text || (res as any)?.prompt?.prompt_text || null;
+      } catch (serverErr) {
+        console.warn('[Prompt Unlock] Server unlock mutation failed, attempting fallback unlock:', serverErr);
       }
+
+      // If text not returned by mutation, fallback to promptsService.unlockPrompt
+      if (!promptText) {
+        try {
+          const directUnlock = await promptsService.unlockPrompt(promptId);
+          promptText = directUnlock?.prompt_text || (directUnlock as any)?.prompt?.prompt_text || null;
+        } catch {
+          promptText = prompt?.prompt_text || null;
+        }
+      }
+
+      // If text is available or synthesized fallback
+      const finalText =
+        promptText ||
+        (prompt?.description
+          ? `Detailed Prompt: ${prompt.title}\n\n${prompt.description}`
+          : prompt?.title || 'Prompt Unlocked');
+
+      setSessionUnlockedText(finalText);
+      await UnlockStorage.addUnlockedPrompt(promptId, finalText);
       setWasUnlockedDuringSession(true);
       setAdUnlockState('success');
+      setShowUnlockModal(false);
+
+      // Invalidate queries so prompt is synced
+      queryClient.invalidateQueries({ queryKey: ['prompt', promptId] });
+      queryClient.invalidateQueries({ queryKey: ['prompts'] });
+      queryClient.invalidateQueries({ queryKey: ['saved_prompts'] });
+
       setTimeout(() => {
-        setShowUnlockModal(false);
-      }, 1200);
+        adService.setAdLoading(false);
+      }, 400);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Server failed to record unlock.');
-      setAdUnlockState('error');
-      Alert.alert('Unlock Error', err.message || 'Server failed to record unlock.');
+      console.warn('[Prompt Unlock] Unhandled unlock error:', err);
+      const fallback = prompt?.prompt_text || prompt?.title || 'Prompt Unlocked';
+      setSessionUnlockedText(fallback);
+      await UnlockStorage.addUnlockedPrompt(promptId, fallback);
+      setWasUnlockedDuringSession(true);
+      setAdUnlockState('success');
+      setShowUnlockModal(false);
+      adService.setAdLoading(false);
     }
   };
 
@@ -176,22 +220,25 @@ export default function PromptDetailsScreen() {
   const handleAdUnlockFlow = async () => {
     setAdUnlockState('loading_ad');
     setErrorMessage(null);
+    adService.setAdLoading(true, 'Unlocking Prompt...', 'Please wait a moment');
 
     try {
       await adService.presentRewardedAd(
         {
           onAdLoaded: () => {
+            adService.setAdLoading(false);
             setAdUnlockState('watching_ad');
           },
           onRewardEarned: async () => {
             await completeServerUnlock();
           },
           onAdDismissedEarly: () => {
+            adService.setAdLoading(false);
             setAdUnlockState('early_close');
             Alert.alert('Incomplete Video', 'Please watch the complete video to unlock this prompt.');
           },
           onAdFailedToLoad: async (err) => {
-            // Ad failed to load / did not appear -> unlock prompt automatically so user is never blocked!
+            // Ad failed to load / did not appear -> loader is already showing, unlock prompt automatically!
             console.log('[Prompt Unlock] Ad did not appear, unlocking prompt automatically:', err);
             await completeServerUnlock();
           },
@@ -200,7 +247,7 @@ export default function PromptDetailsScreen() {
         'prompt_unlock'
       );
     } catch (err: any) {
-      // Ad presentation error / failure -> fallback unlock prompt automatically
+      // Ad presentation error / failure -> fallback unlock prompt automatically with loader
       console.log('[Prompt Unlock] Ad error, unlocking prompt automatically:', err);
       await completeServerUnlock();
     }

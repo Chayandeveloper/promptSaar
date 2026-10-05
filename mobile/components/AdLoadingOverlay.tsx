@@ -13,12 +13,16 @@ import { Theme } from '../constants/Theme';
 
 export const AdLoadingOverlay: React.FC = () => {
   const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState('Opening Prompt...');
+  const [subtitle, setSubtitle] = useState('Please wait a moment');
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
 
   useEffect(() => {
-    const unsubscribe = adService.onAdLoadingChange((isLoading) => {
+    const unsubscribe = adService.onAdLoadingChange((isLoading, newTitle, newSubtitle) => {
       if (isLoading) {
+        if (newTitle) setTitle(newTitle);
+        if (newSubtitle) setSubtitle(newSubtitle);
         setVisible(true);
         Animated.parallel([
           Animated.timing(fadeAnim, {
@@ -41,6 +45,8 @@ export const AdLoadingOverlay: React.FC = () => {
         }).start(() => {
           setVisible(false);
           scaleAnim.setValue(0.92);
+          setTitle('Opening Prompt...');
+          setSubtitle('Please wait a moment');
         });
       }
     });
@@ -74,8 +80,8 @@ export const AdLoadingOverlay: React.FC = () => {
           <View style={styles.spinnerContainer}>
             <ActivityIndicator size="large" color={Theme.colors.primary} />
           </View>
-          <Text style={styles.title}>Opening Prompt...</Text>
-          <Text style={styles.subtitle}>Please wait a moment</Text>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
         </Animated.View>
       </View>
     </Modal>

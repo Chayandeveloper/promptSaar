@@ -230,10 +230,11 @@ class RewardService
             ]);
 
             // Record prompt unlock
-            PromptUnlock::create([
-                'prompt_id'     => $prompt->id,
+            PromptUnlock::firstOrCreate([
+                'prompt_id' => $prompt->id,
+                'device_id' => $lockedUser->device_id,
+            ], [
                 'user_id'       => $lockedUser->id,
-                'device_id'     => $lockedUser->device_id,
                 'unlock_method' => 'coins',
                 'coins_spent'   => $cost,
                 'unlocked_at'   => now(),
@@ -261,13 +262,25 @@ class RewardService
         $prompt->increment('unlock_count');
 
         if ($eventId) {
-            AdRewardEvent::create([
+            AdRewardEvent::firstOrCreate([
+                'event_id' => $eventId,
+            ], [
                 'user_id'      => $user->id,
-                'event_id'     => $eventId,
                 'reward_type'  => 'prompt_unlock',
                 'reference_id' => (string) $prompt->id,
             ]);
         }
+
+        // Record prompt unlock so the prompt stays unlocked in session/database
+        PromptUnlock::firstOrCreate([
+            'prompt_id' => $prompt->id,
+            'device_id' => $deviceId ?? $user->device_id,
+        ], [
+            'user_id'       => $user->id,
+            'unlock_method' => 'ad',
+            'coins_spent'   => 0,
+            'unlocked_at'   => now(),
+        ]);
 
         return [
             'message'     => 'Prompt unlocked with rewarded ad!',
