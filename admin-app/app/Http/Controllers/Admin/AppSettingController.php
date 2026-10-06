@@ -23,27 +23,7 @@ class AppSettingController extends Controller
 
     public function update(Request $request)
     {
-        $validated = $request->validate([
-            'min_version'          => 'nullable|string|max:20',
-            'latest_version'       => 'nullable|string|max:20',
-            'force_update'         => 'nullable|boolean',
-            'update_url'           => 'nullable|string|max:500',
-            'update_title'         => 'nullable|string|max:100',
-            'update_message'       => 'nullable|string|max:1000',
-            'maintenance_mode'     => 'nullable|boolean',
-            'maintenance_message'  => 'nullable|string|max:1000',
-            'whatsapp_url'         => 'nullable|string|max:500',
-            'instagram_url'        => 'nullable|string|max:500',
-            'telegram_url'         => 'nullable|string|max:500',
-        ]);
-
-        foreach ($validated as $key => $value) {
-            if ($value !== null) {
-                AppSetting::set($key, $value);
-            }
-        }
-
-        return redirect()->back()->with('success', 'App version settings updated successfully!');
+        return redirect()->back()->with('info', 'App version settings saving is temporarily disabled.');
     }
 
     public function socialIndex(): Response

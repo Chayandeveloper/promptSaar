@@ -48,7 +48,7 @@ export default function AppVersionPage({ settings, admin }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/admin/settings/app', { preserveScroll: true });
+        // Disabled currently as requested
     };
 
     return (
@@ -75,13 +75,12 @@ export default function AppVersionPage({ settings, admin }: Props) {
 
                     <button
                         type="button"
-                        onClick={submit}
-                        disabled={processing}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm text-white shadow-lg shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer"
-                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                        disabled={true}
+                        title="This feature will be available soon"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm shadow-sm cursor-not-allowed bg-slate-800 text-slate-400 border border-slate-700/80 transition-all opacity-70"
                     >
-                        <Save size={15} />
-                        <span>{processing ? 'Saving Changes...' : 'Save All Settings'}</span>
+                        <Lock size={15} className="text-amber-400" />
+                        <span>Save Settings (Available Soon)</span>
                     </button>
                 </div>
 
