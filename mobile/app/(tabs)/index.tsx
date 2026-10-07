@@ -104,7 +104,9 @@ export default function HomeScreen() {
                   const items = [
                     <PromptCard key={`search-${item.id}`} prompt={item} grid portrait />
                   ];
-                  if ((index + 1) % 8 === 0) {
+                  const isEighth = (index + 1) % 8 === 0;
+                  const isDevSample = __DEV__ && (index === searchData.data.length - 1 || index === 0);
+                  if (isEighth || isDevSample) {
                     items.push(
                       <View key={`search-ad-${index}`} style={styles.inFeedAdContainer}>
                         <BannerAd
@@ -175,15 +177,17 @@ export default function HomeScreen() {
                     const items = [
                       <PromptCard key={`recent-${item.id}`} prompt={item} grid portrait />
                     ];
-                    if ((index + 1) % 8 === 0) {
+                    const isEighth = (index + 1) % 8 === 0;
+                    const isDevSample = __DEV__ && (index === recentData.length - 1 || index === 0);
+                    if (isEighth || isDevSample) {
                       items.push(
-                        <View key={`recent-ad-${index}`} style={styles.inFeedAdContainer}>
-                          <BannerAd
-                            placement="in-feed"
-                            size="medium_rectangle"
-                            unitId={adConfig?.feed_ad_unit_id}
-                          />
-                        </View>
+                        <BannerAd
+                          key={`recent-ad-${index}`}
+                          placement="in-feed"
+                          size="medium_rectangle"
+                          unitId={adConfig?.feed_ad_unit_id}
+                          style={styles.inFeedAdContainer}
+                        />
                       );
                     }
                     return items;

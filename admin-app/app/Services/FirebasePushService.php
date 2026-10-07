@@ -34,7 +34,7 @@ class FirebasePushService
     }
 
     /**
-     * Broadcast a push notification to all active registered devices.
+     * Broadcast a push notification immediately or schedule it for a future timestamp.
      */
     public function broadcast(
         string $title,
@@ -42,9 +42,10 @@ class FirebasePushService
         array $data = [],
         ?string $imageUrl = null,
         string $actionType = 'home',
-        ?string $targetId = null
+        ?string $targetId = null,
+        ?\DateTimeInterface $scheduledAt = null
     ): PushNotification {
-        $tokens = DevicePushToken::where('is_active', true)->get();
+        $isScheduled = $scheduledAt && $scheduledAt > now();
 
         $notificationLog = PushNotification::create([
             'title'         => $title,
@@ -53,14 +54,40 @@ class FirebasePushService
             'action_type'   => $actionType,
             'target_id'     => $targetId,
             'data'          => $data,
-            'sent_count'    => $tokens->count(),
+            'sent_count'    => 0,
             'success_count' => 0,
             'failure_count' => 0,
-            'status'        => 'sent',
+            'status'        => $isScheduled ? 'scheduled' : 'processing',
+            'scheduled_at'  => $scheduledAt,
+            'sent_at'       => null,
+        ]);
+
+        if ($isScheduled) {
+            Log::info("[PushService] Notification #{$notificationLog->id} scheduled for {$scheduledAt->format('Y-m-d H:i:s')}");
+            return $notificationLog;
+        }
+
+        return $this->dispatchNotification($notificationLog);
+    }
+
+    /**
+     * Dispatch an existing push notification record to all registered devices.
+     */
+    public function dispatchNotification(PushNotification $notification): PushNotification
+    {
+        $tokens = DevicePushToken::where('is_active', true)->get();
+
+        $notification->update([
+            'status'     => 'processing',
+            'sent_count' => $tokens->count(),
         ]);
 
         if ($tokens->isEmpty()) {
-            return $notificationLog;
+            $notification->update([
+                'status'  => 'sent',
+                'sent_at' => now(),
+            ]);
+            return $notification;
         }
 
         $successCount = 0;
@@ -74,10 +101,10 @@ class FirebasePushService
         if ($expoTokens->isNotEmpty()) {
             [$expoSuccess, $expoFailure] = $this->sendExpoBatch(
                 $expoTokens->pluck('push_token')->toArray(),
-                $title,
-                $body,
-                $data,
-                $imageUrl
+                $notification->title,
+                $notification->body,
+                $notification->data ?? [],
+                $notification->image_url
             );
             $successCount += $expoSuccess;
             $failureCount += $expoFailure;
@@ -88,10 +115,10 @@ class FirebasePushService
             foreach ($fcmTokens as $fcmRecord) {
                 $ok = $this->sendFcmV1(
                     $fcmRecord->push_token,
-                    $title,
-                    $body,
-                    $data,
-                    $imageUrl
+                    $notification->title,
+                    $notification->body,
+                    $notification->data ?? [],
+                    $notification->image_url
                 );
                 if ($ok) {
                     $successCount++;
@@ -101,13 +128,37 @@ class FirebasePushService
             }
         }
 
-        $notificationLog->update([
+        $notification->update([
             'success_count' => $successCount,
             'failure_count' => $failureCount,
-            'status'        => $failureCount === $tokens->count() && $tokens->isNotEmpty() ? 'failed' : 'sent',
+            'status'        => 'sent',
+            'sent_at'       => now(),
         ]);
 
-        return $notificationLog;
+        Log::info("[PushService] Dispatched notification #{$notification->id} to {$tokens->count()} devices. Success: {$successCount}, Failed: {$failureCount}");
+
+        return $notification;
+    }
+
+    /**
+     * Process and dispatch all pending scheduled notifications that are due.
+     * Returns the count of dispatched notifications.
+     */
+    public function processScheduledNotifications(): int
+    {
+        $due = PushNotification::where('status', 'scheduled')
+            ->whereNotNull('scheduled_at')
+            ->where('scheduled_at', '<=', now())
+            ->orderBy('scheduled_at', 'asc')
+            ->get();
+
+        $processed = 0;
+        foreach ($due as $notification) {
+            $this->dispatchNotification($notification);
+            $processed++;
+        }
+
+        return $processed;
     }
 
     /**
@@ -223,6 +274,13 @@ class FirebasePushService
                 ->withToken($accessToken)
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->post($url, $payload);
+
+            if (!$res->successful()) {
+                Log::warning('[FCM] Send error: ' . $res->status() . ' - ' . $res->body());
+                if ($res->status() === 404 || str_contains($res->body(), 'UNREGISTERED')) {
+                    DevicePushToken::where('push_token', $token)->update(['is_active' => false]);
+                }
+            }
 
             return $res->successful();
         } catch (\Throwable $e) {

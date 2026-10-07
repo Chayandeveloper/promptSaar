@@ -61,4 +61,34 @@ class NotificationController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Push token unregistered.']);
     }
+
+    /**
+     * GET /api/notifications/latest
+     * Returns latest sent notifications for live testing in Expo Go and client in-app sync.
+     */
+    public function latest(Request $request): JsonResponse
+    {
+        // Fail-safe: trigger any overdue scheduled notifications
+        try {
+            $this->pushService->processScheduledNotifications();
+        } catch (\Throwable $e) {}
+
+        $sinceId = (int) $request->query('since_id', 0);
+
+        $query = \App\Models\PushNotification::where(function ($q) {
+            $q->where('status', 'sent')
+              ->orWhereNotNull('sent_at');
+        })->orderBy('id', 'desc');
+
+        if ($sinceId > 0) {
+            $query->where('id', '>', $sinceId);
+        }
+
+        $notifications = $query->limit(5)->get();
+
+        return response()->json([
+            'status'        => 'ok',
+            'notifications' => $notifications,
+        ]);
+    }
 }

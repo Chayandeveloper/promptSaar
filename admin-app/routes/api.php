@@ -96,7 +96,8 @@ Route::prefix('admin')->group(function () {
     });
 });
 
-// Push Notifications Device Registration
+// Push Notifications Device Registration & In-App Sync
 Route::post('/notifications/register-token', [\App\Http\Controllers\Api\NotificationController::class, 'registerToken']);
 Route::post('/notifications/unregister-token', [\App\Http\Controllers\Api\NotificationController::class, 'unregisterToken']);
+Route::get('/notifications/latest', [\App\Http\Controllers\Api\NotificationController::class, 'latest']);
 

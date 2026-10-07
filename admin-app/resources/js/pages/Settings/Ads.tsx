@@ -1,10 +1,10 @@
 import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
 import {
     Tv, Save, CheckCircle, Sparkles,
     PlaySquare, Layers, Coins, RefreshCw, Info,
-    ArrowLeft, Smartphone, LayoutGrid
+    ArrowLeft, Smartphone, LayoutGrid, FileCode, ExternalLink, ShieldCheck
 } from 'lucide-react';
 
 interface Settings {
@@ -108,6 +108,48 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                         <span className="font-medium">Ad settings and switches saved successfully! Mobile clients will apply them immediately.</span>
                     </div>
                 )}
+
+                {/* Quick Link to app-ads.txt Editor */}
+                <div
+                    className="p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05))',
+                        borderColor: 'rgba(99, 102, 241, 0.25)',
+                    }}
+                >
+                    <div className="flex items-start sm:items-center gap-3.5">
+                        <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.3)' }}
+                        >
+                            <FileCode size={20} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    Authorized Digital Sellers (app-ads.txt)
+                                </h3>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                                    <ShieldCheck size={11} /> Active
+                                </span>
+                            </div>
+                            <p className="text-xs pt-0.5" style={{ color: 'var(--color-muted)' }}>
+                                Required by Google AdMob to protect ad revenue from fraud and verify developer ownership.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                            href="/admin/settings/app-ads"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer"
+                            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                        >
+                            <span>Edit app-ads.txt</span>
+                            <ExternalLink size={13} />
+                        </Link>
+                    </div>
+                </div>
 
                 <form onSubmit={submit} className="space-y-6">
                     {/* Master Kill-Switch Card */}

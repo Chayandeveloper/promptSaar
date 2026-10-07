@@ -2,12 +2,23 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const getBackendUrl = () => {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl && !envUrl.includes('127.0.0.1') && !envUrl.includes('localhost')) {
-    return envUrl;
+  // In Expo Go or local development, always connect directly to local Laravel backend
+  if (__DEV__) {
+    const hostUri = Constants.expoConfig?.hostUri || (Constants as any)?.manifest?.debuggerHost;
+    if (hostUri) {
+      const ip = hostUri.split(':')[0];
+      if (ip) {
+        return `http://${ip}:8001/api`;
+      }
+    }
+    return 'http://192.168.1.5:8001/api';
   }
 
-  // Default Fallback for Production / Local
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.trim();
+  }
+
   return 'https://promptbaba.cloud/api';
 };
 
@@ -25,3 +36,5 @@ export const Config = {
     DEVICE_ID:       'promptcraft_device_id',        // anonymous UUID for analytics
   },
 };
+
+console.log('[Config] 🌐 Active Backend API URL:', Config.API_URL);

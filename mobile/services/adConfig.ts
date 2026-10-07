@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from './api';
 import { Config } from '../constants/Config';
 
@@ -39,31 +40,116 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   rewarded_daily_coins_id: Config.ADMOB.REWARDED_ID,
 };
 
+const STORAGE_KEY = '@prompt_saar_ad_config_v2';
+
+function parseBool(val: any, fallback = false): boolean {
+  if (val === undefined || val === null) return fallback;
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'number') return val !== 0;
+  if (typeof val === 'string') {
+    const s = val.trim().toLowerCase();
+    if (s === 'false' || s === '0' || s === 'off' || s === 'no' || s === '') return false;
+    if (s === 'true' || s === '1' || s === 'on' || s === 'yes') return true;
+  }
+  return Boolean(val);
+}
+
 class AdConfigService {
   private cachedConfig: AdConfig = DEFAULT_AD_CONFIG;
+  private hasInitialized = false;
+  private initPromise: Promise<AdConfig> | null = null;
+
+  constructor() {
+    this.init().catch(() => {});
+  }
+
+  async init(): Promise<AdConfig> {
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = (async () => {
+      // 1. Try to load cached config from AsyncStorage for immediate offline/startup accuracy
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object') {
+            this.cachedConfig = this.normalizeConfig(parsed);
+            this.hasInitialized = true;
+          }
+        }
+      } catch (e) {
+        // ignore storage error
+      }
+
+      // 2. Fetch fresh live config from backend
+      try {
+        await this.fetchConfig();
+      } catch (e) {
+        // ignore network error
+      }
+
+      this.hasInitialized = true;
+      return this.cachedConfig;
+    })();
+
+    return this.initPromise;
+  }
+
+  async ensureInitialized(timeoutMs = 1500): Promise<AdConfig> {
+    if (this.hasInitialized) return this.cachedConfig;
+
+    return Promise.race([
+      this.init(),
+      new Promise<AdConfig>((resolve) => {
+        setTimeout(() => resolve(this.cachedConfig), timeoutMs);
+      }),
+    ]);
+  }
+
+  isReady(): boolean {
+    return this.hasInitialized;
+  }
+
+  private normalizeConfig(raw: any): AdConfig {
+    const ads_enabled = parseBool(raw.ads_enabled, true);
+
+    return {
+      ads_enabled,
+      // If master switch is off, all individual triggers are strictly disabled
+      interstitial_prompt_click: ads_enabled && parseBool(raw.interstitial_prompt_click, true),
+      interstitial_prompt_back: ads_enabled && parseBool(raw.interstitial_prompt_back, true),
+      rewarded_prompt_unlock: ads_enabled && parseBool(raw.rewarded_prompt_unlock, true),
+      rewarded_daily_coins: ads_enabled && parseBool(raw.rewarded_daily_coins, true),
+      banner_ads_enabled: ads_enabled && parseBool(raw.banner_ads_enabled, true),
+      feed_ad_enabled: ads_enabled && parseBool(raw.feed_ad_enabled, true),
+      app_open_ad_enabled: ads_enabled && parseBool(raw.app_open_ad_enabled, true),
+
+      interstitial_ad_unit_id: raw.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_ad_unit_id,
+      interstitial_prompt_back_id: raw.interstitial_prompt_back_id || raw.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_prompt_back_id,
+      banner_ad_unit_id: raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_ad_unit_id,
+      feed_ad_unit_id: raw.feed_ad_unit_id || raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.feed_ad_unit_id,
+      app_open_ad_unit_id: raw.app_open_ad_unit_id || DEFAULT_AD_CONFIG.app_open_ad_unit_id,
+      rewarded_ad_unit_id: raw.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_ad_unit_id,
+      rewarded_prompt_unlock_id: raw.rewarded_prompt_unlock_id || raw.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_prompt_unlock_id,
+      rewarded_daily_coins_id: raw.rewarded_daily_coins_id || raw.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_daily_coins_id,
+    };
+  }
 
   async fetchConfig(): Promise<AdConfig> {
     try {
-      const response = await api.get<{ status: string; config: AdConfig }>('/ad-config');
+      const response = await api.get<{ status: string; config: any }>('/ad-config');
       if (response && response.config) {
-        this.cachedConfig = {
-          ads_enabled: Boolean(response.config.ads_enabled),
-          interstitial_prompt_click: Boolean(response.config.interstitial_prompt_click),
-          interstitial_prompt_back: Boolean(response.config.interstitial_prompt_back ?? true),
-          rewarded_prompt_unlock: Boolean(response.config.rewarded_prompt_unlock),
-          rewarded_daily_coins: Boolean(response.config.rewarded_daily_coins),
-          banner_ads_enabled: Boolean(response.config.banner_ads_enabled),
-          feed_ad_enabled: Boolean(response.config.feed_ad_enabled ?? true),
-          app_open_ad_enabled: Boolean(response.config.app_open_ad_enabled ?? true),
-          interstitial_ad_unit_id: response.config.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_ad_unit_id,
-          interstitial_prompt_back_id: response.config.interstitial_prompt_back_id || response.config.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_prompt_back_id,
-          banner_ad_unit_id: response.config.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_ad_unit_id,
-          feed_ad_unit_id: response.config.feed_ad_unit_id || response.config.banner_ad_unit_id || DEFAULT_AD_CONFIG.feed_ad_unit_id,
-          app_open_ad_unit_id: response.config.app_open_ad_unit_id || DEFAULT_AD_CONFIG.app_open_ad_unit_id,
-          rewarded_ad_unit_id: response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_ad_unit_id,
-          rewarded_prompt_unlock_id: response.config.rewarded_prompt_unlock_id || response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_prompt_unlock_id,
-          rewarded_daily_coins_id: response.config.rewarded_daily_coins_id || response.config.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_daily_coins_id,
-        };
+        this.cachedConfig = this.normalizeConfig(response.config);
+        this.hasInitialized = true;
+        console.log('[AdConfig] 📥 Live Config received from server:', {
+          ads_enabled: this.cachedConfig.ads_enabled,
+          interstitial_prompt_click: this.cachedConfig.interstitial_prompt_click,
+          interstitial_prompt_back: this.cachedConfig.interstitial_prompt_back,
+          rewarded_prompt_unlock: this.cachedConfig.rewarded_prompt_unlock,
+          rewarded_daily_coins: this.cachedConfig.rewarded_daily_coins,
+          banner_ads_enabled: this.cachedConfig.banner_ads_enabled,
+        });
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(this.cachedConfig)).catch(() => {});
         return this.cachedConfig;
       }
     } catch (e) {

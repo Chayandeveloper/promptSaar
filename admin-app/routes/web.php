@@ -32,8 +32,7 @@ Route::view('/privacy-policy.html', 'legal.privacy');
 Route::view('/privacy', 'legal.privacy');
 Route::redirect('/privacy policy', '/privacy-policy');
 Route::view('/terms-and-conditions', 'legal.terms')->name('terms.conditions');
-Route::view('/terms', 'legal.terms');
-Route::get('/app-ads.txt', fn() => response("google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa0\n", 200, ['Content-Type' => 'text/plain']));
+Route::get('/app-ads.txt', [AppSettingController::class, 'serveAppAds'])->name('app-ads.public');
 
 /*
 |--------------------------------------------------------------------------
@@ -86,9 +85,11 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users/{id}/adjust-coins', [UserController::class, 'adjustCoins'])->name('users.adjust-coins');
 
-        // Push Notifications (Firebase / Expo)
+        // Push Notifications (Firebase / Expo & Scheduled Timers)
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+        Route::post('/notifications/{notification}/send-now', [NotificationController::class, 'sendNow'])->name('notifications.send-now');
+        Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
         // Reward & Coin Settings
         Route::get('/settings/rewards', [RewardSettingController::class, 'index'])->name('settings.rewards');
@@ -105,6 +106,10 @@ Route::middleware(['auth', EnsureAdmin::class])
         // AdMob Ads Controls (Global on/off, Interstitial on prompt click, Rewarded, Banners)
         Route::get('/settings/ads', [AppSettingController::class, 'adsIndex'])->name('settings.ads');
         Route::put('/settings/ads', [AppSettingController::class, 'updateAds'])->name('settings.ads.update');
+
+        // app-ads.txt Editor (Authorized Digital Sellers)
+        Route::get('/settings/app-ads', [AppSettingController::class, 'appAdsIndex'])->name('settings.app-ads');
+        Route::put('/settings/app-ads', [AppSettingController::class, 'updateAppAds'])->name('settings.app-ads.update');
 
         // Unlock analytics
         Route::get('/unlocks', [UnlockController::class, 'index'])->name('unlocks.index');

@@ -3,24 +3,25 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Layers, Tag, Unlock, LogOut, Menu, X,
     Sparkles, ChevronRight, Bell, Users, Coins, Image as ImageIcon,
-    Smartphone, Share2, Tv
+    Smartphone, Share2, Tv, FileCode
 } from 'lucide-react';
 
 interface Admin { name: string; email: string; avatar?: string; }
 interface Props { children: React.ReactNode; admin: Admin; title?: string; }
 
 const navItems = [
-    { href: '/admin/dashboard',        label: 'Dashboard',          icon: LayoutDashboard },
-    { href: '/admin/prompts',          label: 'Prompts',            icon: Layers          },
-    { href: '/admin/banners',          label: 'Top Banners',        icon: ImageIcon       },
-    { href: '/admin/categories',       label: 'Categories',         icon: Tag             },
-    { href: '/admin/users',            label: 'Users & Coins',      icon: Users           },
-    { href: '/admin/notifications',    label: 'Push Notifications', icon: Bell            },
-    { href: '/admin/settings/ads',     label: 'Ad Controls',        icon: Tv              },
-    { href: '/admin/settings/rewards', label: 'Reward Settings',    icon: Coins           },
-    { href: '/admin/settings/app',     label: 'App Version',        icon: Smartphone      },
-    { href: '/admin/settings/social',  label: 'Social Channels',    icon: Share2          },
-    { href: '/admin/unlocks',          label: 'Unlocks',            icon: Unlock          },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/prompts', label: 'Prompts', icon: Layers },
+    { href: '/admin/banners', label: 'Top Banners', icon: ImageIcon },
+    { href: '/admin/categories', label: 'Categories', icon: Tag },
+    { href: '/admin/users', label: 'Users & Coins', icon: Users },
+    { href: '/admin/notifications', label: 'Push Notifications', icon: Bell },
+    { href: '/admin/settings/ads', label: 'Ad Controls', icon: Tv },
+    { href: '/admin/settings/app-ads', label: 'app-ads.txt', icon: FileCode },
+    { href: '/admin/settings/rewards', label: 'Reward Settings', icon: Coins },
+    { href: '/admin/settings/app', label: 'App Version', icon: Smartphone },
+    { href: '/admin/settings/social', label: 'Social Channels', icon: Share2 },
+    { href: '/admin/unlocks', label: 'Unlocks', icon: Unlock },
 ];
 
 export default function AdminLayout({ children, admin, title }: Props) {
@@ -87,7 +88,7 @@ export default function AdminLayout({ children, admin, title }: Props) {
                                 ? <img src={admin.avatar} alt={admin.name} className="w-full h-full object-cover" />
                                 : <span className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
                                     {admin.name.charAt(0).toUpperCase()}
-                                  </span>
+                                </span>
                             }
                         </div>
                         <div className="flex-1 min-w-0">

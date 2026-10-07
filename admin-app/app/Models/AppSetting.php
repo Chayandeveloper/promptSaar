@@ -22,8 +22,10 @@ class AppSetting extends Model
         }
 
         $val = $setting->value;
-        if (in_array(strtolower($val), ['true', '1'], true)) return true;
-        if (in_array(strtolower($val), ['false', '0'], true)) return false;
+        if (is_null($val)) return $default;
+        $str = strtolower((string) $val);
+        if (in_array($str, ['true', '1'], true)) return true;
+        if (in_array($str, ['false', '0'], true)) return false;
         if (is_numeric($val)) return (int) $val;
 
         return $val;

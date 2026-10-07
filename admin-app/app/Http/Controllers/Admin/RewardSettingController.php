@@ -53,6 +53,7 @@ class RewardSettingController extends Controller
         RewardSetting::set('coins_per_ad', $validated['coins_per_ad']);
         RewardSetting::set('daily_ad_limit', $validated['daily_ad_limit']);
         RewardSetting::set('rewards_enabled', $validated['rewards_enabled']);
+        \App\Models\AppSetting::set('rewarded_daily_coins', $validated['rewards_enabled']);
         RewardSetting::set('default_prompt_cost', $validated['default_prompt_cost']);
 
         $updatedPromptsCount = 0;

@@ -18,6 +18,7 @@ import {
   useClaimAdReward,
 } from '../hooks/useRewards';
 import { adService } from '../services/ads';
+import { adConfigService } from '../services/adConfig';
 import { useAdConfig } from '../hooks/useAdConfig';
 import { Theme } from '../constants/Theme';
 
@@ -32,7 +33,7 @@ export default function EarnCoinsScreen() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const { data: adConfig } = useAdConfig();
-  const isAdFeatureEnabled = adConfig ? (adConfig.ads_enabled && adConfig.rewarded_daily_coins) : true;
+  const isAdFeatureEnabled = adConfig ? Boolean(adConfig.ads_enabled && adConfig.rewarded_daily_coins) : adConfigService.isRewardedDailyCoinsEnabled();
   const balance = coinData?.balance ?? 0;
   const adsWatched = todayData?.ads_watched ?? 0;
   const dailyLimit = todayData?.daily_limit ?? 5;

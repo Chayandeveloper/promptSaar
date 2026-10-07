@@ -37,6 +37,7 @@ import {
 import { useCoinBalance, useUnlockWithCoins, useUnlockWithAd, useRewardConfig } from '../../hooks/useRewards';
 import { useAdConfig } from '../../hooks/useAdConfig';
 import { adService } from '../../services/ads';
+import { adConfigService } from '../../services/adConfig';
 import { Theme } from '../../constants/Theme';
 
 export default function PromptDetailsScreen() {
@@ -50,7 +51,7 @@ export default function PromptDetailsScreen() {
   const toggleSave = useToggleSavePrompt();
   const { data: savedPrompts = [] } = useSavedPrompts();
   const { data: adConfig } = useAdConfig();
-  const canShowAdUnlock = adConfig ? adConfig.ads_enabled && adConfig.rewarded_prompt_unlock : true;
+  const canShowAdUnlock = adConfig ? Boolean(adConfig.ads_enabled && adConfig.rewarded_prompt_unlock) : adConfigService.isRewardedPromptUnlockEnabled();
   const isSaved = Boolean(prompt?.is_saved) || savedPrompts.some((p) => p.id === promptId);
 
   React.useEffect(() => {

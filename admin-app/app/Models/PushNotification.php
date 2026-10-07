@@ -19,6 +19,8 @@ class PushNotification extends Model
         'success_count',
         'failure_count',
         'status',
+        'scheduled_at',
+        'sent_at',
     ];
 
     protected $casts = [
@@ -26,5 +28,7 @@ class PushNotification extends Model
         'sent_count'    => 'integer',
         'success_count' => 'integer',
         'failure_count' => 'integer',
+        'scheduled_at'  => 'datetime',
+        'sent_at'       => 'datetime',
     ];
 }

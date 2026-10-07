@@ -7,6 +7,7 @@ import { notificationService } from '../services/notifications';
 import { adService } from '../services/ads';
 import { AppUpdateModal } from '../components/AppUpdateModal';
 import { AdLoadingOverlay } from '../components/AdLoadingOverlay';
+import { InAppNotificationBanner } from '../components/InAppNotificationBanner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -133,6 +134,7 @@ export default function RootLayout() {
       </Stack>
       <AppUpdateModal />
       <AdLoadingOverlay />
+      <InAppNotificationBanner />
     </QueryClientProvider>
   );
 }

@@ -24,21 +24,18 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 }) => {
   const { data: adConfig } = useAdConfig();
 
-  // Respect Admin switches
-  if (adConfig) {
-    if (!adConfig.ads_enabled) {
-      return null;
-    }
-    const isFeed = placement === 'feed' || placement === 'in-feed';
-    if (isFeed && !adConfig.feed_ad_enabled) {
-      return null;
-    }
-    if (!isFeed && !adConfig.banner_ads_enabled) {
-      return null;
-    }
+  // Respect Admin switches: do not render if config is not loaded, master switch is off, or specific placement is off
+  if (!adConfig || !adConfig.ads_enabled || !__DEV__) {
+    return null;
+  }
+  const isFeed = placement === 'feed' || placement === 'in-feed';
+  if (isFeed && !adConfig.feed_ad_enabled) {
+    return null;
+  }
+  if (!isFeed && !adConfig.banner_ads_enabled) {
+    return null;
   }
 
-  const isFeed = placement === 'feed' || placement === 'in-feed';
   const isRectangle = size === 'medium_rectangle' || placement === 'home_top' || isFeed;
 
   const effectiveId =

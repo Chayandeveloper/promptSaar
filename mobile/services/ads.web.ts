@@ -10,7 +10,7 @@ export interface RewardedAdCallbacks {
 
 class WebAdMobService {
   constructor() {
-    adConfigService.fetchConfig().catch(() => {});
+    adConfigService.init().catch(() => {});
   }
 
   private adLoadingListeners: Set<(isLoading: boolean, title?: string, subtitle?: string) => void> = new Set();
@@ -64,31 +64,51 @@ class WebAdMobService {
 
   async presentInterstitialOnPromptClick(onDismissed: () => void): Promise<void> {
     if (!adConfigService.isInterstitialOnPromptClickEnabled()) {
-      onDismissed();
+      this.setAdLoading(true, 'Opening Prompt...', 'Please wait a moment');
+      setTimeout(() => {
+        this.setAdLoading(false);
+        onDismissed();
+      }, 350);
       return;
     }
+
+    this.setAdLoading(true, 'Opening Prompt...', 'Loading ad...');
     const unitId = adConfigService.getConfig().interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220';
     console.log(
       `%c[AdMob Web Preview] 🎬 Interstitial Ad (Prompt Click) Triggered! Unit ID: ${unitId}`,
       'background: #f59e0b; color: #000; font-weight: bold; padding: 4px;'
     );
-    onDismissed();
+    setTimeout(() => {
+      this.setAdLoading(false);
+      onDismissed();
+    }, 700);
   }
 
   async presentInterstitialOnPromptBack(onDismissed: () => void): Promise<void> {
     if (!adConfigService.isInterstitialOnPromptBackEnabled()) {
-      onDismissed();
+      this.setAdLoading(true, 'Please wait...', 'Returning...');
+      setTimeout(() => {
+        this.setAdLoading(false);
+        onDismissed();
+      }, 350);
       return;
     }
+
+    this.setAdLoading(true, 'Please wait...', 'Loading ad...');
     const unitId = this.getInterstitialPromptBackUnitId();
     console.log(
       `%c[AdMob Web Preview] 🔙 Interstitial Ad (Prompt Back) Triggered! Unit ID: ${unitId}`,
       'background: #ea580c; color: #fff; font-weight: bold; padding: 4px;'
     );
-    onDismissed();
+    setTimeout(() => {
+      this.setAdLoading(false);
+      onDismissed();
+    }, 700);
   }
 
   async presentAppOpenAd(onDismissed?: () => void): Promise<void> {
+    await adConfigService.ensureInitialized(1500);
+
     if (!adConfigService.isAppOpenAdEnabled()) {
       onDismissed?.();
       return;
@@ -104,8 +124,23 @@ class WebAdMobService {
   async presentRewardedAd(
     callbacks: RewardedAdCallbacks,
     simulateEarlyClose = false,
-    _placement: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'
+    placement: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'
   ): Promise<void> {
+    if (!adConfigService.isMasterEnabled()) {
+      callbacks.onRewardEarned();
+      return;
+    }
+
+    if (placement === 'prompt_unlock' && !adConfigService.isRewardedPromptUnlockEnabled()) {
+      callbacks.onRewardEarned();
+      return;
+    }
+
+    if (placement === 'daily_coins' && !adConfigService.isRewardedDailyCoinsEnabled()) {
+      callbacks.onRewardEarned();
+      return;
+    }
+
     this.setAdLoading(true, 'Unlocking Prompt...', 'Please wait a moment');
     callbacks.onAdLoaded?.();
     return new Promise((resolve) => {

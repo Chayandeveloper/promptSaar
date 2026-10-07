@@ -12,8 +12,15 @@ class AppVersionController extends Controller
     /**
      * Check current client version and return update status.
      */
-    public function check(Request $request): JsonResponse
+    public function check(Request $request, \App\Services\FirebasePushService $pushService): JsonResponse
     {
+        // Fail-safe: trigger any overdue scheduled notifications
+        try {
+            $pushService->processScheduledNotifications();
+        } catch (\Throwable $e) {
+            // Ignore background error so API check never fails
+        }
+
         $settings = AppSetting::getAllSettings();
         $clientVersion = $request->query('version', '1.0.0');
 

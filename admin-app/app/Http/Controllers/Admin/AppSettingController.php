@@ -101,6 +101,9 @@ class AppSettingController extends Controller
             AppSetting::set($key, $request->boolean($key));
         }
 
+        // Sync with RewardSetting so both settings stay consistent
+        \App\Models\RewardSetting::set('rewards_enabled', $request->boolean('rewarded_daily_coins'));
+
         $idKeys = [
             'interstitial_ad_unit_id',
             'interstitial_prompt_back_id',
@@ -120,4 +123,95 @@ class AppSettingController extends Controller
 
         return redirect()->back()->with('success', 'AdMob advertisement settings and controls updated successfully!');
     }
+
+    /**
+     * Public endpoint to serve app-ads.txt
+     */
+    public function serveAppAds()
+    {
+        $content = AppSetting::get('app_ads_txt');
+
+        if ($content === null || trim((string) $content) === '') {
+            $filePath = public_path('app-ads.txt');
+            if (file_exists($filePath)) {
+                $content = @file_get_contents($filePath);
+            }
+        }
+
+        if ($content === null || trim((string) $content) === '') {
+            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa0\n";
+        }
+
+        return response($content, 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'no-cache, private',
+        ]);
+    }
+
+    /**
+     * Admin view for app-ads.txt editor
+     */
+    public function appAdsIndex(): Response
+    {
+        $content = AppSetting::get('app_ads_txt');
+
+        if ($content === null || trim((string) $content) === '') {
+            $filePath = public_path('app-ads.txt');
+            if (file_exists($filePath)) {
+                $content = @file_get_contents($filePath);
+            }
+        }
+
+        if ($content === null || trim((string) $content) === '') {
+            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa0\n";
+        }
+
+        $publicPath = public_path('app-ads.txt');
+        $fileWritable = is_writable(dirname($publicPath)) && (!file_exists($publicPath) || is_writable($publicPath));
+        $lastModified = file_exists($publicPath) ? date('Y-m-d H:i:s', filemtime($publicPath)) : null;
+
+        return Inertia::render('Settings/AppAds', [
+            'content'      => (string) $content,
+            'publicUrl'    => url('/app-ads.txt'),
+            'fileWritable' => $fileWritable,
+            'lastModified' => $lastModified,
+            'admin'        => Auth::user()->only('name', 'email', 'avatar'),
+        ]);
+    }
+
+    /**
+     * Update app-ads.txt content in DB and sync to disk
+     */
+    public function updateAppAds(Request $request)
+    {
+        $validated = $request->validate([
+            'content' => 'nullable|string|max:100000',
+        ]);
+
+        $content = (string) ($validated['content'] ?? '');
+
+        // 1. Save to database
+        AppSetting::set('app_ads_txt', $content);
+
+        // 2. Synchronize to public/app-ads.txt so web servers can serve static file directly
+        try {
+            $publicFile = public_path('app-ads.txt');
+            @file_put_contents($publicFile, $content);
+        } catch (\Throwable $e) {
+            \Log::warning('Failed writing public/app-ads.txt: ' . $e->getMessage());
+        }
+
+        // 3. Synchronize to root app-ads.txt if present
+        $rootFile = base_path('../app-ads.txt');
+        if (file_exists($rootFile) && is_writable($rootFile)) {
+            try {
+                @file_put_contents($rootFile, $content);
+            } catch (\Throwable $e) {
+                // Ignore root write failure
+            }
+        }
+
+        return redirect()->back()->with('success', 'app-ads.txt file has been updated and published successfully!');
+    }
 }
+

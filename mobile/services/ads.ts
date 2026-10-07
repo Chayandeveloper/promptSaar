@@ -139,9 +139,16 @@ class AdMobService {
    */
   async presentInterstitialOnPromptClick(onDismissed: () => void): Promise<void> {
     if (!adConfigService.isInterstitialOnPromptClickEnabled()) {
-      onDismissed();
+      console.log('[AdMob] 🔴 Prompt Click Interstitial: DISABLED (Admin switch is OFF)');
+      this.setAdLoading(true, 'Opening Prompt...', 'Please wait a moment');
+      setTimeout(() => {
+        this.setAdLoading(false);
+        onDismissed();
+      }, 350);
       return;
     }
+
+    console.log('[AdMob] 🟢 Prompt Click Interstitial: ENABLED (Admin switch is ON)');
 
     let hasDismissed = false;
     const safeDismiss = () => {
@@ -160,7 +167,7 @@ class AdMobService {
           'ca-app-pub-9010050634863664/9136172220';
 
         // Show immediate loader so user gets instant visual feedback
-        this.setAdLoading(true);
+        this.setAdLoading(true, 'Opening Prompt...', 'Please wait a moment');
 
         const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
@@ -168,7 +175,7 @@ class AdMobService {
 
         const fallbackTimer = setTimeout(() => {
           safeDismiss();
-        }, 3500);
+        }, 3000);
 
         const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
           clearTimeout(fallbackTimer);
@@ -192,6 +199,7 @@ class AdMobService {
           unsubLoaded();
           unsubClosed();
           unsubError();
+          // If no ad is there -> dismiss loader and go to prompt details
           safeDismiss();
         });
 
@@ -203,21 +211,35 @@ class AdMobService {
       }
     }
 
-    safeDismiss();
+    // Expo Go / Dev preview simulation when switch is ON
+    this.setAdLoading(true, 'Opening Prompt...', 'AdMob Interstitial (Expo Go Preview)');
+    setTimeout(() => {
+      safeDismiss();
+    }, 700);
   }
 
   /**
    * Shows an Interstitial Ad when the user presses back from prompt details.
    * Controlled independently by admin setting `interstitial_prompt_back`.
+   * A loader appears while the ad is requested. If the ad appears, loader dismisses and ad shows.
+   * If no ad is there (ad disabled in admin, error, no-fill, timeout), loader appears briefly and then navigates back.
    */
   async presentInterstitialOnPromptBack(onDismissed: () => void): Promise<void> {
     if (!adConfigService.isInterstitialOnPromptBackEnabled()) {
-      onDismissed();
+      console.log('[AdMob] 🔴 Prompt Back Interstitial: DISABLED (Admin switch is OFF)');
+      this.setAdLoading(true, 'Please wait...', 'Returning...');
+      setTimeout(() => {
+        this.setAdLoading(false);
+        onDismissed();
+      }, 350);
       return;
     }
 
+    console.log('[AdMob] 🟢 Prompt Back Interstitial: ENABLED (Admin switch is ON)');
+
     let hasDismissed = false;
     const safeDismiss = () => {
+      this.setAdLoading(false);
       if (!hasDismissed) {
         hasDismissed = true;
         onDismissed();
@@ -228,17 +250,22 @@ class AdMobService {
       try {
         const adUnitId = this.getInterstitialPromptBackUnitId();
 
+        // Show loader until ad appears
+        this.setAdLoading(true, 'Please wait...', 'Loading ad...');
+
         const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
           requestNonPersonalizedAdsOnly: true,
         });
 
-        // 3.5s safety timeout
+        // 3.0s safety timeout
         const fallbackTimer = setTimeout(() => {
           safeDismiss();
-        }, 3500);
+        }, 3000);
 
         const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
           clearTimeout(fallbackTimer);
+          // Dismiss loader right before presenting the ad
+          this.setAdLoading(false);
           interstitial.show().catch(() => {
             safeDismiss();
           });
@@ -257,6 +284,7 @@ class AdMobService {
           unsubLoaded();
           unsubClosed();
           unsubError();
+          // If no ad is there -> dismiss loader and go back
           safeDismiss();
         });
 
@@ -268,7 +296,11 @@ class AdMobService {
       }
     }
 
-    safeDismiss();
+    // Expo Go / Dev preview when switch is ON
+    this.setAdLoading(true, 'Please wait...', 'Loading ad (Expo Go Preview)...');
+    setTimeout(() => {
+      safeDismiss();
+    }, 800);
   }
 
   /**
@@ -282,14 +314,16 @@ class AdMobService {
       return;
     }
 
-    // Refresh ad configuration asynchronously in background
-    adConfigService.fetchConfig().catch(() => {});
+    // Ensure ad configuration is loaded from storage/network before deciding
+    await adConfigService.ensureInitialized(1500);
 
     if (!adConfigService.isAppOpenAdEnabled()) {
+      console.log('[AdMob] 🔴 App Open Ad: DISABLED (Admin switch is OFF)');
       onDismissed?.();
       return;
     }
 
+    console.log('[AdMob] 🟢 App Open Ad: ENABLED (Admin switch is ON)');
     this.appOpenAdShown = true;
 
     let hasDismissed = false;
@@ -395,14 +429,24 @@ class AdMobService {
     placement: 'prompt_unlock' | 'daily_coins' = 'prompt_unlock'
   ): Promise<void> {
     if (!adConfigService.isMasterEnabled()) {
+      console.log(`[AdMob] 🔴 Rewarded Ad (${placement}): DISABLED (Master switch is OFF)`);
       callbacks.onRewardEarned();
       return;
     }
 
     if (placement === 'prompt_unlock' && !adConfigService.isRewardedPromptUnlockEnabled()) {
+      console.log('[AdMob] 🔴 Rewarded Ad (prompt_unlock): DISABLED (Admin switch is OFF)');
       callbacks.onRewardEarned();
       return;
     }
+
+    if (placement === 'daily_coins' && !adConfigService.isRewardedDailyCoinsEnabled()) {
+      console.log('[AdMob] 🔴 Rewarded Ad (daily_coins): DISABLED (Admin switch is OFF)');
+      callbacks.onRewardEarned();
+      return;
+    }
+
+    console.log(`[AdMob] 🟢 Rewarded Ad (${placement}): ENABLED (Admin switch is ON)`);
 
     if (this.isNativeAvailable && RewardedAd && RewardedAdEventType) {
       try {
