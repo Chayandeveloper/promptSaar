@@ -36,6 +36,7 @@ class AdMobService {
   private bannerAdUnitId: string;
   private isNativeAvailable: boolean = false;
   private appOpenAdShown: boolean = false;
+  private lastPromptClickAdTime: number = 0;
   private adLoadingListeners: Set<(isLoading: boolean, title?: string, subtitle?: string) => void> = new Set();
 
   onAdLoadingChange(listener: (isLoading: boolean, title?: string, subtitle?: string) => void): () => void {
@@ -140,15 +141,21 @@ class AdMobService {
   async presentInterstitialOnPromptClick(onDismissed: () => void): Promise<void> {
     if (!adConfigService.isInterstitialOnPromptClickEnabled()) {
       console.log('[AdMob] 🔴 Prompt Click Interstitial: DISABLED (Admin switch is OFF)');
-      this.setAdLoading(true, 'Opening Prompt...', 'Please wait a moment');
-      setTimeout(() => {
-        this.setAdLoading(false);
-        onDismissed();
-      }, 350);
+      onDismissed();
       return;
     }
 
-    console.log('[AdMob] 🟢 Prompt Click Interstitial: ENABLED (Admin switch is ON)');
+    // Cooldown check: prevent back-to-back ad spam (AdMob policy compliance)
+    const cooldownMs = adConfigService.getInterstitialCooldownMs();
+    const now = Date.now();
+    if (this.lastPromptClickAdTime > 0 && cooldownMs > 0 && now - this.lastPromptClickAdTime < cooldownMs) {
+      const remainingSec = Math.round((cooldownMs - (now - this.lastPromptClickAdTime)) / 1000);
+      console.log(`[AdMob] ⏳ Prompt Click Interstitial cooldown active (${remainingSec}s left) - opening prompt directly`);
+      onDismissed();
+      return;
+    }
+
+    console.log('[AdMob] 🟢 Prompt Click Interstitial: Triggering ad');
 
     let hasDismissed = false;
     const safeDismiss = () => {
@@ -181,6 +188,7 @@ class AdMobService {
           clearTimeout(fallbackTimer);
           // Dismiss loader right before presenting the ad
           this.setAdLoading(false);
+          this.lastPromptClickAdTime = Date.now();
           interstitial.show().catch(() => {
             safeDismiss();
           });
@@ -191,6 +199,7 @@ class AdMobService {
           unsubLoaded();
           unsubClosed();
           unsubError();
+          this.lastPromptClickAdTime = Date.now();
           safeDismiss();
         });
 
@@ -212,6 +221,7 @@ class AdMobService {
     }
 
     // Expo Go / Dev preview simulation when switch is ON
+    this.lastPromptClickAdTime = Date.now();
     this.setAdLoading(true, 'Opening Prompt...', 'AdMob Interstitial (Expo Go Preview)');
     setTimeout(() => {
       safeDismiss();
@@ -221,17 +231,12 @@ class AdMobService {
   /**
    * Shows an Interstitial Ad when the user presses back from prompt details.
    * Controlled independently by admin setting `interstitial_prompt_back`.
-   * A loader appears while the ad is requested. If the ad appears, loader dismisses and ad shows.
-   * If no ad is there (ad disabled in admin, error, no-fill, timeout), loader appears briefly and then navigates back.
+   * When disabled in admin panel, directly navigates back immediately with zero delay.
    */
   async presentInterstitialOnPromptBack(onDismissed: () => void): Promise<void> {
     if (!adConfigService.isInterstitialOnPromptBackEnabled()) {
       console.log('[AdMob] 🔴 Prompt Back Interstitial: DISABLED (Admin switch is OFF)');
-      this.setAdLoading(true, 'Please wait...', 'Returning...');
-      setTimeout(() => {
-        this.setAdLoading(false);
-        onDismissed();
-      }, 350);
+      onDismissed();
       return;
     }
 

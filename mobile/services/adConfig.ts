@@ -5,6 +5,7 @@ import { Config } from '../constants/Config';
 export interface AdConfig {
   ads_enabled: boolean;
   interstitial_prompt_click: boolean;
+  interstitial_cooldown_seconds?: number;
   interstitial_prompt_back: boolean;
   rewarded_prompt_unlock: boolean;
   rewarded_daily_coins: boolean;
@@ -24,7 +25,8 @@ export interface AdConfig {
 export const DEFAULT_AD_CONFIG: AdConfig = {
   ads_enabled: true,
   interstitial_prompt_click: true,
-  interstitial_prompt_back: true,
+  interstitial_cooldown_seconds: 45,
+  interstitial_prompt_back: false,
   rewarded_prompt_unlock: true,
   rewarded_daily_coins: true,
   banner_ads_enabled: true,
@@ -117,7 +119,8 @@ class AdConfigService {
       ads_enabled,
       // If master switch is off, all individual triggers are strictly disabled
       interstitial_prompt_click: ads_enabled && parseBool(raw.interstitial_prompt_click, true),
-      interstitial_prompt_back: ads_enabled && parseBool(raw.interstitial_prompt_back, true),
+      interstitial_cooldown_seconds: typeof raw.interstitial_cooldown_seconds === 'number' ? raw.interstitial_cooldown_seconds : (Number(raw.interstitial_cooldown_seconds) || 45),
+      interstitial_prompt_back: ads_enabled && parseBool(raw.interstitial_prompt_back, false),
       rewarded_prompt_unlock: ads_enabled && parseBool(raw.rewarded_prompt_unlock, true),
       rewarded_daily_coins: ads_enabled && parseBool(raw.rewarded_daily_coins, true),
       banner_ads_enabled: ads_enabled && parseBool(raw.banner_ads_enabled, true),
@@ -168,6 +171,13 @@ class AdConfigService {
 
   isInterstitialOnPromptClickEnabled(): boolean {
     return this.cachedConfig.ads_enabled && this.cachedConfig.interstitial_prompt_click;
+  }
+
+  getInterstitialCooldownMs(): number {
+    const sec = typeof this.cachedConfig.interstitial_cooldown_seconds === 'number'
+      ? this.cachedConfig.interstitial_cooldown_seconds
+      : 45;
+    return Math.max(0, sec) * 1000;
   }
 
   isInterstitialOnPromptBackEnabled(): boolean {

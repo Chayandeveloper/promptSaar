@@ -73,7 +73,7 @@ php artisan view:cache
 ### 7. Test the Scheduled Notification Command
 Manually execute the scheduler command to verify that there are no syntax or configuration errors:
 ```bash
-php artisan notifications:send-scheduled
+
 ```
 **Expected Output:**
 ```text

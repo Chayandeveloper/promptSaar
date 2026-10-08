@@ -62,7 +62,8 @@ class AppSettingController extends Controller
         $settings = [
             'ads_enabled'               => (bool) AppSetting::get('ads_enabled', true),
             'interstitial_prompt_click'   => (bool) AppSetting::get('interstitial_prompt_click', true),
-            'interstitial_prompt_back'    => (bool) AppSetting::get('interstitial_prompt_back', true),
+            'interstitial_cooldown_seconds' => (int) AppSetting::get('interstitial_cooldown_seconds', 45),
+            'interstitial_prompt_back'    => (bool) AppSetting::get('interstitial_prompt_back', false),
             'rewarded_prompt_unlock'      => (bool) AppSetting::get('rewarded_prompt_unlock', true),
             'rewarded_daily_coins'        => (bool) AppSetting::get('rewarded_daily_coins', true),
             'banner_ads_enabled'          => (bool) AppSetting::get('banner_ads_enabled', true),
@@ -99,6 +100,10 @@ class AppSettingController extends Controller
 
         foreach ($keys as $key) {
             AppSetting::set($key, $request->boolean($key));
+        }
+
+        if ($request->has('interstitial_cooldown_seconds')) {
+            AppSetting::set('interstitial_cooldown_seconds', max(0, (int) $request->input('interstitial_cooldown_seconds', 45)));
         }
 
         // Sync with RewardSetting so both settings stay consistent

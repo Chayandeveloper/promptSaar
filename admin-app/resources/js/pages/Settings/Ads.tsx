@@ -4,12 +4,13 @@ import AdminLayout from '@/layouts/AdminLayout';
 import {
     Tv, Save, CheckCircle, Sparkles,
     PlaySquare, Layers, Coins, RefreshCw, Info,
-    ArrowLeft, Smartphone, LayoutGrid, FileCode, ExternalLink, ShieldCheck
+    ArrowLeft, Smartphone, LayoutGrid, FileCode, ExternalLink, ShieldCheck, Timer
 } from 'lucide-react';
 
 interface Settings {
     ads_enabled: boolean;
     interstitial_prompt_click: boolean;
+    interstitial_cooldown_seconds?: number;
     interstitial_prompt_back: boolean;
     rewarded_prompt_unlock: boolean;
     rewarded_daily_coins: boolean;
@@ -47,7 +48,8 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
     const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
         ads_enabled: settings.ads_enabled ?? true,
         interstitial_prompt_click: settings.interstitial_prompt_click ?? true,
-        interstitial_prompt_back: settings.interstitial_prompt_back ?? true,
+        interstitial_cooldown_seconds: settings.interstitial_cooldown_seconds ?? 45,
+        interstitial_prompt_back: settings.interstitial_prompt_back ?? false,
         rewarded_prompt_unlock: settings.rewarded_prompt_unlock ?? true,
         rewarded_daily_coins: settings.rewarded_daily_coins ?? true,
         banner_ads_enabled: settings.banner_ads_enabled ?? true,
@@ -233,6 +235,33 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                                 />
                                 <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                             </label>
+                        </div>
+
+                        {/* 1b. Interstitial Cooldown */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b px-3 sm:px-4 bg-zinc-800/30 rounded-xl" style={{ borderColor: 'var(--color-border)' }}>
+                            <div className="space-y-0.5">
+                                <div className="flex items-center gap-2">
+                                    <Timer size={15} className="text-amber-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Prompt Click Ad Cooldown (Seconds)
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    Minimum seconds between prompt-click ads. Default is 45s (prevents AdMob policy strikes while maintaining revenue).
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="300"
+                                    value={data.interstitial_cooldown_seconds}
+                                    onChange={(e) => setData('interstitial_cooldown_seconds', Number(e.target.value))}
+                                    className="w-24 px-3 py-1.5 rounded-lg text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                                    style={inputStyle}
+                                />
+                                <span className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>sec</span>
+                            </div>
                         </div>
 
                         {/* 2. Interstitial on Prompt Back */}

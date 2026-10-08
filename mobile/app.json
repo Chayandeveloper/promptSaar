@@ -2,7 +2,7 @@
   "expo": {
     "name": "Prompt Saar",
     "slug": "prompt-ai",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "promptcraft",
@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.fillosoftpromptsaar.app",
+      "versionCode": 2,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",

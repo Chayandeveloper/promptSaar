@@ -67,7 +67,8 @@ class AppSetting extends Model
         return [
             'ads_enabled'               => $adsEnabled,
             'interstitial_prompt_click'   => $adsEnabled ? (bool) static::get('interstitial_prompt_click', true) : false,
-            'interstitial_prompt_back'    => $adsEnabled ? (bool) static::get('interstitial_prompt_back', true) : false,
+            'interstitial_cooldown_seconds' => (int) static::get('interstitial_cooldown_seconds', 45),
+            'interstitial_prompt_back'    => $adsEnabled ? (bool) static::get('interstitial_prompt_back', false) : false,
             'rewarded_prompt_unlock'      => $adsEnabled ? (bool) static::get('rewarded_prompt_unlock', true) : false,
             'rewarded_daily_coins'        => $adsEnabled ? (bool) static::get('rewarded_daily_coins', true) : false,
             'banner_ads_enabled'          => $adsEnabled ? (bool) static::get('banner_ads_enabled', true) : false,
