@@ -70,16 +70,23 @@ class FirebasePushService
         return $this->dispatchNotification($notificationLog);
     }
 
+    protected ?string $cachedAccessToken = null;
+    protected int $tokenExpiresAt = 0;
+
     /**
      * Dispatch an existing push notification record to all registered devices.
      */
     public function dispatchNotification(PushNotification $notification): PushNotification
     {
+        @set_time_limit(300);
+        @ignore_user_abort(true);
+
         $tokens = DevicePushToken::where('is_active', true)->get();
 
         $notification->update([
             'status'     => 'processing',
             'sent_count' => $tokens->count(),
+            'sent_at'    => now(),
         ]);
 
         if ($tokens->isEmpty()) {
@@ -93,47 +100,44 @@ class FirebasePushService
         $successCount = 0;
         $failureCount = 0;
 
-        // Group tokens by type (Expo vs FCM)
-        $expoTokens = $tokens->where('token_type', 'expo');
-        $fcmTokens  = $tokens->where('token_type', 'fcm');
+        try {
+            // Group tokens by type (Expo vs FCM)
+            $expoTokens = $tokens->where('token_type', 'expo');
+            $fcmTokens  = $tokens->where('token_type', 'fcm');
 
-        // 1. Dispatch Expo tokens in batches
-        if ($expoTokens->isNotEmpty()) {
-            [$expoSuccess, $expoFailure] = $this->sendExpoBatch(
-                $expoTokens->pluck('push_token')->toArray(),
-                $notification->title,
-                $notification->body,
-                $notification->data ?? [],
-                $notification->image_url
-            );
-            $successCount += $expoSuccess;
-            $failureCount += $expoFailure;
-        }
-
-        // 2. Dispatch FCM native tokens
-        if ($fcmTokens->isNotEmpty()) {
-            foreach ($fcmTokens as $fcmRecord) {
-                $ok = $this->sendFcmV1(
-                    $fcmRecord->push_token,
+            // 1. Dispatch Expo tokens in batches
+            if ($expoTokens->isNotEmpty()) {
+                [$expoSuccess, $expoFailure] = $this->sendExpoBatch(
+                    $expoTokens->pluck('push_token')->toArray(),
                     $notification->title,
                     $notification->body,
                     $notification->data ?? [],
                     $notification->image_url
                 );
-                if ($ok) {
-                    $successCount++;
-                } else {
-                    $failureCount++;
-                }
+                $successCount += $expoSuccess;
+                $failureCount += $expoFailure;
             }
-        }
 
-        $notification->update([
-            'success_count' => $successCount,
-            'failure_count' => $failureCount,
-            'status'        => 'sent',
-            'sent_at'       => now(),
-        ]);
+            // 2. Dispatch FCM native tokens in parallel pools
+            if ($fcmTokens->isNotEmpty()) {
+                [$fcmSuccess, $fcmFailure] = $this->sendFcmBatch(
+                    $fcmTokens->pluck('push_token')->toArray(),
+                    $notification->title,
+                    $notification->body,
+                    $notification->data ?? [],
+                    $notification->image_url
+                );
+                $successCount += $fcmSuccess;
+                $failureCount += $fcmFailure;
+            }
+        } finally {
+            $notification->update([
+                'success_count' => $successCount,
+                'failure_count' => $failureCount,
+                'status'        => 'sent',
+                'sent_at'       => now(),
+            ]);
+        }
 
         Log::info("[PushService] Dispatched notification #{$notification->id} to {$tokens->count()} devices. Success: {$successCount}, Failed: {$failureCount}");
 
@@ -146,6 +150,14 @@ class FirebasePushService
      */
     public function processScheduledNotifications(): int
     {
+        // Auto-heal any stale processing notifications (older than 2 minutes)
+        PushNotification::where('status', 'processing')
+            ->where('updated_at', '<', now()->subMinutes(2))
+            ->update([
+                'status'  => 'sent',
+                'sent_at' => now(),
+            ]);
+
         $due = PushNotification::where('status', 'scheduled')
             ->whereNotNull('scheduled_at')
             ->where('scheduled_at', '<=', now())
@@ -228,73 +240,114 @@ class FirebasePushService
     }
 
     /**
-     * Send via Firebase Cloud Messaging (FCM HTTP v1 API).
+     * Send FCM tokens in concurrent batches via HTTP Pool.
      */
-    protected function sendFcmV1(
-        string $token,
+    protected function sendFcmBatch(
+        array $tokens,
         string $title,
         string $body,
         array $data,
         ?string $imageUrl = null
-    ): bool {
+    ): array {
         $credentialsPath = config('services.firebase.credentials') 
             ?? storage_path('app/firebase-credentials.json');
 
         if (!file_exists($credentialsPath)) {
             Log::info("[FCM] firebase-credentials.json not present at {$credentialsPath}. Notification logged.");
-            return true; // Graceful fallback
+            return [count($tokens), 0];
         }
 
         try {
             $creds = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $creds['project_id'] ?? null;
-            if (!$projectId) return false;
+            if (!$projectId) return [0, count($tokens)];
 
-            $accessToken = $this->getGoogleAccessToken($creds);
-            if (!$accessToken) return false;
-
-            $payload = [
-                'message' => [
-                    'token' => $token,
-                    'notification' => [
-                        'title' => $title,
-                        'body'  => $body,
-                    ],
-                    'data' => array_map('strval', $data),
-                    'android' => [
-                        'priority' => 'HIGH',
-                        'notification' => [
-                            'sound'         => 'default',
-                            'channel_id'    => 'default',
-                            'default_sound' => true,
-                        ],
-                    ],
-                ],
-            ];
-
-            if ($imageUrl) {
-                $payload['message']['notification']['image'] = $imageUrl;
-                $payload['message']['android']['notification']['image'] = $imageUrl;
-            }
+            $accessToken = $this->getCachedGoogleAccessToken($creds);
+            if (!$accessToken) return [0, count($tokens)];
 
             $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
-            $res = Http::withoutVerifying()
-                ->withToken($accessToken)
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->post($url, $payload);
+            $chunks = array_chunk($tokens, 100);
+            $success = 0;
+            $failure = 0;
+            $unregistered = [];
 
-            if (!$res->successful()) {
-                Log::warning('[FCM] Send error: ' . $res->status() . ' - ' . $res->body());
-                if ($res->status() === 404 || str_contains($res->body(), 'UNREGISTERED')) {
-                    DevicePushToken::where('push_token', $token)->update(['is_active' => false]);
+            foreach ($chunks as $chunk) {
+                $responses = Http::pool(function ($pool) use ($chunk, $url, $accessToken, $title, $body, $data, $imageUrl) {
+                    $requests = [];
+                    foreach ($chunk as $token) {
+                        $payload = [
+                            'message' => [
+                                'token' => $token,
+                                'notification' => [
+                                    'title' => $title,
+                                    'body'  => $body,
+                                ],
+                                'data' => array_map('strval', $data),
+                                'android' => [
+                                    'priority' => 'HIGH',
+                                    'notification' => [
+                                        'sound'         => 'default',
+                                        'channel_id'    => 'default',
+                                        'default_sound' => true,
+                                    ],
+                                ],
+                            ],
+                        ];
+                        if ($imageUrl) {
+                            $payload['message']['notification']['image'] = $imageUrl;
+                            $payload['message']['android']['notification']['image'] = $imageUrl;
+                        }
+                        $requests[] = $pool->as($token)
+                            ->withoutVerifying()
+                            ->withToken($accessToken)
+                            ->withHeaders(['Content-Type' => 'application/json'])
+                            ->timeout(8)
+                            ->post($url, $payload);
+                    }
+                    return $requests;
+                });
+
+                foreach ($responses as $token => $res) {
+                    if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                        $success++;
+                    } else {
+                        $failure++;
+                        if ($res instanceof \Illuminate\Http\Client\Response) {
+                            if ($res->status() === 404 || str_contains($res->body(), 'UNREGISTERED')) {
+                                $unregistered[] = $token;
+                            }
+                        }
+                    }
                 }
             }
 
-            return $res->successful();
+            if (!empty($unregistered)) {
+                DevicePushToken::whereIn('push_token', $unregistered)->update(['is_active' => false]);
+            }
+
+            return [$success, $failure];
         } catch (\Throwable $e) {
-            Log::error('[FCM] Error sending FCM message: ' . $e->getMessage());
-            return false;
+            Log::error('[FCM] Batch send error: ' . $e->getMessage());
+            return [0, count($tokens)];
         }
+    }
+
+    /**
+     * Get or cached Google OAuth2 access token to prevent rate limits across thousands of devices.
+     */
+    protected function getCachedGoogleAccessToken(array $creds): ?string
+    {
+        if ($this->cachedAccessToken && time() < ($this->tokenExpiresAt - 120)) {
+            return $this->cachedAccessToken;
+        }
+
+        $token = $this->getGoogleAccessToken($creds);
+        if ($token) {
+            $this->cachedAccessToken = $token;
+            $this->tokenExpiresAt = time() + 3500;
+        }
+
+        return $token;
     }
 
     /**
