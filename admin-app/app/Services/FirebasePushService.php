@@ -275,6 +275,12 @@ class FirebasePushService
                 $responses = Http::pool(function ($pool) use ($chunk, $url, $accessToken, $title, $body, $data, $imageUrl) {
                     $requests = [];
                     foreach ($chunk as $token) {
+                        $mergedData = array_merge([
+                            'title'     => $title,
+                            'body'      => $body,
+                            'channelId' => 'default',
+                        ], array_map('strval', $data));
+
                         $payload = [
                             'message' => [
                                 'token' => $token,
@@ -282,13 +288,15 @@ class FirebasePushService
                                     'title' => $title,
                                     'body'  => $body,
                                 ],
-                                'data' => array_map('strval', $data),
+                                'data' => $mergedData,
                                 'android' => [
                                     'priority' => 'HIGH',
                                     'notification' => [
-                                        'sound'         => 'default',
-                                        'channel_id'    => 'default',
-                                        'default_sound' => true,
+                                        'sound'                 => 'default',
+                                        'channel_id'            => 'default',
+                                        'default_sound'         => true,
+                                        'notification_priority' => 'PRIORITY_MAX',
+                                        'visibility'            => 'PUBLIC',
                                     ],
                                 ],
                             ],
