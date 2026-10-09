@@ -101,3 +101,13 @@ Route::post('/notifications/register-token', [\App\Http\Controllers\Api\Notifica
 Route::post('/notifications/unregister-token', [\App\Http\Controllers\Api\NotificationController::class, 'unregisterToken']);
 Route::get('/notifications/latest', [\App\Http\Controllers\Api\NotificationController::class, 'latest']);
 
+// Server / External Web Cron trigger for automated delivery (cPanel cron, curl, uptime monitor, or web ping)
+Route::match(['get', 'post'], '/cron/send-scheduled', function (\App\Services\FirebasePushService $pushService) {
+    $count = $pushService->processScheduledNotifications();
+    return response()->json([
+        'status'      => 'ok',
+        'dispatched'  => $count,
+        'server_time' => now()->toIso8601String(),
+    ]);
+});
+

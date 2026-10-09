@@ -154,8 +154,16 @@ class FirebasePushService
 
         $processed = 0;
         foreach ($due as $notification) {
-            $this->dispatchNotification($notification);
-            $processed++;
+            // Atomically transition status from scheduled to processing to prevent concurrent double dispatch
+            $affected = PushNotification::where('id', $notification->id)
+                ->where('status', 'scheduled')
+                ->update(['status' => 'processing']);
+
+            if ($affected > 0) {
+                $notification->refresh();
+                $this->dispatchNotification($notification);
+                $processed++;
+            }
         }
 
         return $processed;

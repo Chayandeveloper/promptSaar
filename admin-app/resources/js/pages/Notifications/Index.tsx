@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import AdminLayout from '../../layouts/AdminLayout';
 import {
     Bell, Send, Smartphone, CheckCircle, AlertTriangle,
     Layers, Coins, ExternalLink, Image as ImageIcon, Flame,
-    Clock, Calendar, Trash2, Zap, Play, Check
+    Clock, Calendar, Trash2, Zap, Play, Check, RefreshCw
 } from 'lucide-react';
 
 interface Stats {
@@ -73,6 +73,28 @@ export default function NotificationsIndex({
     server_time,
 }: Props) {
     const [activeTab, setActiveTab] = useState<'scheduled' | 'history'>('scheduled');
+    const [, setTick] = useState(0);
+
+    // Auto-refresh countdowns every 5s and automatically trigger dispatch when timers are due
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTick((t) => t + 1);
+
+            // If any scheduled notification has reached its target time, trigger dispatch on server
+            if (scheduled_notifications.length > 0) {
+                const hasDue = scheduled_notifications.some(
+                    (item) => item.scheduled_at && new Date(item.scheduled_at).getTime() <= Date.now()
+                );
+                if (hasDue) {
+                    router.post('/admin/notifications/process-due', {}, {
+                        preserveScroll: true,
+                    });
+                }
+            }
+        }, 6000);
+
+        return () => clearInterval(timer);
+    }, [scheduled_notifications]);
 
     // Helper to get formatted local string for datetime-local
     const formatLocalDateTime = (date: Date) => {
@@ -211,6 +233,19 @@ export default function NotificationsIndex({
                             FCM native broadcasts require your Firebase Admin service account key file at{' '}
                             <code className="bg-black/30 px-1 py-0.5 rounded text-amber-200">storage/app/firebase-credentials.json</code>.
                             Expo devices will still receive notifications via Expo Push automatically!
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Zero Active Devices Notice */}
+            {stats.active_devices === 0 && (
+                <div className="mb-6 p-4 rounded-xl flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                    <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-400" />
+                    <div className="text-xs space-y-1">
+                        <p className="font-bold text-amber-200">0 Active Devices Registered</p>
+                        <p className="text-amber-300/80">
+                            No active push tokens are currently found in your database. When you schedule notifications, they will be processed and logged, but can only ring phones once users open the Prompt Saar mobile app and register active push tokens.
                         </p>
                     </div>
                 </div>
@@ -608,9 +643,20 @@ export default function NotificationsIndex({
                         </button>
                     </div>
 
-                    <span className="text-[11px] text-slate-400">
-                        Auto-processes on time trigger
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => router.post('/admin/notifications/process-due', {}, { preserveScroll: true })}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition-all cursor-pointer"
+                            title="Check for and dispatch all due scheduled notifications right now"
+                        >
+                            <RefreshCw size={12} className={scheduled_notifications.some(i => i.scheduled_at && new Date(i.scheduled_at).getTime() <= Date.now()) ? 'animate-spin' : ''} />
+                            <span>Check Due Timers</span>
+                        </button>
+                        <span className="hidden sm:inline text-[11px] text-slate-400">
+                            Auto-syncs live
+                        </span>
+                    </div>
                 </div>
 
                 {/* TAB 1: Scheduled Queue */}

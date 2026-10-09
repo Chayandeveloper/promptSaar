@@ -88,6 +88,7 @@ Route::middleware(['auth', EnsureAdmin::class])
         // Push Notifications (Firebase / Expo & Scheduled Timers)
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+        Route::post('/notifications/process-due', [NotificationController::class, 'processDue'])->name('notifications.process-due');
         Route::post('/notifications/{notification}/send-now', [NotificationController::class, 'sendNow'])->name('notifications.send-now');
         Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 

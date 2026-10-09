@@ -73,7 +73,7 @@ php artisan view:cache
 ### 7. Test the Scheduled Notification Command
 Manually execute the scheduler command to verify that there are no syntax or configuration errors:
 ```bash
-
+php artisan notifications:send-scheduled
 ```
 **Expected Output:**
 ```text
@@ -85,7 +85,7 @@ No scheduled notifications due at this time.
 
 ## ⏰ Step 8: Configure the 1-Minute Cron Job
 
-To automatically send scheduled notifications at the exact scheduled minute, configure Laravel's task scheduler.
+To automatically send scheduled notifications at the exact scheduled minute, configure Laravel's task scheduler or set up a web ping cron.
 
 ### Option A: Standard Linux VPS / Ubuntu / Nginx / Apache
 1. Open your server crontab:
@@ -109,8 +109,19 @@ To automatically send scheduled notifications at the exact scheduled minute, con
    *(Adjust PHP binary path and folder path according to your hosting provider)*.
 5. Click **Add New Cron Job**.
 
-> **💡 Built-in Fail-Safe Protection:**  
-> Even if your cron job temporarily stops or is delayed, the system has a built-in fail-safe trigger: whenever an admin loads the Notification page or any mobile device pings the API (`/api/app-version`), overdue notifications are automatically processed and dispatched!
+### Option C: Web-Cron (Free Online Cron / curl / Uptime Bot / No SSH Access)
+If your hosting restricts terminal crons or `schedule:run`, use a free web cron (e.g. [cron-job.org](https://cron-job.org), EasyCron, or cPanel curl):
+- URL to call every 1 minute:
+  ```text
+  https://promptbaba.cloud/api/cron/send-scheduled
+  ```
+  *(Or in cPanel cron command: `curl -s https://promptbaba.cloud/api/cron/send-scheduled > /dev/null 2>&1`)*.
+
+> **💡 Built-in Fail-Safe & Live Admin Sync:**  
+> Even if cron is delayed:  
+> 1. The Admin Notifications page now automatically monitors timers live every few seconds and triggers due dispatch instantly!  
+> 2. Admins can click the **Check Due Timers** button anytime in the Scheduled Queue to dispatch immediately.  
+> 3. Mobile app launches (`/api/app-version`), dashboard visits, and in-app sync checks automatically trigger overdue dispatches in the background.
 
 ---
 

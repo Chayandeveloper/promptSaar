@@ -112,11 +112,34 @@ class NotificationController extends Controller
         );
 
         if ($scheduledAt && $scheduledAt > now()) {
-            $formattedTime = $scheduledAt->format('M d, Y h:i A');
+            $localDisplay = $scheduledAt->copy();
+            if (is_numeric($tzOffset)) {
+                $localDisplay = $localDisplay->subMinutes((int) $tzOffset);
+            }
+            $formattedTime = $localDisplay->format('M d, Y h:i A');
             return redirect()->back()->with('success', "Notification scheduled successfully for {$formattedTime}!");
         }
 
         return redirect()->back()->with('success', "Notification dispatched to {$log->sent_count} registered devices!");
+    }
+
+    public function processDue(Request $request)
+    {
+        $count = $this->pushService->processScheduledNotifications();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success'     => true,
+                'dispatched'  => $count,
+                'server_time' => now()->toIso8601String(),
+            ]);
+        }
+
+        if ($count > 0) {
+            return redirect()->back()->with('success', "Dispatched {$count} due scheduled notification(s)!");
+        }
+
+        return redirect()->back()->with('info', "No scheduled notifications are currently due.");
     }
 
     public function sendNow(PushNotification $notification)
