@@ -103,7 +103,7 @@ Route::get('/notifications/latest', [\App\Http\Controllers\Api\NotificationContr
 
 // Server / External Web Cron trigger for automated delivery (cPanel cron, curl, uptime monitor, or web ping)
 Route::match(['get', 'post'], '/cron/send-scheduled', function (\App\Services\FirebasePushService $pushService) {
-    $count = $pushService->processScheduledNotifications();
+    $count = $pushService->processScheduledNotifications(async: true);
     return response()->json([
         'status'      => 'ok',
         'dispatched'  => $count,

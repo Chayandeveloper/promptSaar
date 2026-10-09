@@ -108,7 +108,8 @@ class NotificationController extends Controller
             imageUrl: $validated['image_url'] ?? null,
             actionType: $validated['action_type'],
             targetId: $targetId,
-            scheduledAt: $scheduledAt
+            scheduledAt: $scheduledAt,
+            async: true
         );
 
         if ($scheduledAt && $scheduledAt > now()) {
@@ -120,12 +121,12 @@ class NotificationController extends Controller
             return redirect()->back()->with('success', "Notification scheduled successfully for {$formattedTime}!");
         }
 
-        return redirect()->back()->with('success', "Notification dispatched to {$log->sent_count} registered devices!");
+        return redirect()->back()->with('success', "🚀 Notification broadcast initiated to {$log->sent_count} registered devices! Delivering in background...");
     }
 
     public function processDue(Request $request)
     {
-        $count = $this->pushService->processScheduledNotifications();
+        $count = $this->pushService->processScheduledNotifications(async: true);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -136,7 +137,7 @@ class NotificationController extends Controller
         }
 
         if ($count > 0) {
-            return redirect()->back()->with('success', "Dispatched {$count} due scheduled notification(s)!");
+            return redirect()->back()->with('success', "Dispatched {$count} due scheduled notification(s) in background!");
         }
 
         return redirect()->back()->with('info', "No scheduled notifications are currently due.");
@@ -144,9 +145,14 @@ class NotificationController extends Controller
 
     public function sendNow(PushNotification $notification)
     {
-        $this->pushService->dispatchNotification($notification);
+        $notification->update([
+            'status'  => 'processing',
+            'sent_at' => now(),
+        ]);
 
-        return redirect()->back()->with('success', "Notification #{$notification->id} dispatched immediately to {$notification->sent_count} registered devices!");
+        $this->pushService->dispatchInBackground($notification);
+
+        return redirect()->back()->with('success', "🚀 Notification #{$notification->id} broadcast initiated! Delivering in background...");
     }
 
     public function destroy(PushNotification $notification)

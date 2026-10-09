@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import AdminLayout from '../../layouts/AdminLayout';
 import {
@@ -75,26 +75,42 @@ export default function NotificationsIndex({
     const [activeTab, setActiveTab] = useState<'scheduled' | 'history'>('scheduled');
     const [, setTick] = useState(0);
 
-    // Auto-refresh countdowns every 5s and automatically trigger dispatch when timers are due
+    const isCheckingDueRef = useRef(false);
+
+    // Auto-refresh countdowns every 1.5s, trigger exact on-time delivery when timers expire, and auto-poll while any notification is processing
     useEffect(() => {
         const timer = setInterval(() => {
             setTick((t) => t + 1);
 
-            // If any scheduled notification has reached its target time, trigger dispatch on server
-            if (scheduled_notifications.length > 0) {
+            // 1. Precise On-Time Trigger for Scheduled Timers:
+            if (scheduled_notifications.length > 0 && !isCheckingDueRef.current) {
                 const hasDue = scheduled_notifications.some(
                     (item) => item.scheduled_at && new Date(item.scheduled_at).getTime() <= Date.now()
                 );
                 if (hasDue) {
-                    router.post('/admin/notifications/process-due', {}, {
-                        preserveScroll: true,
-                    });
+                    isCheckingDueRef.current = true;
+                    fetch('/api/cron/send-scheduled')
+                        .then(() => {
+                            router.reload({ preserveScroll: true });
+                        })
+                        .catch(() => {})
+                        .finally(() => {
+                            setTimeout(() => {
+                                isCheckingDueRef.current = false;
+                            }, 3000);
+                        });
                 }
             }
-        }, 6000);
+
+            // 2. Auto-poll status when any notification in history is 'processing':
+            const hasProcessing = notifications?.data?.some((item) => item.status === 'processing');
+            if (hasProcessing && !isCheckingDueRef.current) {
+                router.reload({ only: ['notifications', 'stats'], preserveScroll: true });
+            }
+        }, 1500);
 
         return () => clearInterval(timer);
-    }, [scheduled_notifications]);
+    }, [scheduled_notifications, notifications]);
 
     // Helper to get formatted local string for datetime-local
     const formatLocalDateTime = (date: Date) => {
@@ -776,11 +792,22 @@ export default function NotificationsIndex({
                                                     <span className="text-slate-400 ml-1">devices</span>
                                                 </td>
                                                 <td className="py-3">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                                        item.status === 'sent' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                                    }`}>
-                                                        {item.status.toUpperCase()}
-                                                    </span>
+                                                    {item.status === 'sent' && (
+                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                            SENT
+                                                        </span>
+                                                    )}
+                                                    {item.status === 'processing' && (
+                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1 w-max">
+                                                            <RefreshCw size={10} className="animate-spin text-amber-300" />
+                                                            <span>SENDING...</span>
+                                                        </span>
+                                                    )}
+                                                    {item.status !== 'sent' && item.status !== 'processing' && (
+                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">
+                                                            {item.status.toUpperCase()}
+                                                        </span>
+                                                    )}
                                                 </td>
                                                 <td className="py-3 text-right" style={{ color: 'var(--color-muted)' }}>
                                                     {item.sent_at ? new Date(item.sent_at).toLocaleString() : new Date(item.created_at).toLocaleString()}

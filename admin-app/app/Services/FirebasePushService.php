@@ -43,9 +43,11 @@ class FirebasePushService
         ?string $imageUrl = null,
         string $actionType = 'home',
         ?string $targetId = null,
-        ?\DateTimeInterface $scheduledAt = null
+        ?\DateTimeInterface $scheduledAt = null,
+        bool $async = true
     ): PushNotification {
         $isScheduled = $scheduledAt && $scheduledAt > now();
+        $activeCount = DevicePushToken::where('is_active', true)->count();
 
         $notificationLog = PushNotification::create([
             'title'         => $title,
@@ -54,12 +56,12 @@ class FirebasePushService
             'action_type'   => $actionType,
             'target_id'     => $targetId,
             'data'          => $data,
-            'sent_count'    => 0,
+            'sent_count'    => $activeCount,
             'success_count' => 0,
             'failure_count' => 0,
             'status'        => $isScheduled ? 'scheduled' : 'processing',
             'scheduled_at'  => $scheduledAt,
-            'sent_at'       => null,
+            'sent_at'       => $isScheduled ? null : now(),
         ]);
 
         if ($isScheduled) {
@@ -67,7 +69,43 @@ class FirebasePushService
             return $notificationLog;
         }
 
+        if ($async) {
+            $this->dispatchInBackground($notificationLog);
+            return $notificationLog;
+        }
+
         return $this->dispatchNotification($notificationLog);
+    }
+
+    /**
+     * Launch background dispatch via Artisan CLI so HTTP requests return instantaneously.
+     */
+    public function dispatchInBackground(PushNotification $notification): void
+    {
+        $id = (int) $notification->id;
+        $artisan = base_path('artisan');
+        $dispatched = false;
+
+        if (function_exists('exec')) {
+            try {
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    if (function_exists('pclose') && function_exists('popen')) {
+                        @pclose(@popen("start /B php " . escapeshellarg($artisan) . " notifications:dispatch {$id} > NUL 2>&1", "r"));
+                        $dispatched = true;
+                    }
+                } else {
+                    @exec("nohup php " . escapeshellarg($artisan) . " notifications:dispatch {$id} > /dev/null 2>&1 &");
+                    $dispatched = true;
+                }
+            } catch (\Throwable $e) {
+                Log::warning("[PushService] Failed to spawn background process: " . $e->getMessage());
+            }
+        }
+
+        // If background process couldn't be spawned, dispatch synchronously
+        if (!$dispatched) {
+            $this->dispatchNotification($notification);
+        }
     }
 
     protected ?string $cachedAccessToken = null;
@@ -78,7 +116,7 @@ class FirebasePushService
      */
     public function dispatchNotification(PushNotification $notification): PushNotification
     {
-        @set_time_limit(300);
+        @set_time_limit(600);
         @ignore_user_abort(true);
 
         $tokens = DevicePushToken::where('is_active', true)->get();
@@ -148,19 +186,20 @@ class FirebasePushService
      * Process and dispatch all pending scheduled notifications that are due.
      * Returns the count of dispatched notifications.
      */
-    public function processScheduledNotifications(): int
+    public function processScheduledNotifications(bool $async = false): int
     {
-        // Auto-heal any stale processing notifications (older than 2 minutes)
+        // Auto-heal any stale processing notifications (older than 3 minutes)
         PushNotification::where('status', 'processing')
-            ->where('updated_at', '<', now()->subMinutes(2))
+            ->where('updated_at', '<', now()->subMinutes(3))
             ->update([
                 'status'  => 'sent',
                 'sent_at' => now(),
             ]);
 
+        // Find due scheduled notifications with 45-second leeway to ensure exact minute-tick execution
         $due = PushNotification::where('status', 'scheduled')
             ->whereNotNull('scheduled_at')
-            ->where('scheduled_at', '<=', now())
+            ->where('scheduled_at', '<=', now()->addSeconds(45))
             ->orderBy('scheduled_at', 'asc')
             ->get();
 
@@ -169,11 +208,18 @@ class FirebasePushService
             // Atomically transition status from scheduled to processing to prevent concurrent double dispatch
             $affected = PushNotification::where('id', $notification->id)
                 ->where('status', 'scheduled')
-                ->update(['status' => 'processing']);
+                ->update([
+                    'status'  => 'processing',
+                    'sent_at' => now(),
+                ]);
 
             if ($affected > 0) {
                 $notification->refresh();
-                $this->dispatchNotification($notification);
+                if ($async) {
+                    $this->dispatchInBackground($notification);
+                } else {
+                    $this->dispatchNotification($notification);
+                }
                 $processed++;
             }
         }
@@ -266,50 +312,57 @@ class FirebasePushService
             if (!$accessToken) return [0, count($tokens)];
 
             $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
-            $chunks = array_chunk($tokens, 100);
+            $chunks = array_chunk($tokens, 200);
             $success = 0;
             $failure = 0;
             $unregistered = [];
 
+            // Pre-compile notification template structures once to avoid massive PHP allocation overhead
+            $baseData = array_merge([
+                'title'     => (string) $title,
+                'body'      => (string) $body,
+                'channelId' => 'default',
+            ], array_map('strval', $data));
+
+            $baseNotification = [
+                'title' => $title,
+                'body'  => $body,
+            ];
+
+            $baseAndroid = [
+                'priority' => 'HIGH',
+                'notification' => [
+                    'sound'                 => 'default',
+                    'channel_id'            => 'default',
+                    'default_sound'         => true,
+                    'notification_priority' => 'PRIORITY_MAX',
+                    'visibility'            => 'PUBLIC',
+                ],
+            ];
+
+            if ($imageUrl) {
+                $baseNotification['image'] = $imageUrl;
+                $baseAndroid['notification']['image'] = $imageUrl;
+            }
+
             foreach ($chunks as $chunk) {
-                $responses = Http::pool(function ($pool) use ($chunk, $url, $accessToken, $title, $body, $data, $imageUrl) {
+                $responses = Http::pool(function ($pool) use ($chunk, $url, $accessToken, $baseNotification, $baseData, $baseAndroid) {
                     $requests = [];
                     foreach ($chunk as $token) {
-                        $mergedData = array_merge([
-                            'title'     => $title,
-                            'body'      => $body,
-                            'channelId' => 'default',
-                        ], array_map('strval', $data));
-
                         $payload = [
                             'message' => [
-                                'token' => $token,
-                                'notification' => [
-                                    'title' => $title,
-                                    'body'  => $body,
-                                ],
-                                'data' => $mergedData,
-                                'android' => [
-                                    'priority' => 'HIGH',
-                                    'notification' => [
-                                        'sound'                 => 'default',
-                                        'channel_id'            => 'default',
-                                        'default_sound'         => true,
-                                        'notification_priority' => 'PRIORITY_MAX',
-                                        'visibility'            => 'PUBLIC',
-                                    ],
-                                ],
+                                'token'        => $token,
+                                'notification' => $baseNotification,
+                                'data'         => $baseData,
+                                'android'      => $baseAndroid,
                             ],
                         ];
-                        if ($imageUrl) {
-                            $payload['message']['notification']['image'] = $imageUrl;
-                            $payload['message']['android']['notification']['image'] = $imageUrl;
-                        }
+
                         $requests[] = $pool->as($token)
                             ->withoutVerifying()
                             ->withToken($accessToken)
                             ->withHeaders(['Content-Type' => 'application/json'])
-                            ->timeout(8)
+                            ->timeout(6)
                             ->post($url, $payload);
                     }
                     return $requests;
