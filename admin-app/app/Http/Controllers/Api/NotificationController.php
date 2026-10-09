@@ -41,6 +41,14 @@ class NotificationController extends Controller
             user: $user
         );
 
+        if ($tokenType === 'fcm') {
+            try {
+                $this->pushService->subscribeTokensToTopic([$validated['push_token']], 'all_users');
+            } catch (\Throwable $e) {
+                // Non-blocking to guarantee API registration always succeeds
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Push token registered successfully.',

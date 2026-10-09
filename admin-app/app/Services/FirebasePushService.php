@@ -156,17 +156,30 @@ class FirebasePushService
                 $failureCount += $expoFailure;
             }
 
-            // 2. Dispatch FCM native tokens in parallel pools
+            // 2. Dispatch FCM native tokens via topic 'all_users' (Instant 0.2s broadcast)
             if ($fcmTokens->isNotEmpty()) {
-                [$fcmSuccess, $fcmFailure] = $this->sendFcmBatch(
-                    $fcmTokens->pluck('push_token')->toArray(),
+                $topicSent = $this->sendToTopic(
+                    'all_users',
                     $notification->title,
                     $notification->body,
                     $notification->data ?? [],
                     $notification->image_url
                 );
-                $successCount += $fcmSuccess;
-                $failureCount += $fcmFailure;
+
+                if ($topicSent) {
+                    $successCount += $fcmTokens->count();
+                } else {
+                    // Fallback to token pool if topic broadcast encounters an issue
+                    [$fcmSuccess, $fcmFailure] = $this->sendFcmBatch(
+                        $fcmTokens->pluck('push_token')->toArray(),
+                        $notification->title,
+                        $notification->body,
+                        $notification->data ?? [],
+                        $notification->image_url
+                    );
+                    $successCount += $fcmSuccess;
+                    $failureCount += $fcmFailure;
+                }
             }
         } finally {
             $notification->update([
@@ -283,6 +296,136 @@ class FirebasePushService
         }
 
         return [$success, $failure];
+    }
+
+    /**
+     * Subscribe a batch of device tokens to an FCM topic via Google InstanceID API.
+     * Google supports up to 1,000 tokens per batch request.
+     */
+    public function subscribeTokensToTopic(array $tokens, string $topic = 'all_users'): int
+    {
+        $credentialsPath = config('services.firebase.credentials') 
+            ?? storage_path('app/firebase-credentials.json');
+
+        if (!file_exists($credentialsPath) || empty($tokens)) {
+            return 0;
+        }
+
+        try {
+            $creds = json_decode(file_get_contents($credentialsPath), true);
+            $accessToken = $this->getCachedGoogleAccessToken($creds);
+            if (!$accessToken) return 0;
+
+            $chunks = array_chunk($tokens, 1000);
+            $totalSubscribed = 0;
+
+            foreach ($chunks as $chunk) {
+                $response = Http::withoutVerifying()
+                    ->withToken($accessToken)
+                    ->withHeaders([
+                        'access_token_auth' => 'true',
+                        'Content-Type'      => 'application/json',
+                    ])
+                    ->timeout(15)
+                    ->post('https://iid.googleapis.com/iid/v1:batchAdd', [
+                        'to'                  => "/topics/{$topic}",
+                        'registration_tokens' => array_values($chunk),
+                    ]);
+
+                if ($response->successful()) {
+                    $results = $response->json('results') ?? [];
+                    $success = count(array_filter($results, fn($r) => empty($r['error'])));
+                    $totalSubscribed += ($success > 0 ? $success : count($chunk));
+                } else {
+                    Log::warning("[FCM Topic] Batch subscribe failed: " . $response->body());
+                }
+            }
+
+            return $totalSubscribed;
+        } catch (\Throwable $e) {
+            Log::error("[FCM Topic] Subscription exception: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Send a notification to an FCM topic in a single HTTP request (~200ms).
+     * Google automatically fans out delivery to all subscribed devices.
+     */
+    public function sendToTopic(
+        string $topic,
+        string $title,
+        string $body,
+        array $data = [],
+        ?string $imageUrl = null
+    ): bool {
+        $credentialsPath = config('services.firebase.credentials') 
+            ?? storage_path('app/firebase-credentials.json');
+
+        if (!file_exists($credentialsPath)) {
+            Log::warning("[FCM Topic] firebase-credentials.json not present.");
+            return false;
+        }
+
+        try {
+            $creds = json_decode(file_get_contents($credentialsPath), true);
+            $projectId = $creds['project_id'] ?? null;
+            if (!$projectId) return false;
+
+            $accessToken = $this->getCachedGoogleAccessToken($creds);
+            if (!$accessToken) return false;
+
+            $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+
+            $baseData = array_merge([
+                'title'     => (string) $title,
+                'body'      => (string) $body,
+                'channelId' => 'default',
+            ], array_map('strval', $data));
+
+            $payload = [
+                'message' => [
+                    'topic'        => $topic,
+                    'notification' => [
+                        'title' => $title,
+                        'body'  => $body,
+                    ],
+                    'data'         => $baseData,
+                    'android'      => [
+                        'priority' => 'HIGH',
+                        'notification' => [
+                            'sound'                 => 'default',
+                            'channel_id'            => 'default',
+                            'default_sound'         => true,
+                            'notification_priority' => 'PRIORITY_MAX',
+                            'visibility'            => 'PUBLIC',
+                        ],
+                    ],
+                ],
+            ];
+
+            if ($imageUrl) {
+                $payload['message']['notification']['image'] = $imageUrl;
+                $payload['message']['android']['notification']['image'] = $imageUrl;
+            }
+
+            $response = Http::withoutVerifying()
+                ->withToken($accessToken)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->timeout(10)
+                ->post($url, $payload);
+
+            if ($response->successful()) {
+                Log::info("[FCM Topic] Successfully dispatched to topic '{$topic}': " . $response->body());
+                return true;
+            }
+
+            Log::warning("[FCM Topic] Send to topic '{$topic}' failed ({$response->status()}): " . $response->body());
+            return false;
+        } catch (\Throwable $e) {
+            Log::error("[FCM Topic] Send to topic exception: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -420,7 +563,7 @@ class FirebasePushService
         $header = json_encode(['alg' => 'RS256', 'typ' => 'JWT']);
         $claims = json_encode([
             'iss'   => $creds['client_email'],
-            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging https://www.googleapis.com/auth/cloud-platform',
             'aud'   => 'https://oauth2.googleapis.com/token',
             'exp'   => $now + 3600,
             'iat'   => $now,
