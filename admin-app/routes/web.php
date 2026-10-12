@@ -90,6 +90,7 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::post('/templates/{id}/toggle', [TemplateController::class, 'toggle'])->name('templates.toggle');
         Route::post('/templates/upload-video', [TemplateController::class, 'uploadVideo'])->name('templates.upload-video');
         Route::post('/templates/upload-thumbnail', [TemplateController::class, 'uploadThumbnail'])->name('templates.upload-thumbnail');
+        Route::post('/templates/upload-vn-image', [TemplateController::class, 'uploadVnImage'])->name('templates.upload-vn-image');
 
         // Users & Coin Ledger Management
         Route::get('/users', [UserController::class, 'index'])->name('users.index');

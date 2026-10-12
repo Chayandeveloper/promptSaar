@@ -32,7 +32,11 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   if (isFeed && !adConfig.feed_ad_enabled) {
     return null;
   }
-  if (!isFeed && !adConfig.banner_ads_enabled) {
+  const isTemplateDetail = placement === 'template_detail' || placement === 'template_bottom';
+  if (isTemplateDetail && !(adConfig.banner_template_detail ?? adConfig.banner_ads_enabled)) {
+    return null;
+  }
+  if (!isFeed && !isTemplateDetail && !adConfig.banner_ads_enabled) {
     return null;
   }
 
@@ -40,6 +44,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
   const effectiveId =
     unitId ||
+    (isTemplateDetail ? adConfig?.banner_template_detail_id : null) ||
     (isFeed ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
     adConfig?.banner_ad_unit_id ||
     Config.ADMOB.BANNER_ID ||

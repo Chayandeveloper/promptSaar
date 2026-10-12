@@ -21,6 +21,8 @@ class Template extends Model
         'use_count',
         'views_count',
         'is_featured',
+        'is_vn',
+        'vn_image_url',
         'is_active',
         'order',
     ];
@@ -30,6 +32,7 @@ class Template extends Model
         'use_count'   => 'integer',
         'views_count' => 'integer',
         'is_featured' => 'boolean',
+        'is_vn'       => 'boolean',
         'is_active'   => 'boolean',
         'order'       => 'integer',
     ];
@@ -47,6 +50,11 @@ class Template extends Model
     }
 
     public function getThumbnailUrlAttribute($value): ?string
+    {
+        return $this->formatMediaUrl($value);
+    }
+
+    public function getVnImageUrlAttribute($value): ?string
     {
         return $this->formatMediaUrl($value);
     }

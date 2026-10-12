@@ -89,6 +89,8 @@ export interface Template {
   use_count: number;
   views_count: number;
   is_featured: boolean;
+  is_vn?: boolean;
+  vn_image_url?: string | null;
   is_active: boolean;
   order: number;
   created_at?: string;

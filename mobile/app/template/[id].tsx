@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,17 +13,20 @@ import {
   Alert,
   Image,
   BackHandler,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import * as Clipboard from 'expo-clipboard';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useTemplate, useUseTemplateMutation } from '../../hooks/useTemplates';
 import { Theme } from '../../constants/Theme';
 import { resolveMediaUrl } from '../../utils/url';
 import { adService } from '../../services/ads';
+import { BannerAd } from '../../components/BannerAd';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -174,6 +177,8 @@ export default function TemplateDetailScreen() {
     initialThumbnail?: string;
     initialTitle?: string;
     initialCategory?: string;
+    initialIsVn?: string;
+    initialVnImageUrl?: string;
   }>();
   const templateId = params.id ? parseInt(params.id, 10) : 0;
 
@@ -185,6 +190,15 @@ export default function TemplateDetailScreen() {
   const [isMuted, setIsMuted] = useState(false);
   const [isOpeningCapCut, setIsOpeningCapCut] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
+
+  // VN Swipe Mode
+  const horizontalScrollRef = useRef<ScrollView>(null);
+  const [activePageIndex, setActivePageIndex] = useState(0);
+
+  const isVn = template?.is_vn ?? (params.initialIsVn === 'true');
+  const rawVnImageUrl = template?.vn_image_url || params.initialVnImageUrl || '';
+  const vnImageSource = rawVnImageUrl ? resolveMediaUrl(rawVnImageUrl) : null;
+  const canSwipeVn = Boolean(isVn && vnImageSource);
 
   const rawVideoUrl = template?.video_url || params.initialVideoUrl || '';
   const videoSource = resolveMediaUrl(rawVideoUrl);
@@ -241,6 +255,30 @@ export default function TemplateDetailScreen() {
     }
   };
 
+  const handleShareVnImage = async () => {
+    if (!vnImageSource) return;
+    Haptics.selectionAsync().catch(() => {});
+    try {
+      await Share.share({
+        title: `${displayTitle} - VN Template Image`,
+        message: `Check out this VN Preset / Template: "${displayTitle}"\n${vnImageSource}`,
+      });
+    } catch (err) {
+      console.log('Share error:', err);
+    }
+  };
+
+  const handleCopyVnLink = async () => {
+    if (!vnImageSource) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    try {
+      await Clipboard.setStringAsync(vnImageSource);
+      Alert.alert('Link Copied', 'VN Template image URL has been copied to your clipboard!');
+    } catch (e) {
+      Alert.alert('VN Image', vnImageSource);
+    }
+  };
+
   const handleUseTemplate = async () => {
     if (!template) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -258,11 +296,9 @@ export default function TemplateDetailScreen() {
       if (supported) {
         await Linking.openURL(targetUrl);
       } else {
-        // If deep link wasn't supported, fallback to standard web link or CapCut store
         if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
           await Linking.openURL(targetUrl);
         } else {
-          // Open web CapCut template or Play Store / App Store
           const storeUrl =
             Platform.OS === 'ios'
               ? 'https://apps.apple.com/app/capcut-video-editor/id1500855883'
@@ -272,7 +308,6 @@ export default function TemplateDetailScreen() {
       }
     } catch (err) {
       console.log('Error opening CapCut:', err);
-      // Fallback
       if (template.capcut_url) {
         Linking.openURL(template.capcut_url).catch(() => {
           Alert.alert('Notice', 'Could not open CapCut. Please ensure the app is installed.');
@@ -293,10 +328,9 @@ export default function TemplateDetailScreen() {
   const displayTitle = template?.title || params.initialTitle || '';
   const displayCategory = template?.category || params.initialCategory || '';
 
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-
+  // Render the Video Screen
+  const renderVideoScreen = () => (
+    <View style={styles.pageItem}>
       {/* Full Screen Instagram/Reel Video View */}
       {videoSource ? (
         <TemplateVideoView
@@ -354,10 +388,39 @@ export default function TemplateDetailScreen() {
           <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
 
-        <View style={styles.topBadge}>
-          <Ionicons name="film" size={13} color="#FF3366" />
-          <Text style={styles.topBadgeText}>CapCut Reel</Text>
-        </View>
+        {canSwipeVn ? (
+          /* Segmented Switch: Video / VN Image */
+          <View style={styles.topTabsPill}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                horizontalScrollRef.current?.scrollTo({ x: 0, animated: true });
+                setIsPlaying(true);
+              }}
+              style={[styles.topTabBtn, activePageIndex === 0 && styles.topTabBtnActive]}
+            >
+              <Ionicons name="film" size={11} color="#FFFFFF" />
+              <Text style={styles.topTabText}>Video</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                horizontalScrollRef.current?.scrollTo({ x: SCREEN_WIDTH, animated: true });
+                setIsPlaying(false);
+              }}
+              style={[styles.topTabBtn, activePageIndex === 1 && styles.topTabBtnActiveVn]}
+            >
+              <Ionicons name="image" size={11} color="#FFFFFF" />
+              <Text style={styles.topTabText}>VN Image</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.topBadge}>
+            <Ionicons name="film" size={13} color="#FF3366" />
+            <Text style={styles.topBadgeText}>CapCut Reel</Text>
+          </View>
+        )}
 
         <View style={styles.topRightActions}>
           <TouchableOpacity
@@ -382,6 +445,29 @@ export default function TemplateDetailScreen() {
         </View>
       </View>
 
+      {/* Floating Swipe Left Hint Pill on Video Screen */}
+      {canSwipeVn && activePageIndex === 0 && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => {
+            horizontalScrollRef.current?.scrollTo({ x: SCREEN_WIDTH, animated: true });
+            setIsPlaying(false);
+          }}
+          style={[styles.swipeHintBadge, { bottom: Math.max(insets.bottom, 16) + 160 }]}
+        >
+          <LinearGradient
+            colors={['#8B5CF6', '#7C3AED']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.swipeHintGradient}
+          >
+            <Ionicons name="image" size={13} color="#FFFFFF" />
+            <Text style={styles.swipeHintText}>Swipe left for VN Image</Text>
+            <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+
       {/* Bottom Reel Style Info & "Use This Template" CTA */}
       {(template || displayTitle) && (
         <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 16) + 12 }]}>
@@ -390,6 +476,13 @@ export default function TemplateDetailScreen() {
             {displayCategory ? (
               <View style={styles.categoryPill}>
                 <Text style={styles.categoryPillText}>{displayCategory}</Text>
+              </View>
+            ) : null}
+
+            {canSwipeVn ? (
+              <View style={styles.vnCategoryPill}>
+                <Ionicons name="image-outline" size={11} color="#FFFFFF" />
+                <Text style={styles.vnCategoryPillText}>VN PRESET</Text>
               </View>
             ) : null}
 
@@ -470,7 +563,183 @@ export default function TemplateDetailScreen() {
           <Text style={styles.subtext}>
             Tapping opens CapCut app ready with this video effect
           </Text>
+
+          {/* Ad Banner Below Use This Template Button (Controlled by Admin Panel) */}
+          <View style={styles.templateAdBannerWrapper}>
+            <BannerAd placement="template_detail" size="banner" />
+          </View>
         </View>
+      )}
+    </View>
+  );
+
+  // Render the VN Image Screen (Revealed by swiping left)
+  const renderVnImageScreen = () => (
+    <View style={styles.pageItem}>
+      <View style={styles.vnPageContainer}>
+        {/* Full-size VN Image / QR Code */}
+        {vnImageSource ? (
+          <Image
+            source={{ uri: vnImageSource }}
+            style={styles.vnImage}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#8B5CF6" />
+          </View>
+        )}
+
+        {/* Top Navigation Bar on VN Page */}
+        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleGoBack}
+            style={styles.iconButton}
+          >
+            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {/* Segmented Switch: Video / VN Image */}
+          <View style={styles.topTabsPill}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                horizontalScrollRef.current?.scrollTo({ x: 0, animated: true });
+                setIsPlaying(true);
+              }}
+              style={styles.topTabBtn}
+            >
+              <Ionicons name="film" size={11} color="rgba(255,255,255,0.7)" />
+              <Text style={styles.topTabText}>Video</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[styles.topTabBtn, styles.topTabBtnActiveVn]}
+            >
+              <Ionicons name="image" size={11} color="#FFFFFF" />
+              <Text style={styles.topTabText}>VN Image</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.topRightActions}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleShareVnImage}
+              style={styles.iconButton}
+            >
+              <Ionicons name="share-social-outline" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Bottom Info Card for VN Image */}
+        <View style={[styles.vnBottomCard, { paddingBottom: Math.max(insets.bottom, 16) + 12 }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(11, 15, 25, 0.95)', '#0B0F19']}
+            locations={[0, 0.4, 1]}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
+
+          <View style={styles.vnHeaderRow}>
+            <View style={styles.vnTagBadge}>
+              <Ionicons name="qr-code-outline" size={12} color="#FFFFFF" />
+              <Text style={styles.vnTagBadgeText}>VN CODE / PRESET</Text>
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                horizontalScrollRef.current?.scrollTo({ x: 0, animated: true });
+                setIsPlaying(true);
+              }}
+              style={styles.backToVideoChip}
+            >
+              <Ionicons name="videocam-outline" size={12} color="#A78BFA" />
+              <Text style={styles.backToVideoChipText}>👈 Back to Video</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.vnTitle}>{displayTitle}</Text>
+          <Text style={styles.vnSubtitle}>
+            Scan this QR code or import the preset photo into the VN Video Editor app to recreate this viral reel.
+          </Text>
+
+          {/* VN Actions */}
+          <View style={styles.vnActionsRow}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={handleCopyVnLink}
+              style={styles.vnActionBtn}
+            >
+              <Ionicons name="copy-outline" size={15} color="#FFFFFF" />
+              <Text style={styles.vnActionBtnText}>Copy Link</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={handleShareVnImage}
+              style={styles.vnActionBtn}
+            >
+              <Ionicons name="share-social-outline" size={15} color="#FFFFFF" />
+              <Text style={styles.vnActionBtnText}>Share</Text>
+            </TouchableOpacity>
+
+            {template?.capcut_url ? (
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={handleUseTemplate}
+                style={styles.vnCtaWrapper}
+              >
+                <LinearGradient
+                  colors={['#8B5CF6', '#6D28D9']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.vnCtaButton}
+                >
+                  <Text style={styles.vnCtaButtonText}>OPEN APP</Text>
+                  <Ionicons name="open-outline" size={14} color="#FFFFFF" />
+                </LinearGradient>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+
+      {canSwipeVn ? (
+        /* Horizontal Pager: Swipe left to see VN Image */
+        <ScrollView
+          ref={horizontalScrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          onMomentumScrollEnd={(e) => {
+            const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+            setActivePageIndex(page);
+            if (page === 1) {
+              // Pause video on image page
+              setIsPlaying(false);
+            } else {
+              // Resume playback on video page
+              setIsPlaying(true);
+            }
+          }}
+          style={styles.pagerScrollView}
+        >
+          {renderVideoScreen()}
+          {renderVnImageScreen()}
+        </ScrollView>
+      ) : (
+        renderVideoScreen()
       )}
     </View>
   );
@@ -742,5 +1011,217 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     textAlign: 'center',
     marginTop: 8,
+  },
+  templateAdBannerWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  // Pager & Horizontal Swipe Styles
+  pagerScrollView: {
+    flex: 1,
+    width: SCREEN_WIDTH,
+  },
+  pageItem: {
+    width: SCREEN_WIDTH,
+    height: '100%',
+    position: 'relative',
+    backgroundColor: '#000000',
+  },
+  // Top Tabs Pill
+  topTabsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    borderRadius: 22,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  topTabBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 18,
+  },
+  topTabBtnActive: {
+    backgroundColor: '#FF3366',
+  },
+  topTabBtnActiveVn: {
+    backgroundColor: '#8B5CF6',
+  },
+  topTabText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  topTabTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  // Swipe Left Prompt Floating Hint
+  swipeHintBadge: {
+    position: 'absolute',
+    right: 16,
+    zIndex: 25,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  swipeHintGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  swipeHintText: {
+    color: '#FFFFFF',
+    fontSize: 11.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  vnCategoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3.5,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 8,
+  },
+  vnCategoryPillText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  // VN Page Layout & Styles
+  vnPageContainer: {
+    flex: 1,
+    width: SCREEN_WIDTH,
+    height: '100%',
+    backgroundColor: '#070A12',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  vnImage: {
+    width: SCREEN_WIDTH - 24,
+    height: SCREEN_HEIGHT * 0.62,
+    borderRadius: 18,
+    backgroundColor: '#000000',
+  },
+  vnBottomCard: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    paddingHorizontal: 18,
+    paddingTop: 36,
+  },
+  vnHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  vnTagBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(139, 92, 246, 0.9)',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  vnTagBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  backToVideoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  backToVideoChipText: {
+    color: '#DDD6FE',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  vnTitle: {
+    color: '#FFFFFF',
+    fontSize: 19,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+    marginBottom: 4,
+  },
+  vnSubtitle: {
+    color: '#94A3B8',
+    fontSize: 12,
+    lineHeight: 17,
+    marginBottom: 14,
+  },
+  vnActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  vnActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  vnActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  vnCtaWrapper: {
+    flex: 1.3,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  vnCtaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  vnCtaButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
 });

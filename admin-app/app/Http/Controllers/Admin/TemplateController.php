@@ -65,6 +65,8 @@ class TemplateController extends Controller
             'capcut_url'    => 'required|string|max:2000',
             'duration'      => 'nullable|string|max:20',
             'is_featured'   => 'nullable|boolean',
+            'is_vn'         => 'nullable|boolean',
+            'vn_image_url'  => 'nullable|string',
             'is_active'     => 'nullable|boolean',
             'order'         => 'nullable|integer',
             'tags'          => 'nullable',
@@ -89,6 +91,8 @@ class TemplateController extends Controller
             'duration'      => $validated['duration'] ?: '0:15',
             'tags'          => $tags,
             'is_featured'   => (bool) ($validated['is_featured'] ?? false),
+            'is_vn'         => (bool) ($validated['is_vn'] ?? false),
+            'vn_image_url'  => !empty($validated['is_vn']) ? ($validated['vn_image_url'] ?? null) : null,
             'is_active'     => (bool) ($validated['is_active'] ?? true),
             'order'         => (int) ($validated['order'] ?? 0),
         ]);
@@ -109,6 +113,8 @@ class TemplateController extends Controller
             'capcut_url'    => 'required|string|max:2000',
             'duration'      => 'nullable|string|max:20',
             'is_featured'   => 'nullable|boolean',
+            'is_vn'         => 'nullable|boolean',
+            'vn_image_url'  => 'nullable|string',
             'is_active'     => 'nullable|boolean',
             'order'         => 'nullable|integer',
             'tags'          => 'nullable',
@@ -133,6 +139,8 @@ class TemplateController extends Controller
             'duration'      => $validated['duration'] ?: '0:15',
             'tags'          => $tags,
             'is_featured'   => (bool) ($validated['is_featured'] ?? false),
+            'is_vn'         => (bool) ($validated['is_vn'] ?? false),
+            'vn_image_url'  => !empty($validated['is_vn']) ? ($validated['vn_image_url'] ?? null) : null,
             'is_active'     => (bool) ($validated['is_active'] ?? true),
             'order'         => (int) ($validated['order'] ?? 0),
         ]);
@@ -177,6 +185,19 @@ class TemplateController extends Controller
         ]);
 
         $path = $request->file('thumbnail')->store('templates/thumbnails', 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
+    }
+
+    public function uploadVnImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:15360', // max 15MB
+        ]);
+
+        $path = $request->file('image')->store('templates/vn_images', 'public');
 
         return response()->json([
             'url' => asset('storage/' . $path),

@@ -12,6 +12,7 @@ export interface AdConfig {
   rewarded_prompt_unlock: boolean;
   rewarded_daily_coins: boolean;
   banner_ads_enabled: boolean;
+  banner_template_detail: boolean;
   feed_ad_enabled: boolean;
   app_open_ad_enabled: boolean;
   interstitial_ad_unit_id: string;
@@ -19,6 +20,7 @@ export interface AdConfig {
   interstitial_template_click_id?: string;
   interstitial_template_back_id?: string;
   banner_ad_unit_id?: string;
+  banner_template_detail_id?: string;
   feed_ad_unit_id?: string;
   app_open_ad_unit_id?: string;
   rewarded_ad_unit_id?: string;
@@ -36,6 +38,7 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   rewarded_prompt_unlock: true,
   rewarded_daily_coins: true,
   banner_ads_enabled: true,
+  banner_template_detail: true,
   feed_ad_enabled: true,
   app_open_ad_enabled: true,
   interstitial_ad_unit_id: 'ca-app-pub-9010050634863664/9136172220',
@@ -43,6 +46,7 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   interstitial_template_click_id: 'ca-app-pub-9010050634863664/9136172220',
   interstitial_template_back_id: 'ca-app-pub-9010050634863664/9136172220',
   banner_ad_unit_id: Config.ADMOB.BANNER_ID,
+  banner_template_detail_id: Config.ADMOB.BANNER_ID,
   feed_ad_unit_id: Config.ADMOB.BANNER_ID,
   app_open_ad_unit_id: 'ca-app-pub-3940256099942544/9257395921',
   rewarded_ad_unit_id: Config.ADMOB.REWARDED_ID,
@@ -134,6 +138,7 @@ class AdConfigService {
       rewarded_prompt_unlock: ads_enabled && parseBool(raw.rewarded_prompt_unlock, true),
       rewarded_daily_coins: ads_enabled && parseBool(raw.rewarded_daily_coins, true),
       banner_ads_enabled: ads_enabled && parseBool(raw.banner_ads_enabled, true),
+      banner_template_detail: ads_enabled && parseBool(raw.banner_template_detail, true),
       feed_ad_enabled: ads_enabled && parseBool(raw.feed_ad_enabled, true),
       app_open_ad_enabled: ads_enabled && parseBool(raw.app_open_ad_enabled, true),
 
@@ -142,6 +147,7 @@ class AdConfigService {
       interstitial_template_click_id: raw.interstitial_template_click_id || raw.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_template_click_id,
       interstitial_template_back_id: raw.interstitial_template_back_id || raw.interstitial_prompt_back_id || DEFAULT_AD_CONFIG.interstitial_template_back_id,
       banner_ad_unit_id: raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_ad_unit_id,
+      banner_template_detail_id: raw.banner_template_detail_id || raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_template_detail_id,
       feed_ad_unit_id: raw.feed_ad_unit_id || raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.feed_ad_unit_id,
       app_open_ad_unit_id: raw.app_open_ad_unit_id || DEFAULT_AD_CONFIG.app_open_ad_unit_id,
       rewarded_ad_unit_id: raw.rewarded_ad_unit_id || DEFAULT_AD_CONFIG.rewarded_ad_unit_id,
@@ -214,6 +220,10 @@ class AdConfigService {
 
   isBannerAdsEnabled(): boolean {
     return this.cachedConfig.ads_enabled && this.cachedConfig.banner_ads_enabled;
+  }
+
+  isTemplateDetailBannerEnabled(): boolean {
+    return this.cachedConfig.ads_enabled && (this.cachedConfig.banner_template_detail ?? this.cachedConfig.banner_ads_enabled);
   }
 
   isFeedAdEnabled(): boolean {

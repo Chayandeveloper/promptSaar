@@ -41,6 +41,8 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, featured }
           initialThumbnail: template.thumbnail_url,
           initialTitle: template.title,
           initialCategory: template.category,
+          initialIsVn: template.is_vn ? 'true' : 'false',
+          initialVnImageUrl: template.vn_image_url || '',
         },
       } as any);
     });
@@ -74,11 +76,19 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, featured }
         style={styles.gradient}
       />
 
-      {/* Top Header Strip: CapCut Badge & Duration */}
+      {/* Top Header Strip: CapCut Badge, VN Badge & Duration */}
       <View style={styles.topStrip}>
-        <View style={styles.capcutBadge}>
-          <Ionicons name="film-outline" size={11} color="#FFFFFF" />
-          <Text style={styles.capcutText}>CapCut</Text>
+        <View style={styles.badgeGroup}>
+          <View style={styles.capcutBadge}>
+            <Ionicons name="film-outline" size={11} color="#FFFFFF" />
+            <Text style={styles.capcutText}>CapCut</Text>
+          </View>
+          {template.is_vn ? (
+            <View style={styles.vnBadge}>
+              <Ionicons name="image-outline" size={10} color="#FFFFFF" />
+              <Text style={styles.vnBadgeText}>VN CODE</Text>
+            </View>
+          ) : null}
         </View>
 
         {template.duration ? (
@@ -156,6 +166,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 2,
   },
+  badgeGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   capcutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -164,6 +179,21 @@ const styles = StyleSheet.create({
     paddingVertical: 3.5,
     borderRadius: 12,
     gap: 3.5,
+  },
+  vnBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(147, 51, 234, 0.85)',
+    paddingHorizontal: 6,
+    paddingVertical: 3.5,
+    borderRadius: 12,
+    gap: 3,
+  },
+  vnBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   capcutText: {
     color: '#FFFFFF',

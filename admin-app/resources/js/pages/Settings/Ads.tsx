@@ -17,6 +17,7 @@ interface Settings {
     rewarded_prompt_unlock: boolean;
     rewarded_daily_coins: boolean;
     banner_ads_enabled: boolean;
+    banner_template_detail: boolean;
     feed_ad_enabled: boolean;
     app_open_ad_enabled: boolean;
     interstitial_ad_unit_id: string;
@@ -24,6 +25,7 @@ interface Settings {
     interstitial_template_click_id?: string;
     interstitial_template_back_id?: string;
     banner_ad_unit_id: string;
+    banner_template_detail_id?: string;
     feed_ad_unit_id: string;
     app_open_ad_unit_id: string;
     rewarded_ad_unit_id?: string;
@@ -59,6 +61,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
         rewarded_prompt_unlock: settings.rewarded_prompt_unlock ?? true,
         rewarded_daily_coins: settings.rewarded_daily_coins ?? true,
         banner_ads_enabled: settings.banner_ads_enabled ?? true,
+        banner_template_detail: settings.banner_template_detail ?? true,
         feed_ad_enabled: settings.feed_ad_enabled ?? true,
         app_open_ad_enabled: settings.app_open_ad_enabled ?? true,
         interstitial_ad_unit_id: settings.interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
@@ -66,6 +69,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
         interstitial_template_click_id: settings.interstitial_template_click_id || settings.interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
         interstitial_template_back_id: settings.interstitial_template_back_id || settings.interstitial_prompt_back_id || 'ca-app-pub-9010050634863664/9136172220',
         banner_ad_unit_id: settings.banner_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
+        banner_template_detail_id: settings.banner_template_detail_id || settings.banner_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
         feed_ad_unit_id: settings.feed_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
         app_open_ad_unit_id: settings.app_open_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
         rewarded_prompt_unlock_id: settings.rewarded_prompt_unlock_id || settings.rewarded_ad_unit_id || 'ca-app-pub-9010050634863664/7562991281',
@@ -440,6 +444,34 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             </label>
                         </div>
 
+                        {/* 5b. Template Detail Screen Banner Ad (Below "Use This Template") */}
+                        <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <Layers size={16} className="text-violet-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Template Detail Banner Ad (Below "Use This Template")
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                                        Banner
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    Display an AdMob banner ad directly underneath the "USE THIS TEMPLATE" button inside the template video player screen.
+                                </p>
+                            </div>
+
+                            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(data.banner_template_detail)}
+                                    onChange={(e) => setData('banner_template_detail', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                            </label>
+                        </div>
+
                         {/* 6. In-Feed Ads (Every 8 prompts) */}
                         <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                             <div className="space-y-1">
@@ -599,6 +631,26 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             )}
                             <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
                                 Live Banner ID: <code className="text-indigo-400 font-mono">ca-app-pub-9010050634863664/4429647201</code>.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android Template Detail Banner Ad Unit ID
+                            </label>
+                            <input
+                                type="text"
+                                value={data.banner_template_detail_id}
+                                onChange={(e) => setData('banner_template_detail_id', e.target.value)}
+                                placeholder="ca-app-pub-9010050634863664/4429647201"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                                style={inputStyle}
+                            />
+                            {errors.banner_template_detail_id && (
+                                <p className="text-red-400 text-xs mt-1">{errors.banner_template_detail_id}</p>
+                            )}
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Banner Ad Unit ID displayed below the "Use This Template" CTA button. Defaults to main banner ID.
                             </p>
                         </div>
 

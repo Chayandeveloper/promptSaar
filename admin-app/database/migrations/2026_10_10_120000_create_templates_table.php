@@ -24,6 +24,8 @@ return new class extends Migration
             $table->unsignedInteger('use_count')->default(0);
             $table->unsignedInteger('views_count')->default(0);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_vn')->default(false);
+            $table->text('vn_image_url')->nullable();
             $table->boolean('is_active')->default(true);
             $table->integer('order')->default(0);
             $table->timestamps();
