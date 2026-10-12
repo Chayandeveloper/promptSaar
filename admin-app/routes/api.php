@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PromptController;
 use App\Http\Controllers\Api\RewardController;
+use App\Http\Controllers\Api\TemplateController;
 use App\Models\RewardSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,11 @@ Route::post('/prompts/{id}/unlock-with-coins', [PromptController::class, 'unlock
 Route::post('/prompts/{id}/unlock-with-ad', [PromptController::class, 'unlockWithAd'])->whereNumber('id');
 Route::post('/prompts/{id}/unlock', [PromptController::class, 'unlock'])->whereNumber('id'); // Legacy compatibility
 Route::post('/prompts/{id}/relock', [PromptController::class, 'relock'])->whereNumber('id');
+
+// CapCut Video Templates API
+Route::get('/templates', [TemplateController::class, 'index']);
+Route::get('/templates/{id}', [TemplateController::class, 'show'])->whereNumber('id');
+Route::post('/templates/{id}/use', [TemplateController::class, 'useTemplate'])->whereNumber('id');
 
 // Admin Reward API Endpoints (Section 22)
 Route::prefix('admin')->group(function () {

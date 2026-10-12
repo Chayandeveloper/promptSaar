@@ -7,6 +7,8 @@ export interface AdConfig {
   interstitial_prompt_click: boolean;
   interstitial_cooldown_seconds?: number;
   interstitial_prompt_back: boolean;
+  interstitial_template_click: boolean;
+  interstitial_template_back: boolean;
   rewarded_prompt_unlock: boolean;
   rewarded_daily_coins: boolean;
   banner_ads_enabled: boolean;
@@ -14,6 +16,8 @@ export interface AdConfig {
   app_open_ad_enabled: boolean;
   interstitial_ad_unit_id: string;
   interstitial_prompt_back_id?: string;
+  interstitial_template_click_id?: string;
+  interstitial_template_back_id?: string;
   banner_ad_unit_id?: string;
   feed_ad_unit_id?: string;
   app_open_ad_unit_id?: string;
@@ -27,6 +31,8 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   interstitial_prompt_click: true,
   interstitial_cooldown_seconds: 45,
   interstitial_prompt_back: false,
+  interstitial_template_click: true,
+  interstitial_template_back: true,
   rewarded_prompt_unlock: true,
   rewarded_daily_coins: true,
   banner_ads_enabled: true,
@@ -34,6 +40,8 @@ export const DEFAULT_AD_CONFIG: AdConfig = {
   app_open_ad_enabled: true,
   interstitial_ad_unit_id: 'ca-app-pub-9010050634863664/9136172220',
   interstitial_prompt_back_id: 'ca-app-pub-9010050634863664/9136172220',
+  interstitial_template_click_id: 'ca-app-pub-9010050634863664/9136172220',
+  interstitial_template_back_id: 'ca-app-pub-9010050634863664/9136172220',
   banner_ad_unit_id: Config.ADMOB.BANNER_ID,
   feed_ad_unit_id: Config.ADMOB.BANNER_ID,
   app_open_ad_unit_id: 'ca-app-pub-3940256099942544/9257395921',
@@ -121,6 +129,8 @@ class AdConfigService {
       interstitial_prompt_click: ads_enabled && parseBool(raw.interstitial_prompt_click, true),
       interstitial_cooldown_seconds: typeof raw.interstitial_cooldown_seconds === 'number' ? raw.interstitial_cooldown_seconds : (Number(raw.interstitial_cooldown_seconds) || 45),
       interstitial_prompt_back: ads_enabled && parseBool(raw.interstitial_prompt_back, false),
+      interstitial_template_click: ads_enabled && parseBool(raw.interstitial_template_click, true),
+      interstitial_template_back: ads_enabled && parseBool(raw.interstitial_template_back, true),
       rewarded_prompt_unlock: ads_enabled && parseBool(raw.rewarded_prompt_unlock, true),
       rewarded_daily_coins: ads_enabled && parseBool(raw.rewarded_daily_coins, true),
       banner_ads_enabled: ads_enabled && parseBool(raw.banner_ads_enabled, true),
@@ -129,6 +139,8 @@ class AdConfigService {
 
       interstitial_ad_unit_id: raw.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_ad_unit_id,
       interstitial_prompt_back_id: raw.interstitial_prompt_back_id || raw.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_prompt_back_id,
+      interstitial_template_click_id: raw.interstitial_template_click_id || raw.interstitial_ad_unit_id || DEFAULT_AD_CONFIG.interstitial_template_click_id,
+      interstitial_template_back_id: raw.interstitial_template_back_id || raw.interstitial_prompt_back_id || DEFAULT_AD_CONFIG.interstitial_template_back_id,
       banner_ad_unit_id: raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.banner_ad_unit_id,
       feed_ad_unit_id: raw.feed_ad_unit_id || raw.banner_ad_unit_id || DEFAULT_AD_CONFIG.feed_ad_unit_id,
       app_open_ad_unit_id: raw.app_open_ad_unit_id || DEFAULT_AD_CONFIG.app_open_ad_unit_id,
@@ -182,6 +194,14 @@ class AdConfigService {
 
   isInterstitialOnPromptBackEnabled(): boolean {
     return this.cachedConfig.ads_enabled && this.cachedConfig.interstitial_prompt_back;
+  }
+
+  isInterstitialOnTemplateClickEnabled(): boolean {
+    return this.cachedConfig.ads_enabled && this.cachedConfig.interstitial_template_click;
+  }
+
+  isInterstitialOnTemplateBackEnabled(): boolean {
+    return this.cachedConfig.ads_enabled && this.cachedConfig.interstitial_template_back;
   }
 
   isRewardedPromptUnlockEnabled(): boolean {

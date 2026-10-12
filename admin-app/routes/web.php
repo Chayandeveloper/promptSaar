@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\RewardSettingController;
+use App\Http\Controllers\Admin\TemplateController;
 use App\Http\Controllers\Admin\UnlockController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\EnsureAdmin;
@@ -80,6 +81,15 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::post('/banners/{id}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
         Route::post('/banners/set-from-prompt/{promptId}', [BannerController::class, 'setFromPrompt'])->name('banners.set-from-prompt');
         Route::post('/banners/upload-image', [BannerController::class, 'uploadImage'])->name('banners.upload-image');
+
+        // CapCut Video Templates Management
+        Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
+        Route::post('/templates', [TemplateController::class, 'store'])->name('templates.store');
+        Route::put('/templates/{id}', [TemplateController::class, 'update'])->name('templates.update');
+        Route::delete('/templates/{id}', [TemplateController::class, 'destroy'])->name('templates.destroy');
+        Route::post('/templates/{id}/toggle', [TemplateController::class, 'toggle'])->name('templates.toggle');
+        Route::post('/templates/upload-video', [TemplateController::class, 'uploadVideo'])->name('templates.upload-video');
+        Route::post('/templates/upload-thumbnail', [TemplateController::class, 'uploadThumbnail'])->name('templates.upload-thumbnail');
 
         // Users & Coin Ledger Management
         Route::get('/users', [UserController::class, 'index'])->name('users.index');

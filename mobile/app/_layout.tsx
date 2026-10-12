@@ -90,6 +90,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="template/[id]"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
           name="category/[slug]"
           options={{
             title: 'Category Prompts',

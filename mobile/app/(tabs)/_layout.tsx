@@ -65,11 +65,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="templates"
         options={{
-          title: 'Search',
+          title: 'Templates',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? 'search' : 'search-outline'}
-              size={22}
+              name={focused ? 'videocam' : 'videocam-outline'}
+              size={23}
               color={color}
             />
           ),

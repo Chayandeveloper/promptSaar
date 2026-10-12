@@ -35,6 +35,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 }) => {
   const { data: adConfig } = useAdConfig();
   const [useFallback, setUseFallback] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   // Check admin switches: do not render if config is not loaded, master switch is off, or specific placement is off
   if (!adConfig || !adConfig.ads_enabled) {
@@ -61,8 +62,6 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   const adUnitId = useFallback
     ? (TestIds?.BANNER || GOOGLE_TEST_BANNER_ID)
     : configuredId;
-
-  const [loadFailed, setLoadFailed] = useState(false);
 
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {

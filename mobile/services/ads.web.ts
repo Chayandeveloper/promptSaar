@@ -106,6 +106,34 @@ class WebAdMobService {
     }, 700);
   }
 
+  async presentInterstitialOnTemplateClick(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnTemplateClickEnabled()) {
+      onDismissed();
+      return;
+    }
+
+    this.setAdLoading(true, 'Opening Template...', 'Loading video preset...');
+    console.log('[AdMob Web Preview] 🎬 Interstitial Ad (Template Click) Triggered');
+    setTimeout(() => {
+      this.setAdLoading(false);
+      onDismissed();
+    }, 600);
+  }
+
+  async presentInterstitialOnTemplateBack(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnTemplateBackEnabled()) {
+      onDismissed();
+      return;
+    }
+
+    this.setAdLoading(true, 'Please wait...', 'Loading ad...');
+    console.log('[AdMob Web Preview] 🔙 Interstitial Ad (Template Back) Triggered');
+    setTimeout(() => {
+      this.setAdLoading(false);
+      onDismissed();
+    }, 600);
+  }
+
   async presentAppOpenAd(onDismissed?: () => void): Promise<void> {
     await adConfigService.ensureInitialized(1500);
 

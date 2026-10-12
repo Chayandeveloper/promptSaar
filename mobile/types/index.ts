@@ -76,6 +76,38 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+export interface Template {
+  id: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  thumbnail_url: string;
+  video_url: string;
+  capcut_url: string;
+  tags?: string[] | null;
+  duration?: string | null;
+  use_count: number;
+  views_count: number;
+  is_featured: boolean;
+  is_active: boolean;
+  order: number;
+  created_at?: string;
+}
+
+export interface TemplateCategoryCount {
+  category: string;
+  count: number;
+}
+
+export interface TemplateListResponse {
+  status: string;
+  data: Template[];
+  total: number;
+  current_page: number;
+  last_page: number;
+  categories: TemplateCategoryCount[];
+}
+
 // ─── Reward & Coin System Types ──────────────────────────────────────────────
 export interface CoinBalanceResponse {
   balance: number;

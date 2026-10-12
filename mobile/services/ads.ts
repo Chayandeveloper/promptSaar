@@ -134,6 +134,25 @@ class AdMobService {
     );
   }
 
+  getInterstitialTemplateClickUnitId(): string {
+    const config = adConfigService.getConfig();
+    return (
+      config.interstitial_template_click_id ||
+      config.interstitial_ad_unit_id ||
+      'ca-app-pub-9010050634863664/9136172220'
+    );
+  }
+
+  getInterstitialTemplateBackUnitId(): string {
+    const config = adConfigService.getConfig();
+    return (
+      config.interstitial_template_back_id ||
+      config.interstitial_prompt_back_id ||
+      config.interstitial_ad_unit_id ||
+      'ca-app-pub-9010050634863664/9136172220'
+    );
+  }
+
   /**
    * Shows an Interstitial Ad when a prompt is clicked.
    * If interstitial ads are disabled from admin panel, directly calls onDismissed() immediately.
@@ -290,6 +309,158 @@ class AdMobService {
           unsubClosed();
           unsubError();
           // If no ad is there -> dismiss loader and go back
+          safeDismiss();
+        });
+
+        interstitial.load();
+        return;
+      } catch (err: any) {
+        safeDismiss();
+        return;
+      }
+    }
+
+    // Expo Go / Dev preview when switch is ON
+    this.setAdLoading(true, 'Please wait...', 'Loading ad (Expo Go Preview)...');
+    setTimeout(() => {
+      safeDismiss();
+    }, 800);
+  }
+
+  /**
+   * Shows an Interstitial Ad when a video template is clicked.
+   * Controlled by admin switch `interstitial_template_click`.
+   * When turned off from admin panel, directly calls onDismissed() with zero delay.
+   */
+  async presentInterstitialOnTemplateClick(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnTemplateClickEnabled()) {
+      console.log('[AdMob] 🔴 Template Click Interstitial: DISABLED (Admin switch is OFF)');
+      onDismissed();
+      return;
+    }
+
+    console.log('[AdMob] 🟢 Template Click Interstitial: Triggering ad');
+
+    let hasDismissed = false;
+    const safeDismiss = () => {
+      this.setAdLoading(false);
+      if (!hasDismissed) {
+        hasDismissed = true;
+        onDismissed();
+      }
+    };
+
+    if (this.isNativeAvailable && InterstitialAd && AdEventType) {
+      try {
+        const adUnitId = this.getInterstitialTemplateClickUnitId();
+
+        this.setAdLoading(true, 'Opening Template...', 'Loading video preset...');
+
+        const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+          requestNonPersonalizedAdsOnly: true,
+        });
+
+        const fallbackTimer = setTimeout(() => {
+          safeDismiss();
+        }, 3000);
+
+        const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+          clearTimeout(fallbackTimer);
+          this.setAdLoading(false);
+          interstitial.show().catch(() => {
+            safeDismiss();
+          });
+        });
+
+        const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+          clearTimeout(fallbackTimer);
+          unsubLoaded();
+          unsubClosed();
+          unsubError();
+          safeDismiss();
+        });
+
+        const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
+          clearTimeout(fallbackTimer);
+          unsubLoaded();
+          unsubClosed();
+          unsubError();
+          safeDismiss();
+        });
+
+        interstitial.load();
+        return;
+      } catch (err: any) {
+        safeDismiss();
+        return;
+      }
+    }
+
+    // Expo Go / Dev preview simulation when switch is ON
+    this.setAdLoading(true, 'Opening Template...', 'AdMob Interstitial (Expo Go Preview)');
+    setTimeout(() => {
+      safeDismiss();
+    }, 700);
+  }
+
+  /**
+   * Shows an Interstitial Ad when user presses back from the video template player screen.
+   * Controlled by admin switch `interstitial_template_back`.
+   * When turned off from admin panel, immediately navigates back with zero delay.
+   */
+  async presentInterstitialOnTemplateBack(onDismissed: () => void): Promise<void> {
+    if (!adConfigService.isInterstitialOnTemplateBackEnabled()) {
+      console.log('[AdMob] 🔴 Template Back Interstitial: DISABLED (Admin switch is OFF)');
+      onDismissed();
+      return;
+    }
+
+    console.log('[AdMob] 🟢 Template Back Interstitial: Triggering ad');
+
+    let hasDismissed = false;
+    const safeDismiss = () => {
+      this.setAdLoading(false);
+      if (!hasDismissed) {
+        hasDismissed = true;
+        onDismissed();
+      }
+    };
+
+    if (this.isNativeAvailable && InterstitialAd && AdEventType) {
+      try {
+        const adUnitId = this.getInterstitialTemplateBackUnitId();
+
+        this.setAdLoading(true, 'Please wait...', 'Loading ad...');
+
+        const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+          requestNonPersonalizedAdsOnly: true,
+        });
+
+        const fallbackTimer = setTimeout(() => {
+          safeDismiss();
+        }, 3000);
+
+        const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+          clearTimeout(fallbackTimer);
+          this.setAdLoading(false);
+          interstitial.show().catch(() => {
+            safeDismiss();
+          });
+        });
+
+        const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+          clearTimeout(fallbackTimer);
+          unsubLoaded();
+          unsubClosed();
+          unsubError();
+          safeDismiss();
+        });
+
+        const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
+          clearTimeout(fallbackTimer);
+          unsubLoaded();
+          unsubClosed();
+          unsubError();
           safeDismiss();
         });
 

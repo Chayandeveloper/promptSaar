@@ -12,6 +12,8 @@ interface Settings {
     interstitial_prompt_click: boolean;
     interstitial_cooldown_seconds?: number;
     interstitial_prompt_back: boolean;
+    interstitial_template_click: boolean;
+    interstitial_template_back: boolean;
     rewarded_prompt_unlock: boolean;
     rewarded_daily_coins: boolean;
     banner_ads_enabled: boolean;
@@ -19,6 +21,8 @@ interface Settings {
     app_open_ad_enabled: boolean;
     interstitial_ad_unit_id: string;
     interstitial_prompt_back_id: string;
+    interstitial_template_click_id?: string;
+    interstitial_template_back_id?: string;
     banner_ad_unit_id: string;
     feed_ad_unit_id: string;
     app_open_ad_unit_id: string;
@@ -50,6 +54,8 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
         interstitial_prompt_click: settings.interstitial_prompt_click ?? true,
         interstitial_cooldown_seconds: settings.interstitial_cooldown_seconds ?? 45,
         interstitial_prompt_back: settings.interstitial_prompt_back ?? false,
+        interstitial_template_click: settings.interstitial_template_click ?? true,
+        interstitial_template_back: settings.interstitial_template_back ?? true,
         rewarded_prompt_unlock: settings.rewarded_prompt_unlock ?? true,
         rewarded_daily_coins: settings.rewarded_daily_coins ?? true,
         banner_ads_enabled: settings.banner_ads_enabled ?? true,
@@ -57,6 +63,8 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
         app_open_ad_enabled: settings.app_open_ad_enabled ?? true,
         interstitial_ad_unit_id: settings.interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
         interstitial_prompt_back_id: settings.interstitial_prompt_back_id || 'ca-app-pub-9010050634863664/9136172220',
+        interstitial_template_click_id: settings.interstitial_template_click_id || settings.interstitial_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
+        interstitial_template_back_id: settings.interstitial_template_back_id || settings.interstitial_prompt_back_id || 'ca-app-pub-9010050634863664/9136172220',
         banner_ad_unit_id: settings.banner_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
         feed_ad_unit_id: settings.feed_ad_unit_id || 'ca-app-pub-9010050634863664/4429647201',
         app_open_ad_unit_id: settings.app_open_ad_unit_id || 'ca-app-pub-9010050634863664/9136172220',
@@ -292,6 +300,62 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             </label>
                         </div>
 
+                        {/* 2b. Interstitial on Template Click */}
+                        <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <PlaySquare size={16} className="text-rose-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Interstitial Ad on Video Template Click
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                        Fullscreen
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    When a user taps any video template card from the Templates feed, display a full-screen interstitial ad before opening the template video player.
+                                </p>
+                            </div>
+
+                            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(data.interstitial_template_click)}
+                                    onChange={(e) => setData('interstitial_template_click', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+                            </label>
+                        </div>
+
+                        {/* 2c. Interstitial on Template Back / Exit */}
+                        <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <ArrowLeft size={16} className="text-pink-400" />
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Interstitial Ad on Video Template Back / Exit
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                                        Fullscreen
+                                    </span>
+                                </div>
+                                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                                    When a user exits or navigates back from the video template player screen, display a full-screen interstitial ad before returning.
+                                </p>
+                            </div>
+
+                            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(data.interstitial_template_back)}
+                                    onChange={(e) => setData('interstitial_template_back', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                            </label>
+                        </div>
+
                         {/* 3. Rewarded Ad for Prompt Unlock */}
                         <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                             <div className="space-y-1">
@@ -481,6 +545,40 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             )}
                             <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
                                 Interstitial shown when user exits prompt details screen.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android Interstitial Ad Unit ID (Template Click)
+                            </label>
+                            <input
+                                type="text"
+                                value={data.interstitial_template_click_id}
+                                onChange={(e) => setData('interstitial_template_click_id', e.target.value)}
+                                placeholder="ca-app-pub-9010050634863664/9136172220"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                                style={inputStyle}
+                            />
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Interstitial shown when user taps a template card in the Templates tab.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Android Interstitial Ad Unit ID (Template Back / Exit)
+                            </label>
+                            <input
+                                type="text"
+                                value={data.interstitial_template_back_id}
+                                onChange={(e) => setData('interstitial_template_back_id', e.target.value)}
+                                placeholder="ca-app-pub-9010050634863664/9136172220"
+                                className="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+                                style={inputStyle}
+                            />
+                            <p className="text-xs mt-1.5" style={{ color: 'var(--color-muted)' }}>
+                                Interstitial shown when user navigates back from template player screen.
                             </p>
                         </div>
 
