@@ -22,8 +22,8 @@ export const promptsService = {
     return res.trending;
   },
 
-  async getRecentPrompts(): Promise<PromptSummary[]> {
-    const res = await api.get<{ recent: PromptSummary[] }>('/prompts/recent');
+  async getRecentPrompts(limit = 100): Promise<PromptSummary[]> {
+    const res = await api.get<{ recent: PromptSummary[] }>('/prompts/recent', { limit });
     return res.recent;
   },
 

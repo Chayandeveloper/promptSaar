@@ -124,10 +124,11 @@ class PromptController extends Controller
     public function recent(Request $request): JsonResponse
     {
         $user = $this->rewardService->resolveUser($request);
+        $limit = (int) $request->input('limit', 100);
         $prompts = Prompt::with('category')
             ->where('is_published', true)
             ->orderBy('created_at', 'desc')
-            ->take(10)
+            ->take($limit)
             ->get();
 
         return response()->json(['recent' => $prompts->map(fn($p) => $this->formatSummary($p, $user))]);

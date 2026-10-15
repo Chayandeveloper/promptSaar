@@ -32,10 +32,10 @@ export function useTrendingPrompts() {
   });
 }
 
-export function useRecentPrompts() {
+export function useRecentPrompts(limit = 100) {
   return useQuery({
-    queryKey: ['prompts', 'recent'],
-    queryFn: () => promptsService.getRecentPrompts(),
+    queryKey: ['prompts', 'recent', limit],
+    queryFn: () => promptsService.getRecentPrompts(limit),
     staleTime: 1000 * 60 * 5,
   });
 }
