@@ -18,7 +18,7 @@ const navItems = [
     { href: '/admin/users', label: 'Users & Coins', icon: Users },
     { href: '/admin/notifications', label: 'Push Notifications', icon: Bell },
     { href: '/admin/settings/ads', label: 'Ad Controls', icon: Tv },
-    { href: '/admin/settings/app-ads', label: 'app-ads.txt', icon: FileCode },
+    { href: '/admin/settings/app-ads', label: 'app-ads.txt (AdMob)', icon: FileCode },
     { href: '/admin/settings/rewards', label: 'Reward Settings', icon: Coins },
     { href: '/admin/settings/app', label: 'App Version', icon: Smartphone },
     { href: '/admin/settings/social', label: 'Social Channels', icon: Share2 },

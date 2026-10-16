@@ -148,15 +148,19 @@ class AppSettingController extends Controller
     {
         $content = AppSetting::get('app_ads_txt');
 
+        $publicFile = public_path('app-ads.txt');
+        $rootFile = base_path('../app-ads.txt');
+
         if ($content === null || trim((string) $content) === '') {
-            $filePath = public_path('app-ads.txt');
-            if (file_exists($filePath)) {
-                $content = @file_get_contents($filePath);
+            if (file_exists($publicFile) && trim((string) @file_get_contents($publicFile)) !== '') {
+                $content = @file_get_contents($publicFile);
+            } elseif (file_exists($rootFile) && trim((string) @file_get_contents($rootFile)) !== '') {
+                $content = @file_get_contents($rootFile);
             }
         }
 
         if ($content === null || trim((string) $content) === '') {
-            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa0\n";
+            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa1\ngoogle.com, pub-8448030863991486, DIRECT, f08c47fec0942fa0\n";
         }
 
         return response($content, 200, [
@@ -171,21 +175,30 @@ class AppSettingController extends Controller
     public function appAdsIndex(): Response
     {
         $content = AppSetting::get('app_ads_txt');
+        $publicFile = public_path('app-ads.txt');
+        $rootFile = base_path('../app-ads.txt');
 
-        if ($content === null || trim((string) $content) === '') {
-            $filePath = public_path('app-ads.txt');
-            if (file_exists($filePath)) {
-                $content = @file_get_contents($filePath);
+        // Check if content is empty or if file has accounts that DB missed
+        if (file_exists($publicFile)) {
+            $fileContent = @file_get_contents($publicFile);
+            if ($content === null || trim((string) $content) === '' || (str_contains($fileContent, 'pub-8448030863991486') && !str_contains((string) $content, 'pub-8448030863991486'))) {
+                $content = $fileContent;
+                AppSetting::set('app_ads_txt', $content);
+            }
+        } elseif (file_exists($rootFile)) {
+            $rootContent = @file_get_contents($rootFile);
+            if ($content === null || trim((string) $content) === '') {
+                $content = $rootContent;
+                AppSetting::set('app_ads_txt', $content);
             }
         }
 
         if ($content === null || trim((string) $content) === '') {
-            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa0\n";
+            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa1\ngoogle.com, pub-8448030863991486, DIRECT, f08c47fec0942fa0\n";
         }
 
-        $publicPath = public_path('app-ads.txt');
-        $fileWritable = is_writable(dirname($publicPath)) && (!file_exists($publicPath) || is_writable($publicPath));
-        $lastModified = file_exists($publicPath) ? date('Y-m-d H:i:s', filemtime($publicPath)) : null;
+        $fileWritable = is_writable(dirname($publicFile)) && (!file_exists($publicFile) || is_writable($publicFile));
+        $lastModified = file_exists($publicFile) ? date('Y-m-d H:i:s', filemtime($publicFile)) : null;
 
         return Inertia::render('Settings/AppAds', [
             'content'      => (string) $content,
@@ -218,14 +231,12 @@ class AppSettingController extends Controller
             \Log::warning('Failed writing public/app-ads.txt: ' . $e->getMessage());
         }
 
-        // 3. Synchronize to root app-ads.txt if present
-        $rootFile = base_path('../app-ads.txt');
-        if (file_exists($rootFile) && is_writable($rootFile)) {
-            try {
-                @file_put_contents($rootFile, $content);
-            } catch (\Throwable $e) {
-                // Ignore root write failure
-            }
+        // 3. Synchronize to root app-ads.txt
+        try {
+            $rootFile = base_path('../app-ads.txt');
+            @file_put_contents($rootFile, $content);
+        } catch (\Throwable $e) {
+            // Ignore root write failure
         }
 
         return redirect()->back()->with('success', 'app-ads.txt file has been updated and published successfully!');

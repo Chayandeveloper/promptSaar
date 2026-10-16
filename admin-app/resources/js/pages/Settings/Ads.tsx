@@ -148,7 +148,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                                 </span>
                             </div>
                             <p className="text-xs pt-0.5" style={{ color: 'var(--color-muted)' }}>
-                                Required by Google AdMob to protect ad revenue from fraud and verify developer ownership.
+                                Add and manage multiple Google AdMob publisher accounts and mediation partners for app-ads.txt verification.
                             </p>
                         </div>
                     </div>
@@ -159,7 +159,7 @@ export default function AdsSettingsPage({ settings, admin }: Props) {
                             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer"
                             style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                         >
-                            <span>Edit app-ads.txt</span>
+                            <span>Manage AdMob Accounts</span>
                             <ExternalLink size={13} />
                         </Link>
                     </div>
