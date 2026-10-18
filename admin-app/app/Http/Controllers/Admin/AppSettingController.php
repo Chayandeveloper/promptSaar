@@ -146,7 +146,8 @@ class AppSettingController extends Controller
      */
     public function serveAppAds()
     {
-        $content = AppSetting::get('app_ads_txt');
+        $settingExists = AppSetting::where('key', 'app_ads_txt')->exists();
+        $content = $settingExists ? AppSetting::get('app_ads_txt') : null;
 
         $publicFile = public_path('app-ads.txt');
         $rootFile = base_path('../app-ads.txt');
@@ -160,12 +161,12 @@ class AppSettingController extends Controller
         }
 
         if ($content === null || trim((string) $content) === '') {
-            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa1\ngoogle.com, pub-8448030863991486, DIRECT, f08c47fec0942fa0\n";
+            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa1\ngoogle.com, pub-8448030863991486, DIRECT, f08c47fec0942fa0\ngoogle.com, pub-6046304076225926, DIRECT, f08c47fec0942fa0\ngoogle.com, pub-3492959112438381, DIRECT, f08c47fec0942fa0\ngoogle.com, pub-9396520297120071, DIRECT, f08c47fec0942fa0\n";
         }
 
         return response($content, 200, [
             'Content-Type' => 'text/plain; charset=UTF-8',
-            'Cache-Control' => 'no-cache, private',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, private',
         ]);
     }
 
@@ -174,27 +175,26 @@ class AppSettingController extends Controller
      */
     public function appAdsIndex(): Response
     {
-        $content = AppSetting::get('app_ads_txt');
+        $settingExists = AppSetting::where('key', 'app_ads_txt')->exists();
+        $content = $settingExists ? AppSetting::get('app_ads_txt') : null;
+
         $publicFile = public_path('app-ads.txt');
         $rootFile = base_path('../app-ads.txt');
 
-        // Check if content is empty or if file has accounts that DB missed
-        if (file_exists($publicFile)) {
-            $fileContent = @file_get_contents($publicFile);
-            if ($content === null || trim((string) $content) === '' || (str_contains($fileContent, 'pub-8448030863991486') && !str_contains((string) $content, 'pub-8448030863991486'))) {
-                $content = $fileContent;
-                AppSetting::set('app_ads_txt', $content);
+        // Only seed from file if setting has never been configured in DB
+        if (!$settingExists) {
+            if (file_exists($publicFile) && trim((string) @file_get_contents($publicFile)) !== '') {
+                $content = @file_get_contents($publicFile);
+            } elseif (file_exists($rootFile) && trim((string) @file_get_contents($rootFile)) !== '') {
+                $content = @file_get_contents($rootFile);
             }
-        } elseif (file_exists($rootFile)) {
-            $rootContent = @file_get_contents($rootFile);
-            if ($content === null || trim((string) $content) === '') {
-                $content = $rootContent;
+            if ($content !== null) {
                 AppSetting::set('app_ads_txt', $content);
             }
         }
 
-        if ($content === null || trim((string) $content) === '') {
-            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa1\ngoogle.com, pub-8448030863991486, DIRECT, f08c47fec0942fa0\n";
+        if ($content === null) {
+            $content = "google.com, pub-9010050634863664, DIRECT, f08c47fec0942fa1\ngoogle.com, pub-8448030863991486, DIRECT, f08c47fec0942fa0\ngoogle.com, pub-6046304076225926, DIRECT, f08c47fec0942fa0\ngoogle.com, pub-3492959112438381, DIRECT, f08c47fec0942fa0\ngoogle.com, pub-9396520297120071, DIRECT, f08c47fec0942fa0\n";
         }
 
         $fileWritable = is_writable(dirname($publicFile)) && (!file_exists($publicFile) || is_writable($publicFile));
@@ -224,10 +224,15 @@ class AppSettingController extends Controller
         AppSetting::set('app_ads_txt', $content);
 
         // 2. Synchronize to public/app-ads.txt so web servers can serve static file directly
+        $publicFile = public_path('app-ads.txt');
+        $writeSuccess = true;
         try {
-            $publicFile = public_path('app-ads.txt');
-            @file_put_contents($publicFile, $content);
+            $res = @file_put_contents($publicFile, $content);
+            if ($res === false) {
+                $writeSuccess = false;
+            }
         } catch (\Throwable $e) {
+            $writeSuccess = false;
             \Log::warning('Failed writing public/app-ads.txt: ' . $e->getMessage());
         }
 
@@ -237,6 +242,10 @@ class AppSettingController extends Controller
             @file_put_contents($rootFile, $content);
         } catch (\Throwable $e) {
             // Ignore root write failure
+        }
+
+        if (!$writeSuccess && file_exists($publicFile)) {
+            return redirect()->back()->with('warning', 'app-ads.txt was saved in the database, but public/app-ads.txt on disk is not writable. If your web server serves static files directly, please check file permissions (e.g. chmod 666 public/app-ads.txt).');
         }
 
         return redirect()->back()->with('success', 'app-ads.txt file has been updated and published successfully!');

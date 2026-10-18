@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
 import {
     FileCode, Save, CheckCircle, ExternalLink, Copy, Check,
@@ -127,10 +127,22 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
         content: content || '',
     });
 
+    const pageProps = usePage<{ flash?: { success?: string; error?: string; warning?: string; info?: string } }>().props;
+    const flash = pageProps.flash;
+
     const [copiedUrl, setCopiedUrl] = useState(false);
     const [copiedContent, setCopiedContent] = useState(false);
     const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'manager' | 'raw'>('manager');
+
+    // Auto-save feedback states
+    const [isSavingAction, setIsSavingAction] = useState(false);
+    const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+
+    // Keep form content synchronized whenever props update from server
+    useEffect(() => {
+        setData('content', content || '');
+    }, [content]);
 
     // Modal state for adding or editing an account
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,6 +160,22 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         put('/admin/settings/app-ads', { preserveScroll: true });
+    };
+
+    // Auto-publish changes directly to the server so additions and deletions persist immediately
+    const publishDirectly = (newContent: string, message: string) => {
+        setData('content', newContent);
+        setIsSavingAction(true);
+        router.put('/admin/settings/app-ads', { content: newContent }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setActionFeedback(message);
+                setTimeout(() => setActionFeedback(null), 4000);
+            },
+            onFinish: () => {
+                setIsSavingAction(false);
+            }
+        });
     };
 
     const handleCopyUrl = () => {
@@ -303,7 +331,6 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
     // Auto-clean Pub ID when typing or pasting
     const handlePubIdChange = (val: string) => {
         let clean = val.trim();
-        // If Google AdMob, clean up full AdMob strings like "ca-app-pub-8448030863991486~1234567" or "pub-8448..."
         if (selectedPreset === 'admob' || modalDomain.toLowerCase() === 'google.com') {
             const pubMatch = clean.match(/pub-?(\d{14,20})/i);
             if (pubMatch) {
@@ -315,7 +342,7 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
         setModalPubId(clean);
     };
 
-    // Save Account from Modal (Add or Edit)
+    // Save Account from Modal (Add or Edit) - Automatically persists to backend
     const handleSaveAccount = (e: React.FormEvent) => {
         e.preventDefault();
         setModalFormError('');
@@ -352,20 +379,20 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
         const labelLine = modalLabel.trim() ? `# Label: ${modalLabel.trim()}\n` : '';
         const fullBlock = `${labelLine}${lineRecord}`;
 
+        let newContent = data.content;
+
         if (editingAccount) {
             // Update existing line
             const lines = data.content.split('\n');
             const targetLineIndex = editingAccount.lineNumber - 1;
 
             if (targetLineIndex >= 0 && targetLineIndex < lines.length) {
-                // If previous line was an associated label comment, check if we should update or replace it
                 const prevIndex = targetLineIndex - 1;
                 if (prevIndex >= 0 && lines[prevIndex].trim().startsWith('#') && lines[prevIndex].toLowerCase().includes('label:')) {
                     if (modalLabel.trim()) {
                         lines[prevIndex] = `# Label: ${modalLabel.trim()}`;
                         lines[targetLineIndex] = lineRecord;
                     } else {
-                        // remove label
                         lines.splice(prevIndex, 1);
                         lines[targetLineIndex - 1] = lineRecord;
                     }
@@ -374,20 +401,20 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
                 } else {
                     lines[targetLineIndex] = lineRecord;
                 }
-                setData('content', lines.join('\n'));
+                newContent = lines.join('\n');
             }
         } else {
             // Append new account
             const trimmedContent = data.content.trim();
-            const newContent = trimmedContent ? `${trimmedContent}\n\n${fullBlock}\n` : `${fullBlock}\n`;
-            setData('content', newContent);
+            newContent = trimmedContent ? `${trimmedContent}\n\n${fullBlock}\n` : `${fullBlock}\n`;
         }
 
         setIsModalOpen(false);
         setEditingAccount(null);
+        publishDirectly(newContent, editingAccount ? 'Account updated and published live!' : `Account ${pubId} added and published live!`);
     };
 
-    // Delete Account
+    // Delete Account - Automatically persists to backend
     const handleDeleteAccount = (acc: AccountItem) => {
         if (!confirm(`Are you sure you want to remove account "${acc.publisherId}" (${acc.domain}) from app-ads.txt?`)) {
             return;
@@ -397,16 +424,15 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
         const targetLineIndex = acc.lineNumber - 1;
 
         if (targetLineIndex >= 0 && targetLineIndex < lines.length) {
-            // Check if line before is an associated label
             const prevIndex = targetLineIndex - 1;
             if (prevIndex >= 0 && lines[prevIndex].trim().startsWith('#') && lines[prevIndex].toLowerCase().includes('label:')) {
                 lines.splice(prevIndex, 2);
             } else {
                 lines.splice(targetLineIndex, 1);
             }
-            // Clean up excess consecutive blank lines
             const cleaned = lines.filter((l, idx, arr) => !(l.trim() === '' && arr[idx - 1]?.trim() === ''));
-            setData('content', cleaned.join('\n') + (cleaned.length > 0 ? '\n' : ''));
+            const newContent = cleaned.join('\n') + (cleaned.length > 0 ? '\n' : '');
+            publishDirectly(newContent, `Account ${acc.publisherId} removed and published live!`);
         }
     };
 
@@ -417,7 +443,8 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
         if (data.content.startsWith('# app-ads.txt')) {
             return;
         }
-        setData('content', `${comment}${data.content.trimStart()}`);
+        const newContent = `${comment}${data.content.trimStart()}`;
+        publishDirectly(newContent, 'Standard header comment inserted and published!');
     };
 
     // Helper: Format and Clean content
@@ -426,8 +453,11 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
             .split('\n')
             .map(line => line.trim())
             .filter((line, idx, arr) => !(line === '' && arr[idx - 1] === ''));
-        setData('content', lines.join('\n') + (lines.length > 0 ? '\n' : ''));
+        const newContent = lines.join('\n') + (lines.length > 0 ? '\n' : '');
+        publishDirectly(newContent, 'Formatted and published successfully!');
     };
+
+    const isBusy = processing || isSavingAction;
 
     return (
         <AdminLayout admin={admin} title="app-ads.txt / AdMob Sellers Editor">
@@ -455,7 +485,8 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
                         <button
                             type="button"
                             onClick={() => openAddAccountModal('admob')}
-                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-emerald-500/20 hover:opacity-90 transition-all cursor-pointer"
+                            disabled={isBusy}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-emerald-500/20 hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
                             style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
                             title="Add a new Google AdMob Publisher Account"
                         >
@@ -466,22 +497,35 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
                         <button
                             type="button"
                             onClick={submit}
-                            disabled={processing}
+                            disabled={isBusy}
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
                             style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                         >
-                            {processing ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
-                            <span>{processing ? 'Publishing...' : 'Save & Publish'}</span>
+                            {isBusy ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
+                            <span>{isBusy ? 'Publishing...' : 'Save & Publish'}</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Published Notification */}
-                {recentlySuccessful && (
+                {(actionFeedback || recentlySuccessful || flash?.success) && (
                     <div className="flex items-center gap-3 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-sm animate-in fade-in duration-300">
                         <CheckCircle size={18} className="shrink-0" />
                         <div>
-                            <span className="font-semibold">Published Successfully:</span> The updated app-ads.txt file with all accounts is now live on your domain and saved in database & disk.
+                            <span className="font-semibold">Published Successfully:</span> {actionFeedback || flash?.success || 'The updated app-ads.txt file with all accounts is now live on your domain and saved in database & disk.'}
+                        </div>
+                    </div>
+                )}
+
+                {/* Warning / Server Permissions Notification */}
+                {(flash?.warning || !fileWritable) && (
+                    <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-sm animate-in fade-in duration-300">
+                        <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-400" />
+                        <div className="space-y-1">
+                            <span className="font-semibold">File System Permission Notice:</span>
+                            <p className="text-xs text-amber-200/90 leading-relaxed">
+                                {flash?.warning || 'The public/app-ads.txt file on disk is not writable by PHP. Settings are saved in the database, but if your web server (Nginx/Apache) serves static files directly from public/, changes won\'t appear on your live URL until file permissions are fixed (e.g. chmod 666 public/app-ads.txt).'}
+                            </p>
                         </div>
                     </div>
                 )}
@@ -786,12 +830,12 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
                                     <button
                                         type="button"
                                         onClick={submit}
-                                        disabled={processing}
+                                        disabled={isBusy}
                                         className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
                                         style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                                     >
-                                        {processing ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
-                                        <span>{processing ? 'Saving...' : 'Save & Publish Changes'}</span>
+                                        {isBusy ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
+                                        <span>{isBusy ? 'Saving...' : 'Save & Publish Changes'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -1066,11 +1110,12 @@ export default function AppAdsPage({ content, publicUrl, fileWritable, lastModif
                                 </button>
                                 <button
                                     type="submit"
-                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer"
+                                    disabled={isBusy}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-indigo-500/20 hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
                                     style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                                 >
-                                    <Check size={15} />
-                                    <span>{editingAccount ? 'Update Account' : 'Add Account to File'}</span>
+                                    {isBusy ? <RefreshCw size={15} className="animate-spin" /> : <Check size={15} />}
+                                    <span>{isBusy ? 'Saving...' : (editingAccount ? 'Update Account' : 'Add Account & Publish')}</span>
                                 </button>
                             </div>
                         </form>
