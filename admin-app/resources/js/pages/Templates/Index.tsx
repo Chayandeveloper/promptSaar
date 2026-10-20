@@ -184,15 +184,24 @@ export default function TemplatesIndex({ templates, stats, categories, filters, 
                 },
                 body: fd,
             });
-            const data = await res.json();
-            if (data.url) {
+
+            if (res.status === 419) {
+                alert('Session expired. Please refresh the page and log in again.');
+                return;
+            }
+
+            const data = await res.json().catch(() => null);
+
+            if (res.ok && data?.url) {
                 form.setData('video_url', data.url);
             } else {
-                alert('Failed to upload video');
+                const errorMsg = data?.errors?.video?.[0] || data?.message || `Upload failed with status ${res.status}`;
+                alert(errorMsg);
             }
-        } catch (err) {
-            alert('Upload error. File may be too large.');
+        } catch (err: any) {
+            alert(err?.message || 'Upload error. The file may exceed the server file size limit.');
         } finally {
+            if (e.target) e.target.value = '';
             setUploadingVideo(false);
         }
     };
@@ -215,15 +224,24 @@ export default function TemplatesIndex({ templates, stats, categories, filters, 
                 },
                 body: fd,
             });
-            const data = await res.json();
-            if (data.url) {
+
+            if (res.status === 419) {
+                alert('Session expired. Please refresh the page and try again.');
+                return;
+            }
+
+            const data = await res.json().catch(() => null);
+
+            if (res.ok && data?.url) {
                 form.setData('thumbnail_url', data.url);
             } else {
-                alert('Failed to upload thumbnail');
+                const errorMsg = data?.errors?.thumbnail?.[0] || data?.message || `Upload failed with status ${res.status}`;
+                alert(errorMsg);
             }
-        } catch (err) {
-            alert('Upload error');
+        } catch (err: any) {
+            alert(err?.message || 'Upload error');
         } finally {
+            if (e.target) e.target.value = '';
             setUploadingThumb(false);
         }
     };
@@ -246,15 +264,24 @@ export default function TemplatesIndex({ templates, stats, categories, filters, 
                 },
                 body: fd,
             });
-            const data = await res.json();
-            if (data.url) {
+
+            if (res.status === 419) {
+                alert('Session expired. Please refresh the page and try again.');
+                return;
+            }
+
+            const data = await res.json().catch(() => null);
+
+            if (res.ok && data?.url) {
                 form.setData('vn_image_url', data.url);
             } else {
-                alert('Failed to upload VN image');
+                const errorMsg = data?.errors?.image?.[0] || data?.message || `Upload failed with status ${res.status}`;
+                alert(errorMsg);
             }
-        } catch (err) {
-            alert('Upload error. File may be too large.');
+        } catch (err: any) {
+            alert(err?.message || 'Upload error. File may be too large.');
         } finally {
+            if (e.target) e.target.value = '';
             setUploadingVn(false);
         }
     };
@@ -793,7 +820,7 @@ export default function TemplatesIndex({ templates, stats, categories, filters, 
                                         type="file"
                                         ref={videoInputRef}
                                         onChange={handleVideoUpload}
-                                        accept="video/mp4,video/quicktime,video/webm"
+                                        accept="video/*"
                                         className="hidden"
                                     />
 

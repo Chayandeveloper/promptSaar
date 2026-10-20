@@ -2,6 +2,11 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const getBackendUrl = () => {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.trim();
+  }
+
   // In Expo Go or local development, always connect directly to local Laravel backend
   if (__DEV__) {
     const hostUri = Constants.expoConfig?.hostUri || (Constants as any)?.manifest?.debuggerHost;
@@ -12,11 +17,6 @@ const getBackendUrl = () => {
       }
     }
     return 'http://192.168.1.5:8001/api';
-  }
-
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl && envUrl.trim().length > 0) {
-    return envUrl.trim();
   }
 
   return 'https://promptbaba.cloud/api';

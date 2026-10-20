@@ -14,8 +14,10 @@ import {
   Image,
   BackHandler,
   ScrollView,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -101,6 +103,26 @@ const TemplateVideoView: React.FC<TemplateVideoViewProps> = ({
       statusSub?.remove?.();
       playingSub?.remove?.();
     };
+  }, [player, isPlaying]);
+
+  // Resume playback immediately when app returns to foreground from background/external apps
+  useEffect(() => {
+    if (!player) return;
+
+    const handleAppState = (nextState: AppStateStatus) => {
+      if (nextState === 'active' && isPlaying) {
+        try {
+          player.play();
+        } catch (e) {
+          try {
+            player.replay();
+          } catch (err) {}
+        }
+      }
+    };
+
+    const sub = AppState.addEventListener('change', handleAppState);
+    return () => sub.remove();
   }, [player, isPlaying]);
 
   const handleRetry = () => {
@@ -231,6 +253,35 @@ export default function TemplateDetailScreen() {
     return () => sub.remove();
   }, [handleGoBack]);
 
+  // Resume video playback when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      isLeavingRef.current = false;
+      if (activePageIndex === 0) {
+        setIsPlaying(true);
+      }
+      return () => {
+        setIsPlaying(false);
+      };
+    }, [activePageIndex])
+  );
+
+  // Resume video playback when app returns to foreground from external apps (e.g. CapCut)
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        if (!isLeavingRef.current && activePageIndex === 0) {
+          setIsPlaying(true);
+        }
+      } else if (nextAppState.match(/inactive|background/)) {
+        setIsPlaying(false);
+      }
+    };
+
+    const sub = AppState.addEventListener('change', handleAppStateChange);
+    return () => sub.remove();
+  }, [activePageIndex]);
+
   const togglePlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setIsPlaying((prev) => !prev);
@@ -284,6 +335,9 @@ export default function TemplateDetailScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setIsOpeningCapCut(true);
 
+    // Pause video playback while external CapCut app is opening
+    setIsPlaying(false);
+
     try {
       // 1. Increment template use count on backend
       useTemplateMutation.mutate(template.id);
@@ -315,6 +369,10 @@ export default function TemplateDetailScreen() {
       }
     } finally {
       setIsOpeningCapCut(false);
+      // In case the user immediately returns or Linking doesn't trigger AppState change
+      if (AppState.currentState === 'active' && activePageIndex === 0 && !isLeavingRef.current) {
+        setIsPlaying(true);
+      }
     }
   };
 

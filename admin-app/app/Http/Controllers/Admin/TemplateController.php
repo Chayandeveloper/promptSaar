@@ -167,15 +167,47 @@ class TemplateController extends Controller
 
     public function uploadVideo(Request $request)
     {
+        if (!$request->hasFile('video')) {
+            return response()->json([
+                'message' => 'No video file received. The file may exceed the server upload limit (post_max_size / upload_max_filesize).'
+            ], 422);
+        }
+
         $request->validate([
-            'video' => 'required|file|mimes:mp4,mov,avi,webm,mkv|max:102400', // max 100MB
+            'video' => [
+                'required',
+                'file',
+                'max:153600', // max 150MB
+                function ($attribute, $value, $fail) {
+                    $validExtensions = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', '3gp', 'ts', 'flv'];
+                    $validMimes = [
+                        'video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo',
+                        'video/x-matroska', 'video/ogg', 'video/3gpp', 'video/x-m4v',
+                        'application/octet-stream'
+                    ];
+
+                    $ext = strtolower($value->getClientOriginalExtension());
+                    $mime = $value->getMimeType();
+
+                    if (!in_array($ext, $validExtensions) && !in_array($mime, $validMimes)) {
+                        $fail("The video must be a valid video format: " . implode(', ', $validExtensions));
+                    }
+                },
+            ],
         ]);
 
-        $path = $request->file('video')->store('templates/videos', 'public');
+        try {
+            $path = $request->file('video')->store('templates/videos', 'public');
 
-        return response()->json([
-            'url' => asset('storage/' . $path),
-        ]);
+            return response()->json([
+                'url' => asset('storage/' . $path),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Video upload failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Server failed to save uploaded video: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function uploadThumbnail(Request $request)
