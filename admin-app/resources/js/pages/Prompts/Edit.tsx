@@ -1,12 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
-import { Save, X, Upload, Plus } from 'lucide-react';
+import { Save, X, Upload, Plus, Images, Video, Trash2 } from 'lucide-react';
 
 interface Category { id: number; name: string; slug: string; icon: string; }
 interface Prompt {
     id: number; category_id: number; title: string; description: string; prompt_text: string;
-    cover_image: string; unlock_cost?: number; tags: string[]; is_featured: boolean; is_trending: boolean; is_published: boolean;
+    cover_image: string; gallery_images?: string[]; video_url?: string | null;
+    unlock_cost?: number; tags: string[]; is_featured: boolean; is_trending: boolean; is_published: boolean;
 }
 interface Admin { name: string; email: string; avatar?: string; }
 interface Props { prompt: Prompt; categories: Category[]; admin: Admin; }
@@ -19,8 +20,13 @@ const inputStyle = {
 
 export default function PromptsEdit({ prompt, categories, admin }: Props) {
     const [tagInput, setTagInput] = useState('');
+    const [galleryUrlInput, setGalleryUrlInput] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [uploadingGallery, setUploadingGallery] = useState(false);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const galleryFileRef = useRef<HTMLInputElement>(null);
+    const videoFileRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, put, processing, errors } = useForm({
         category_id: String(prompt.category_id),
@@ -28,6 +34,8 @@ export default function PromptsEdit({ prompt, categories, admin }: Props) {
         description: prompt.description,
         prompt_text: prompt.prompt_text,
         cover_image: prompt.cover_image,
+        gallery_images: prompt.gallery_images ?? [],
+        video_url: prompt.video_url ?? '',
         unlock_cost: prompt.unlock_cost ?? 30,
         tags: prompt.tags ?? [],
         is_featured: prompt.is_featured,
@@ -55,6 +63,60 @@ export default function PromptsEdit({ prompt, categories, admin }: Props) {
             const json = await res.json();
             if (json.url) setData('cover_image', json.url);
         } finally { setUploading(false); }
+    };
+
+    const handleGalleryUpload = async (files: FileList) => {
+        setUploadingGallery(true);
+        const uploadedUrls: string[] = [];
+        try {
+            for (const file of Array.from(files)) {
+                const form = new FormData();
+                form.append('image', file);
+                const res = await fetch('/admin/prompts/upload-image', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '' },
+                    body: form,
+                });
+                const json = await res.json();
+                if (json.url) uploadedUrls.push(json.url);
+            }
+            if (uploadedUrls.length > 0) {
+                setData('gallery_images', [...data.gallery_images, ...uploadedUrls]);
+            }
+        } finally {
+            setUploadingGallery(false);
+            if (galleryFileRef.current) galleryFileRef.current.value = '';
+        }
+    };
+
+    const addGalleryUrl = () => {
+        const url = galleryUrlInput.trim();
+        if (url && !data.gallery_images.includes(url)) {
+            setData('gallery_images', [...data.gallery_images, url]);
+        }
+        setGalleryUrlInput('');
+    };
+
+    const removeGalleryImage = (idx: number) => {
+        setData('gallery_images', data.gallery_images.filter((_, i) => i !== idx));
+    };
+
+    const handleVideoUpload = async (file: File) => {
+        setUploadingVideo(true);
+        const form = new FormData();
+        form.append('video', file);
+        try {
+            const res = await fetch('/admin/prompts/upload-video', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '' },
+                body: form,
+            });
+            const json = await res.json();
+            if (json.url) setData('video_url', json.url);
+        } finally {
+            setUploadingVideo(false);
+            if (videoFileRef.current) videoFileRef.current.value = '';
+        }
     };
 
     const submit = (e: React.FormEvent) => {
@@ -103,7 +165,7 @@ export default function PromptsEdit({ prompt, categories, admin }: Props) {
 
                     <div className="space-y-5">
                         <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                            <h3 className="font-semibold mb-3" style={{ color: 'var(--color-text)' }}>Cover Image</h3>
+                            <h3 className="font-semibold mb-3" style={{ color: 'var(--color-text)' }}>Primary Cover Image *</h3>
                             {data.cover_image && <img src={data.cover_image} alt="Cover" className="w-full h-40 object-cover rounded-xl mb-3" />}
                             <input value={data.cover_image} onChange={e => setData('cover_image', e.target.value)}
                                 placeholder="https://..." className="w-full px-3 py-2 rounded-xl text-xs outline-none mb-2" style={inputStyle} />
@@ -112,7 +174,126 @@ export default function PromptsEdit({ prompt, categories, admin }: Props) {
                             <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
                                 className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium"
                                 style={{ background: 'var(--color-surface-2)', border: '1px dashed var(--color-border)', color: 'var(--color-muted)' }}>
-                                <Upload size={13} /> {uploading ? 'Uploading...' : 'Upload Image'}
+                                <Upload size={13} /> {uploading ? 'Uploading...' : 'Upload Primary Image'}
+                            </button>
+                        </div>
+
+                        {/* Additional Slider Photos (Multiple Upload) */}
+                        <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="font-semibold flex items-center gap-1.5 text-sm" style={{ color: 'var(--color-text)' }}>
+                                    <Images size={15} className="text-indigo-400" /> Slider Photos ({data.gallery_images.length})
+                                </h3>
+                            </div>
+                            <p className="text-[11px] mb-3" style={{ color: 'var(--color-muted)' }}>
+                                Upload multiple photos for a swipeable image slider on Home &amp; Prompt Details.
+                            </p>
+
+                            {data.gallery_images.length > 0 && (
+                                <div className="grid grid-cols-3 gap-2 mb-3">
+                                    {data.gallery_images.map((imgUrl, idx) => (
+                                        <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-700">
+                                            <img src={imgUrl} alt={`Slide ${idx + 2}`} className="w-full h-20 object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeGalleryImage(idx)}
+                                                className="absolute top-1 right-1 bg-black/75 text-white rounded-full p-1 hover:bg-red-500 transition-colors"
+                                            >
+                                                <X size={11} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="flex gap-2 mb-2">
+                                <input
+                                    value={galleryUrlInput}
+                                    onChange={e => setGalleryUrlInput(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addGalleryUrl())}
+                                    placeholder="Paste image URL..."
+                                    className="flex-1 px-3 py-2 rounded-xl text-xs outline-none"
+                                    style={inputStyle}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addGalleryUrl}
+                                    className="px-3 py-2 rounded-xl text-xs"
+                                    style={{ background: '#6366f1', color: 'white' }}
+                                >
+                                    <Plus size={13} />
+                                </button>
+                            </div>
+
+                            <input
+                                ref={galleryFileRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={e => e.target.files?.length && handleGalleryUpload(e.target.files)}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => galleryFileRef.current?.click()}
+                                disabled={uploadingGallery}
+                                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium"
+                                style={{ background: 'var(--color-surface-2)', border: '1px dashed var(--color-border)', color: 'var(--color-muted)' }}
+                            >
+                                <Upload size={13} /> {uploadingGallery ? 'Uploading Photos...' : 'Upload Multiple Photos'}
+                            </button>
+                        </div>
+
+                        {/* Prompt Video (Downloadable) */}
+                        <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="font-semibold flex items-center gap-1.5 text-sm" style={{ color: 'var(--color-text)' }}>
+                                    <Video size={15} className="text-rose-400" /> Prompt Video (Optional)
+                                </h3>
+                                {data.video_url && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setData('video_url', '')}
+                                        className="text-xs text-red-400 flex items-center gap-1 hover:underline"
+                                    >
+                                        <Trash2 size={12} /> Remove
+                                    </button>
+                                )}
+                            </div>
+                            <p className="text-[11px] mb-3" style={{ color: 'var(--color-muted)' }}>
+                                Attach a preview video that users can watch and download in the mobile app.
+                            </p>
+
+                            {data.video_url && (
+                                <video
+                                    src={data.video_url}
+                                    controls
+                                    className="w-full h-40 object-cover rounded-xl mb-3 bg-black"
+                                />
+                            )}
+
+                            <input
+                                value={data.video_url}
+                                onChange={e => setData('video_url', e.target.value)}
+                                placeholder="https://...mp4 or upload below"
+                                className="w-full px-3 py-2 rounded-xl text-xs outline-none mb-2"
+                                style={inputStyle}
+                            />
+                            <input
+                                ref={videoFileRef}
+                                type="file"
+                                accept="video/*"
+                                className="hidden"
+                                onChange={e => e.target.files?.[0] && handleVideoUpload(e.target.files[0])}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => videoFileRef.current?.click()}
+                                disabled={uploadingVideo}
+                                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium"
+                                style={{ background: 'var(--color-surface-2)', border: '1px dashed var(--color-border)', color: 'var(--color-muted)' }}
+                            >
+                                <Upload size={13} /> {uploadingVideo ? 'Uploading Video...' : 'Upload Video (MP4/MOV)'}
                             </button>
                         </div>
 

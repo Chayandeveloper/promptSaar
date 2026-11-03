@@ -66,6 +66,7 @@ Route::middleware(['auth', EnsureAdmin::class])
         Route::put('/prompts/{id}', [PromptController::class, 'update'])->name('prompts.update');
         Route::delete('/prompts/{id}', [PromptController::class, 'destroy'])->name('prompts.destroy');
         Route::post('/prompts/upload-image', [PromptController::class, 'uploadImage'])->name('prompts.upload-image');
+        Route::post('/prompts/upload-video', [PromptController::class, 'uploadVideo'])->name('prompts.upload-video');
 
         // Categories CRUD
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');

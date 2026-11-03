@@ -105,8 +105,7 @@ export default function HomeScreen() {
                     <PromptCard key={`search-${item.id}`} prompt={item} grid portrait />
                   ];
                   const isEighth = (index + 1) % 8 === 0;
-                  const isDevSample = __DEV__ && (index === searchData.data.length - 1 || index === 0);
-                  if (isEighth || isDevSample) {
+                  if (isEighth) {
                     items.push(
                       <View key={`search-ad-${index}`} style={styles.inFeedAdContainer}>
                         <BannerAd
@@ -149,6 +148,7 @@ export default function HomeScreen() {
                 <CategorySkeleton />
                 <CategorySkeleton />
                 <CategorySkeleton />
+                <CategorySkeleton />
               </View>
             ) : categoriesData && categoriesData.length > 0 ? (
               <CategoryList categories={categoriesData} />
@@ -178,16 +178,15 @@ export default function HomeScreen() {
                       <PromptCard key={`recent-${item.id}`} prompt={item} grid portrait />
                     ];
                     const isEighth = (index + 1) % 8 === 0;
-                    const isDevSample = __DEV__ && (index === recentData.length - 1 || index === 0);
-                    if (isEighth || isDevSample) {
+                    if (isEighth) {
                       items.push(
-                        <BannerAd
-                          key={`recent-ad-${index}`}
-                          placement="in-feed"
-                          size="medium_rectangle"
-                          unitId={adConfig?.feed_ad_unit_id}
-                          style={styles.inFeedAdContainer}
-                        />
+                        <View key={`recent-ad-${index}`} style={styles.inFeedAdContainer}>
+                          <BannerAd
+                            placement="in-feed"
+                            size="medium_rectangle"
+                            unitId={adConfig?.feed_ad_unit_id}
+                          />
+                        </View>
                       );
                     }
                     return items;
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
   categoriesSkeletonRow: {
     flexDirection: 'row',
     paddingHorizontal: Theme.spacing.md,
-    marginBottom: Theme.spacing.lg,
+    marginBottom: Theme.spacing.md + 4,
   },
   inFeedAdContainer: {
     width: '100%',

@@ -7,10 +7,10 @@ import {
   RefreshControl,
   TouchableOpacity,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/ScreenContainer';
-import { SearchBar } from '../../components/SearchBar';
 import { TemplateCard } from '../../components/TemplateCard';
 import { EmptyState } from '../../components/EmptyState';
 import { BannerAd } from '../../components/BannerAd';
@@ -32,9 +32,17 @@ const CATEGORIES = [
 ];
 
 export default function TemplatesScreen() {
+  const [searchInput, setSearchInput] = useState('');
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { data: adConfig } = useAdConfig();
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilterQuery(searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const {
     data: templatesData,
@@ -48,38 +56,53 @@ export default function TemplatesScreen() {
 
   const templates = templatesData?.data || [];
   const total = templatesData?.total || 0;
-
-  // Split featured / trending template for top spotlight
-  const featuredTemplate = templates.find((t) => t.is_featured) || templates[0];
   const gridTemplates = templates;
 
   return (
     <ScreenContainer noPadding>
-      {/* Screen Header */}
+      {/* Compact Top Bar */}
       <View style={styles.header}>
+        {/* Title + Badge + Count in a single compact row */}
         <View style={styles.headerTop}>
-          <View>
-            <View style={styles.badgeRow}>
-              <View style={styles.capcutBadge}>
-                <Ionicons name="film" size={12} color="#FFFFFF" />
-                <Text style={styles.capcutBadgeText}>CAPCUT PRESETS</Text>
-              </View>
-              <View style={styles.liveDot} />
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Templates</Text>
+            <View style={styles.capcutBadge}>
+              <Ionicons name="film" size={10} color="#FFFFFF" />
+              <Text style={styles.capcutBadgeText}>CAPCUT</Text>
             </View>
-            <Text style={styles.title}>Video Templates</Text>
-            <Text style={styles.subtitle}>
-              Trending Instagram Reels & TikTok CapCut templates
+            <View style={styles.liveDot} />
+          </View>
+
+          <View style={styles.countPill}>
+            <Text style={styles.countBadge}>
+              {total} {total === 1 ? 'preset' : 'presets'}
             </Text>
           </View>
         </View>
 
-        {/* Search Bar */}
-        <View style={styles.searchBarWrapper}>
-          <SearchBar
-            value={filterQuery}
-            onSearch={(text) => setFilterQuery(text)}
-            placeholder="Search templates (e.g. beat sync, slowmo, reel)..."
+        {/* Compact Search Input */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={15} color={Theme.colors.primary} />
+          <TextInput
+            style={styles.searchInput}
+            value={searchInput}
+            onChangeText={setSearchInput}
+            placeholder="Search templates (beat sync, slowmo, reel)..."
+            placeholderTextColor={Theme.colors.textMuted}
+            returnKeyType="search"
           />
+          {searchInput.length > 0 && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                setSearchInput('');
+                setFilterQuery('');
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="close-circle" size={15} color={Theme.colors.textMuted} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Horizontal Category Filter Pills */}
@@ -109,16 +132,6 @@ export default function TemplatesScreen() {
             );
           })}
         </ScrollView>
-      </View>
-
-      {/* Count Strip */}
-      <View style={styles.countStrip}>
-        <Text style={styles.countTitle}>
-          {selectedCategory !== 'All' ? `${selectedCategory} Templates` : 'All Templates'}
-        </Text>
-        <Text style={styles.countBadge}>
-          {total} template{total === 1 ? '' : 's'}
-        </Text>
       </View>
 
       {/* Templates Grid List */}
@@ -185,9 +198,8 @@ const CARD_HEIGHT = CARD_WIDTH * (16 / 9);
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: Theme.spacing.md,
-    paddingTop: Theme.spacing.md,
-    paddingBottom: Theme.spacing.xs,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
@@ -195,65 +207,91 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: Theme.spacing.md,
+    marginBottom: 8,
   },
-  badgeRow: {
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
+    gap: 7,
+  },
+  title: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: '#0F172A',
+    letterSpacing: -0.4,
   },
   capcutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FF0055',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    gap: 4,
+    paddingHorizontal: 6.5,
+    paddingVertical: 2,
+    borderRadius: 8,
+    gap: 3.5,
   },
   capcutBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9.5,
+    fontSize: 8.5,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
     backgroundColor: '#10B981',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: -0.5,
+  countPill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Theme.borderRadius.full,
   },
-  subtitle: {
-    fontSize: 12,
+  countBadge: {
+    fontSize: 10.5,
     color: '#64748B',
-    marginTop: 2,
+    fontWeight: '600',
   },
-  searchBarWrapper: {
-    marginTop: 8,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 11,
+    paddingHorizontal: 11,
+    height: 36,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginHorizontal: Theme.spacing.md,
+    marginBottom: 8,
+    gap: 7,
+  },
+  searchInput: {
+    flex: 1,
+    color: Theme.colors.text,
+    fontSize: 12.5,
+    paddingVertical: 0,
   },
   categoryScroll: {
     flexDirection: 'row',
-    gap: 8,
-    paddingVertical: 10,
+    gap: 6,
+    paddingHorizontal: Theme.spacing.md,
   },
   categoryPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: Theme.borderRadius.full,
     backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   categoryPillActive: {
     backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
   },
   categoryPillText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '600',
     color: '#64748B',
   },
@@ -261,28 +299,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  countStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    backgroundColor: '#FAFAFC',
-  },
-  countTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
-  },
-  countBadge: {
-    fontSize: 11.5,
-    color: '#94A3B8',
-    fontWeight: '600',
-  },
   listContent: {
-    padding: Theme.spacing.md,
+    paddingHorizontal: Theme.spacing.md,
+    paddingTop: 10,
     paddingBottom: Theme.spacing.xxl + 32,
   },
   gridList: {

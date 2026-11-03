@@ -550,14 +550,6 @@ export default function TemplateDetailScreen() {
                 <Text style={styles.durationPillText}>{template.duration}</Text>
               </View>
             ) : null}
-
-            {template?.use_count ? (
-              <View style={styles.usesPill}>
-                <Text style={styles.usesPillText}>
-                  🔥 {formatNumber(template.use_count)} used
-                </Text>
-              </View>
-            ) : null}
           </View>
 
           {/* Template Title */}
@@ -762,6 +754,11 @@ export default function TemplateDetailScreen() {
                 </LinearGradient>
               </TouchableOpacity>
             ) : null}
+          </View>
+
+          {/* Ad Banner Below VN Actions */}
+          <View style={styles.templateAdBannerWrapper}>
+            <BannerAd placement="template_detail" size="banner" />
           </View>
         </View>
       </View>
@@ -1071,10 +1068,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   templateAdBannerWrapper: {
-    width: '100%',
+    width: SCREEN_WIDTH,
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
+    minHeight: 52,
   },
   // Pager & Horizontal Swipe Styles
   pagerScrollView: {

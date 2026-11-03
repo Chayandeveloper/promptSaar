@@ -28,6 +28,8 @@ export interface PromptSummary {
   slug: string;
   description: string;
   cover_image: string;
+  gallery_images?: string[];
+  video_url?: string | null;
   unlock_cost: number;
   category_id?: number;
   category: {

@@ -27,6 +27,7 @@ import { BannerAd } from '../../components/BannerAd';
 import { ErrorState } from '../../components/ErrorState';
 import { Skeleton, PromptCardSkeleton } from '../../components/Skeleton';
 import { PromptCard } from '../../components/PromptCard';
+import { PromptMediaCarousel } from '../../components/PromptMediaCarousel';
 import {
   usePrompt,
   useToggleSavePrompt,
@@ -328,12 +329,17 @@ export default function PromptDetailsScreen() {
   return (
     <ScreenContainer noPadding edges={['left', 'right', 'bottom']}>
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* Cover Image Container */}
-        <View style={styles.coverWrapper}>
-          <Image source={{ uri: prompt.cover_image }} style={styles.coverImage} resizeMode="cover" />
+        {/* Cover Image / Multi-Photo Slider & Video Carousel */}
+        <View style={styles.mediaHeaderWrapper}>
+          <PromptMediaCarousel
+            promptId={prompt.id}
+            coverImage={prompt.cover_image}
+            galleryImages={prompt.gallery_images}
+            videoUrl={prompt.video_url}
+          />
 
           {/* Action & Navigation Overlay */}
-          <View style={[styles.topActionsRow, { top: Math.max(insets.top, 14) + 6 }]}>
+          <View style={[styles.topActionsRow, { top: Math.max(insets.top, 14) + 6 }]} pointerEvents="box-none">
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleGoBack}
@@ -651,6 +657,10 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: Theme.spacing.xxl + 24,
+  },
+  mediaHeaderWrapper: {
+    width: '100%',
+    position: 'relative',
   },
   coverWrapper: {
     width: '100%',

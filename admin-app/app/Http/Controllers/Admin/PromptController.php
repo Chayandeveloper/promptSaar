@@ -58,17 +58,20 @@ class PromptController extends Controller
         $defaultCost = (int) \App\Models\RewardSetting::get('default_prompt_cost', 30);
 
         $validated = $request->validate([
-            'category_id'  => 'required|exists:categories,id',
-            'title'        => 'required|string|max:255',
-            'description'  => 'required|string',
-            'prompt_text'  => 'required|string',
-            'cover_image'  => 'required|string',
-            'unlock_cost'  => 'nullable|integer|min:0|max:10000',
-            'tags'         => 'nullable|array',
-            'tags.*'       => 'string|max:50',
-            'is_featured'  => 'boolean',
-            'is_trending'  => 'boolean',
-            'is_published' => 'boolean',
+            'category_id'      => 'required|exists:categories,id',
+            'title'            => 'required|string|max:255',
+            'description'      => 'required|string',
+            'prompt_text'      => 'required|string',
+            'cover_image'      => 'required|string',
+            'gallery_images'   => 'nullable|array',
+            'gallery_images.*' => 'nullable|string',
+            'video_url'        => 'nullable|string|max:1000',
+            'unlock_cost'      => 'nullable|integer|min:0|max:10000',
+            'tags'             => 'nullable|array',
+            'tags.*'           => 'string|max:50',
+            'is_featured'      => 'boolean',
+            'is_trending'      => 'boolean',
+            'is_published'     => 'boolean',
         ]);
 
         $slug     = Str::slug($validated['title']);
@@ -81,14 +84,16 @@ class PromptController extends Controller
 
         Prompt::create([
             ...$validated,
-            'slug'         => $slug,
-            'unlock_cost'  => $validated['unlock_cost'] ?? $defaultCost,
-            'tags'         => $validated['tags'] ?? [],
-            'is_featured'  => $validated['is_featured'] ?? false,
-            'is_trending'  => $validated['is_trending'] ?? false,
-            'is_published' => $validated['is_published'] ?? true,
-            'views'        => 0,
-            'unlock_count' => 0,
+            'slug'           => $slug,
+            'gallery_images' => array_values(array_filter($validated['gallery_images'] ?? [])),
+            'video_url'      => !empty($validated['video_url']) ? trim($validated['video_url']) : null,
+            'unlock_cost'    => $validated['unlock_cost'] ?? $defaultCost,
+            'tags'           => $validated['tags'] ?? [],
+            'is_featured'    => $validated['is_featured'] ?? false,
+            'is_trending'    => $validated['is_trending'] ?? false,
+            'is_published'   => $validated['is_published'] ?? true,
+            'views'          => 0,
+            'unlock_count'   => 0,
         ]);
 
         return redirect()->route('admin.prompts.index')->with('success', 'Prompt created successfully!');
@@ -111,18 +116,24 @@ class PromptController extends Controller
         $prompt = Prompt::findOrFail($id);
 
         $validated = $request->validate([
-            'category_id'  => 'required|exists:categories,id',
-            'title'        => 'required|string|max:255',
-            'description'  => 'required|string',
-            'prompt_text'  => 'required|string',
-            'cover_image'  => 'required|string',
-            'unlock_cost'  => 'required|integer|min:0|max:10000',
-            'tags'         => 'nullable|array',
-            'tags.*'       => 'string|max:50',
-            'is_featured'  => 'boolean',
-            'is_trending'  => 'boolean',
-            'is_published' => 'boolean',
+            'category_id'      => 'required|exists:categories,id',
+            'title'            => 'required|string|max:255',
+            'description'      => 'required|string',
+            'prompt_text'      => 'required|string',
+            'cover_image'      => 'required|string',
+            'gallery_images'   => 'nullable|array',
+            'gallery_images.*' => 'nullable|string',
+            'video_url'        => 'nullable|string|max:1000',
+            'unlock_cost'      => 'required|integer|min:0|max:10000',
+            'tags'             => 'nullable|array',
+            'tags.*'           => 'string|max:50',
+            'is_featured'      => 'boolean',
+            'is_trending'      => 'boolean',
+            'is_published'     => 'boolean',
         ]);
+
+        $validated['gallery_images'] = array_values(array_filter($validated['gallery_images'] ?? []));
+        $validated['video_url']      = !empty($validated['video_url']) ? trim($validated['video_url']) : null;
 
         // Re-slug only if title changed
         if ($validated['title'] !== $prompt->title) {
@@ -150,9 +161,37 @@ class PromptController extends Controller
 
     public function uploadImage(Request $request)
     {
-        $request->validate(['image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120']);
+        $request->validate(['image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240']);
 
         $path = $request->file('image')->store('prompts', 'public');
+
+        return response()->json(['url' => asset('storage/' . $path)]);
+    }
+
+    public function uploadVideo(Request $request)
+    {
+        if (!$request->hasFile('video')) {
+            return response()->json([
+                'message' => 'No video file received. The file may exceed the server upload limit.'
+            ], 422);
+        }
+
+        $request->validate([
+            'video' => [
+                'required',
+                'file',
+                'max:153600', // max 150MB
+                function ($attribute, $value, $fail) {
+                    $validExtensions = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', '3gp'];
+                    $ext = strtolower($value->getClientOriginalExtension());
+                    if (!in_array($ext, $validExtensions)) {
+                        $fail("The video must be a valid format: " . implode(', ', $validExtensions));
+                    }
+                },
+            ],
+        ]);
+
+        $path = $request->file('video')->store('prompts/videos', 'public');
 
         return response()->json(['url' => asset('storage/' . $path)]);
     }

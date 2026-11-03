@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Share } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Share,
+  ScrollView,
+  LayoutChangeEvent,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +16,7 @@ import { Theme } from '../constants/Theme';
 import { PromptSummary } from '../types';
 import { useToggleSavePrompt, useSavedPrompts } from '../hooks/usePrompts';
 import { adService } from '../services/ads';
+import { resolveMediaUrl } from '../utils/url';
 
 interface PromptCardProps {
   prompt: PromptSummary;
@@ -25,6 +35,21 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   const toggleSave = useToggleSavePrompt();
   const { data: savedPrompts = [] } = useSavedPrompts();
   const isSaved = Boolean(prompt.is_saved) || savedPrompts.some((p) => p.id === prompt.id);
+
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [cardWidth, setCardWidth] = useState(0);
+
+  const allImages = React.useMemo(() => {
+    const raw = [
+      prompt.cover_image,
+      ...(Array.isArray(prompt.gallery_images) ? prompt.gallery_images : []),
+    ].filter((u): u is string => Boolean(u && u.trim()));
+    // Deduplicate while preserving order
+    return Array.from(new Set(raw.map((u) => resolveMediaUrl(u))));
+  }, [prompt.cover_image, prompt.gallery_images]);
+
+  const hasMultiplePhotos = allImages.length > 1;
+  const hasVideo = Boolean(prompt.video_url && prompt.video_url.trim());
 
   const handlePress = () => {
     adService.presentInterstitialOnPromptClick(() => {
@@ -49,10 +74,18 @@ export const PromptCard: React.FC<PromptCardProps> = ({
     }
   };
 
+  const handleLayout = (e: LayoutChangeEvent) => {
+    const w = e.nativeEvent.layout.width;
+    if (w > 0 && w !== cardWidth) {
+      setCardWidth(w);
+    }
+  };
+
   return (
     <TouchableOpacity
-      activeOpacity={0.88}
+      activeOpacity={0.9}
       onPress={handlePress}
+      onLayout={handleLayout}
       style={[
         styles.card,
         horizontal
@@ -62,7 +95,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             : styles.cardVertical,
       ]}
     >
-      {/* Cover Image Container */}
+      {/* Cover Image / Multi-Photo Slider Container */}
       <View
         style={[
           styles.imageContainer,
@@ -70,26 +103,74 @@ export const PromptCard: React.FC<PromptCardProps> = ({
           portrait && styles.imageContainerPortrait,
         ]}
       >
-        <Image
-          source={{ uri: prompt.cover_image }}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        {hasMultiplePhotos && cardWidth > 0 ? (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled
+            onMomentumScrollEnd={(e) => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+              if (idx >= 0 && idx < allImages.length) {
+                setActiveSlide(idx);
+              }
+            }}
+            style={StyleSheet.absoluteFill}
+          >
+            {allImages.map((imgUri, idx) => (
+              <TouchableOpacity
+                key={`${prompt.id}-img-${idx}`}
+                activeOpacity={0.92}
+                onPress={handlePress}
+                style={{ width: cardWidth, height: '100%' }}
+              >
+                <Image
+                  source={{ uri: imgUri }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        ) : (
+          <Image
+            source={{ uri: allImages[0] || prompt.cover_image }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        )}
 
         {/* Lock Overlay / Badge */}
-        <View style={[styles.topBadgeRow, grid && styles.topBadgeRowGrid]}>
-          {prompt.is_locked ? (
-            <View style={styles.lockPill}>
-              <Ionicons name="lock-closed" size={grid ? 10 : 12} color="#FF7A00" />
-            </View>
-          ) : (
-            <View style={styles.unlockedPill}>
-              <Ionicons name="checkmark-circle" size={grid ? 8 : 10} color="#10B981" />
-              <Text style={[styles.unlockedText, grid && styles.unlockedTextGrid]}>
-                Unlocked
-              </Text>
-            </View>
-          )}
+        <View style={[styles.topBadgeRow, grid && styles.topBadgeRowGrid]} pointerEvents="box-none">
+          <View style={styles.topLeftBadges} pointerEvents="none">
+            {prompt.is_locked ? (
+              <View style={styles.lockPill}>
+                <Ionicons name="lock-closed" size={grid ? 10 : 12} color="#FF7A00" />
+              </View>
+            ) : (
+              <View style={styles.unlockedPill}>
+                <Ionicons name="checkmark-circle" size={grid ? 8 : 10} color="#10B981" />
+                <Text style={[styles.unlockedText, grid && styles.unlockedTextGrid]}>
+                  Unlocked
+                </Text>
+              </View>
+            )}
+
+            {hasMultiplePhotos && (
+              <View style={styles.mediaCountPill}>
+                <Ionicons name="images" size={9} color="#FFFFFF" />
+                <Text style={styles.mediaCountText}>
+                  {activeSlide + 1}/{allImages.length}
+                </Text>
+              </View>
+            )}
+
+            {hasVideo && (
+              <View style={styles.videoBadgePill}>
+                <Ionicons name="videocam" size={10} color="#FFFFFF" />
+              </View>
+            )}
+          </View>
 
           {/* Bookmark Button */}
           <TouchableOpacity
@@ -108,6 +189,27 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             />
           </TouchableOpacity>
         </View>
+
+        {/* Slider Pagination Dots */}
+        {hasMultiplePhotos && (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.sliderDotsRow,
+              portrait && styles.sliderDotsRowPortrait,
+            ]}
+          >
+            {allImages.map((_, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.sliderDot,
+                  idx === activeSlide && styles.sliderDotActive,
+                ]}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Trending pill */}
         {prompt.is_trending && (
@@ -263,6 +365,61 @@ const styles = StyleSheet.create({
     top: 6,
     left: 6,
     right: 6,
+  },
+  topLeftBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  mediaCountPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(17, 24, 39, 0.82)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: Theme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+  },
+  mediaCountText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  videoBadgePill: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(225, 29, 72, 0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)',
+  },
+  sliderDotsRow: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    zIndex: 5,
+  },
+  sliderDotsRowPortrait: {
+    bottom: 52,
+  },
+  sliderDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  sliderDotActive: {
+    width: 14,
+    backgroundColor: '#FFFFFF',
   },
   lockPill: {
     alignItems: 'center',

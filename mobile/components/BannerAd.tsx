@@ -34,7 +34,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
   style,
 }) => {
   const { data: adConfig } = useAdConfig();
-  const [useFallback, setUseFallback] = useState(false);
+  const [retryStep, setRetryStep] = useState<0 | 1 | 2>(0);
   const [loadFailed, setLoadFailed] = useState(false);
 
   // Check admin switches: do not render if config is not loaded, master switch is off, or specific placement is off
@@ -55,18 +55,24 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
   const isRectangle = size === 'medium_rectangle' || placement === 'home_top' || isFeed;
 
+  const primaryBannerId = Config.ADMOB.BANNER_ID || 'ca-app-pub-9010050634863664/4429647201';
+
   const configuredId =
     unitId ||
     (isTemplateDetail ? adConfig?.banner_template_detail_id : null) ||
     (isRectangle ? adConfig?.feed_ad_unit_id : adConfig?.banner_ad_unit_id) ||
     adConfig?.banner_ad_unit_id ||
-    Config.ADMOB.BANNER_ID ||
-    'ca-app-pub-9010050634863664/4429647201';
+    primaryBannerId;
 
-  // Try live ID first; if AdMob returns NO_FILL, fall back to Google Test ID so space is not blank
-  const adUnitId = useFallback
-    ? (TestIds?.BANNER || GOOGLE_TEST_BANNER_ID)
-    : configuredId;
+  // Step 0: configuredId from server/prop
+  // Step 1: fallback to primaryBannerId if configuredId was different (e.g. stale ID in DB)
+  // Step 2 (DEV only): Google test banner ID
+  const adUnitId =
+    retryStep === 0
+      ? configuredId
+      : retryStep === 1
+      ? primaryBannerId
+      : (TestIds?.BANNER || GOOGLE_TEST_BANNER_ID);
 
   // In native Android/iOS APK where Google Mobile Ads SDK is installed
   if (Platform.OS !== 'web' && RNBannerAd && BannerAdSize) {
@@ -77,14 +83,16 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
     const selectedSize = isRectangle
       ? BannerAdSize.MEDIUM_RECTANGLE
-      : isFeed
+      : size === 'large_banner'
+      ? BannerAdSize.LARGE_BANNER
+      : size === 'banner' || isFeed || isTemplateDetail
       ? BannerAdSize.BANNER
       : BannerAdSize.ANCHORED_ADAPTIVE_BANNER;
 
     return (
       <View style={[styles.container, isRectangle && styles.rectangleContainer, style]}>
         <RNBannerAd
-          key={`${adUnitId}-${selectedSize}`}
+          key={`${adUnitId}-${selectedSize}-${retryStep}`}
           unitId={adUnitId}
           size={selectedSize}
           requestOptions={{
@@ -92,8 +100,10 @@ export const BannerAd: React.FC<BannerAdProps> = ({
           }}
           onAdFailedToLoad={(error: any) => {
             console.warn(`[AdMob Banner - ${placement}] Failed to load (${adUnitId}):`, error?.message || error);
-            if (__DEV__ && !useFallback && configuredId !== GOOGLE_TEST_BANNER_ID) {
-              setUseFallback(true);
+            if (retryStep === 0 && configuredId !== primaryBannerId) {
+              setRetryStep(1);
+            } else if (__DEV__ && retryStep < 2 && adUnitId !== GOOGLE_TEST_BANNER_ID) {
+              setRetryStep(2);
             } else {
               setLoadFailed(true);
             }

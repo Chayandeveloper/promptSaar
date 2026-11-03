@@ -48,12 +48,6 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, featured }
     });
   };
 
-  const formatUses = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
-    return count.toString();
-  };
-
   const resolvedThumb = resolveMediaUrl(template.thumbnail_url);
 
   return (
@@ -107,26 +101,22 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, featured }
 
       {/* Bottom Content Info */}
       <View style={styles.bottomContent}>
-        {template.category ? (
-          <View style={styles.categoryPill}>
-            <Text style={styles.categoryText}>{template.category}</Text>
-          </View>
-        ) : null}
+        <View style={styles.bottomMetaRow}>
+          {template.category ? (
+            <View style={styles.categoryPill}>
+              <Text style={styles.categoryText}>{template.category}</Text>
+            </View>
+          ) : <View />}
 
-        <Text style={styles.title} numberOfLines={2}>
-          {template.title}
-        </Text>
-
-        <View style={styles.statsRow}>
-          <View style={styles.usesStat}>
-            <Text style={styles.flameIcon}>🔥</Text>
-            <Text style={styles.usesText}>{formatUses(template.use_count)} uses</Text>
-          </View>
           <View style={styles.ctaMini}>
             <Text style={styles.ctaMiniText}>USE</Text>
             <Ionicons name="chevron-forward" size={11} color="#FFFFFF" />
           </View>
         </View>
+
+        <Text style={styles.title} numberOfLines={2}>
+          {template.title}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -237,13 +227,17 @@ const styles = StyleSheet.create({
     padding: 10,
     zIndex: 2,
   },
+  bottomMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
   categoryPill: {
-    alignSelf: 'flex-start',
     backgroundColor: 'rgba(99, 102, 241, 0.85)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    marginBottom: 4,
   },
   categoryText: {
     color: '#FFFFFF',
@@ -260,25 +254,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
-    marginBottom: 6,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  usesStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  flameIcon: {
-    fontSize: 10,
-  },
-  usesText: {
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 10,
-    fontWeight: '600',
   },
   ctaMini: {
     flexDirection: 'row',

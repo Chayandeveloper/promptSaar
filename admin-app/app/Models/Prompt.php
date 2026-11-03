@@ -18,6 +18,8 @@ class Prompt extends Model
         'description',
         'prompt_text',
         'cover_image',
+        'gallery_images',
+        'video_url',
         'unlock_cost',
         'tags',
         'is_featured',
@@ -28,13 +30,14 @@ class Prompt extends Model
     ];
 
     protected $casts = [
-        'unlock_cost'  => 'integer',
-        'tags'         => 'array',
-        'is_featured'  => 'boolean',
-        'is_trending'  => 'boolean',
-        'is_published' => 'boolean',
-        'views'        => 'integer',
-        'unlock_count' => 'integer',
+        'gallery_images' => 'array',
+        'unlock_cost'    => 'integer',
+        'tags'           => 'array',
+        'is_featured'    => 'boolean',
+        'is_trending'    => 'boolean',
+        'is_published'   => 'boolean',
+        'views'          => 'integer',
+        'unlock_count'   => 'integer',
     ];
 
     public function category(): BelongsTo

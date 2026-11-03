@@ -42,13 +42,15 @@ class PromptController extends Controller
         $isUnlocked = $this->isPromptUnlocked($prompt, $user);
 
         return [
-            'id'           => $prompt->id,
-            'title'        => $prompt->title,
-            'slug'         => $prompt->slug,
-            'description'  => $prompt->description,
-            'cover_image'  => $prompt->cover_image,
-            'unlock_cost'  => (int) ($prompt->unlock_cost ?? 30),
-            'category_id'  => $prompt->category_id,
+            'id'             => $prompt->id,
+            'title'          => $prompt->title,
+            'slug'           => $prompt->slug,
+            'description'    => $prompt->description,
+            'cover_image'    => $prompt->cover_image,
+            'gallery_images' => array_values(array_filter($prompt->gallery_images ?? [])),
+            'video_url'      => $prompt->video_url,
+            'unlock_cost'    => (int) ($prompt->unlock_cost ?? 30),
+            'category_id'    => $prompt->category_id,
             'category'     => $prompt->category ? [
                 'id'   => $prompt->category->id,
                 'name' => $prompt->category->name,
@@ -262,5 +264,47 @@ class PromptController extends Controller
             'status'  => 'ok',
             'message' => 'Prompt relocked successfully.',
         ]);
+    }
+
+    /**
+     * GET /api/prompts/{id}/download-video
+     * Downloads the prompt's attached video file directly.
+     */
+    public function downloadVideo(int $id)
+    {
+        $prompt = Prompt::where('is_published', true)->findOrFail($id);
+
+        if (empty($prompt->video_url)) {
+            abort(404, 'No video attached to this prompt.');
+        }
+
+        $videoUrl = trim($prompt->video_url);
+        $filename = 'prompt-' . ($prompt->slug ?: $prompt->id) . '.mp4';
+
+        // Check if video is stored locally under /storage/...
+        $storagePath = null;
+        if (str_contains($videoUrl, '/storage/')) {
+            $rel = ltrim(substr($videoUrl, strpos($videoUrl, '/storage/') + 9), '/');
+            $candidate = storage_path('app/public/' . $rel);
+            if (file_exists($candidate)) {
+                $storagePath = $candidate;
+            } else {
+                $publicCandidate = public_path('storage/' . $rel);
+                if (file_exists($publicCandidate)) {
+                    $storagePath = $publicCandidate;
+                }
+            }
+        }
+
+        if ($storagePath && file_exists($storagePath)) {
+            $ext = pathinfo($storagePath, PATHINFO_EXTENSION) ?: 'mp4';
+            $filename = 'prompt-' . ($prompt->slug ?: $prompt->id) . '.' . $ext;
+            return response()->download($storagePath, $filename, [
+                'Content-Type' => 'video/' . ($ext === 'mov' ? 'quicktime' : $ext),
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+        }
+
+        return redirect()->away($videoUrl);
     }
 }

@@ -83,8 +83,8 @@ export const PromptCardSkeleton: React.FC<{ grid?: boolean; portrait?: boolean }
 export const CategorySkeleton: React.FC = () => {
   return (
     <View style={styles.categorySkeleton}>
-      <Skeleton width={18} height={18} borderRadius={Theme.borderRadius.full} />
-      <Skeleton width={64} height={14} borderRadius={Theme.borderRadius.sm} />
+      <Skeleton width={20} height={20} borderRadius={Theme.borderRadius.full} />
+      <Skeleton width={52} height={11} borderRadius={Theme.borderRadius.sm} />
     </View>
   );
 };
@@ -112,14 +112,15 @@ const styles = StyleSheet.create({
   categorySkeleton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    width: 104,
-    height: 40,
-    backgroundColor: Theme.colors.surfaceElevated,
+    gap: 6,
+    width: 90,
+    height: 32,
+    backgroundColor: '#FFFFFF',
     borderRadius: Theme.borderRadius.full,
-    paddingHorizontal: 12,
-    marginRight: 10,
+    paddingLeft: 6,
+    paddingRight: 10,
+    marginRight: 8,
     borderWidth: 1,
-    borderColor: Theme.colors.borderLight,
+    borderColor: Theme.colors.border,
   },
 });
